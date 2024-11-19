@@ -1,9 +1,9 @@
-package org.example.flowday.domain.spot.entity;
+package org.example.flowday.domain.course.spot.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.flowday.domain.course.entity.Course;
-import org.example.flowday.domain.vote.entity.Vote;
+import org.example.flowday.domain.course.course.entity.Course;
+import org.example.flowday.domain.course.vote.entity.Vote;
 
 @Entity
 @Getter

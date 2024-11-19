@@ -1,10 +1,10 @@
-package org.example.flowday.domain.course.entity;
+package org.example.flowday.domain.course.course.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.flowday.domain.member.entity.Member;
-import org.example.flowday.domain.spot.entity.Spot;
-import org.example.flowday.domain.vote.entity.Vote;
+import org.example.flowday.domain.course.spot.entity.Spot;
+import org.example.flowday.domain.course.vote.entity.Vote;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;

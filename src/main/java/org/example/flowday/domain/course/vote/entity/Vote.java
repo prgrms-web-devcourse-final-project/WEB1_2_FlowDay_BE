@@ -1,9 +1,9 @@
-package org.example.flowday.domain.vote.entity;
+package org.example.flowday.domain.course.vote.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.flowday.domain.course.entity.Course;
-import org.example.flowday.domain.spot.entity.Spot;
+import org.example.flowday.domain.course.course.entity.Course;
+import org.example.flowday.domain.course.spot.entity.Spot;
 
 import java.util.ArrayList;
 import java.util.List;
