@@ -1,9 +1,10 @@
-package org.example.flowday.global.jwt.filter;
+package org.example.flowday.global.security.filter;
 
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,9 +20,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
+    protected String obtainPassword(HttpServletRequest request) {
+        return request.getParameter("pw");
+    }
+
+    @Override
+    protected String obtainUsername(HttpServletRequest request) {
+        return request.getParameter("loginId");
+    }
+
+    @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         String username = obtainUsername(request);
         String password = obtainPassword(request);
+        System.out.println(username);
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
 
