@@ -2,7 +2,7 @@ package org.example.flowday.domain.post.post.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.flowday.domain.course.entity.Course;
+import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.tag.entity.Tag;
@@ -55,7 +55,5 @@ public class Post {
     @OneToMany(mappedBy = "post" , cascade = CascadeType.ALL , orphanRemoval = true)
     @Builder.Default
     private List<Reply> replys = new ArrayList<>();
-
-
 
 }
