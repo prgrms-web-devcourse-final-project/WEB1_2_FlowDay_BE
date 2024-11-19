@@ -44,7 +44,8 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     private Member writer;
 
-    @OneToOne
+    @OneToOne()
+    @JoinColumn(name="course_id" , referencedColumnName = "id")
     private Course course;
 
     @OneToMany(mappedBy = "post" , cascade = CascadeType.ALL , orphanRemoval = true)
