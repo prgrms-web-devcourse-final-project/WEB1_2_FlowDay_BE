@@ -2,6 +2,7 @@ package org.example.flowday.domain.course.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.spot.entity.Spot;
 import org.example.flowday.domain.vote.entity.Vote;
 import org.springframework.data.annotation.CreatedDate;
