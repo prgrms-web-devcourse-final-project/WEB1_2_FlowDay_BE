@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.flowday.domain.course.entity.Course;
+import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.post.comment.entity.Reply;
 import org.example.flowday.domain.post.tag.entity.Tag;
 import org.springframework.data.annotation.CreatedDate;
