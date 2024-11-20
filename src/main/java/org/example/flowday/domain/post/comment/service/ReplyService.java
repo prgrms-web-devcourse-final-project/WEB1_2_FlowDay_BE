@@ -11,6 +11,10 @@ import org.example.flowday.domain.post.post.repository.PostRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -63,6 +67,32 @@ public class ReplyService {
         replyRepository.save(reply);
 
         return new ReplyDTO.updateResponse(request.getContent() , "댓글이 수정 되었습니다 ");
+    }
+
+
+    public List<ReplyDTO.Response> findAllByPost(Long postId) {
+        List<Reply> replies = replyRepository.findAllReplies(postId);
+
+        Map<Long , ReplyDTO.Response > replyMap = new HashMap<>();
+        List<ReplyDTO.Response> result = new ArrayList<>();
+
+        for (Reply reply : replies) {
+            ReplyDTO.Response dto = new ReplyDTO.Response(reply);
+            replyMap.put(reply.getId(), dto);
+
+            if (reply.getParent() == null) {
+                result.add(dto);
+            } else {
+                ReplyDTO.Response parentDTO = replyMap.get(reply.getParent().getId());
+                if(parentDTO != null) {
+                    parentDTO.getChildren().add(dto);
+                }
+
+            }
+        }
+
+        return result;
+
     }
 
 

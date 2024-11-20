@@ -8,6 +8,8 @@ import org.example.flowday.domain.post.comment.entity.Reply;
 import org.example.flowday.domain.post.post.entity.Post;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReplyDTO {
 
@@ -74,6 +76,27 @@ public class ReplyDTO {
 
 
 
+
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Response {
+        private Long id;
+        private String content;
+        private String memberName;
+        private LocalDateTime createdAt;
+        private List<Response> children;
+
+        public Response (Reply reply) {
+            id = reply.getId();
+            content = reply.getContent();
+            memberName = reply.getMember().getName();
+            createdAt = reply.getCreatedAt();
+            children = new ArrayList<>();
+
+        }
 
     }
 }
