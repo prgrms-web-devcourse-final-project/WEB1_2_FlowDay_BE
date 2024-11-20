@@ -1,10 +1,7 @@
 package org.example.flowday.domain.post.comment.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.springframework.data.annotation.CreatedDate;
@@ -28,8 +25,6 @@ public class Reply {
     private String content;
     @CreatedDate
     private LocalDateTime createdAt;
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post;
@@ -42,6 +37,35 @@ public class Reply {
 
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
     private List<Reply> children = new ArrayList<>();
+
+
+    @Builder
+    public Reply(Post post, String content, Member member, Reply parent) {
+        setPost(post);
+        this.content = content;
+        this.member = member;
+        setParent(parent);
+    }
+
+    /*
+    ** 연관관계 편의 메서드
+    */
+    public void setParent(Reply parent) {
+        this.parent = parent;
+        if (parent != null) {
+            parent.getChildren().add(this);
+        }
+    }
+
+    public void setPost(Post post) {
+        this.post = post;
+        post.getReplys().add(this);
+    }
+
+
+    public void deleteContent(String content) {
+        this.content = content;
+    }
 
 
 }
