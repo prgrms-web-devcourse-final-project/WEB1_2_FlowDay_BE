@@ -68,4 +68,12 @@ public class Reply {
     }
 
 
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void updateDeleteMsg() {
+        this.content = "작성자에 의해 삭제되었습니다";
+    }
+
 }

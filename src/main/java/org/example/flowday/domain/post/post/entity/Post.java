@@ -53,4 +53,14 @@ public class Post {
     @OneToMany(mappedBy = "post" , cascade = CascadeType.ALL , orphanRemoval = true)
     private List<Reply> replys = new ArrayList<>();
 
+
+    @Builder
+    public Post(String title, String city, String content, Status status, Member writer, Course course) {
+        this.title = title;
+        this.city = city;
+        this.content = content;
+        this.status = status;
+        this.writer = writer;
+        this.course = course;
+    }
 }
