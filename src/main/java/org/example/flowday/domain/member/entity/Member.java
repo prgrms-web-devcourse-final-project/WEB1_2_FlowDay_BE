@@ -5,11 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.example.flowday.domain.course.entity.Course;
+import org.example.flowday.domain.post.comment.entity.Reply;
+import org.example.flowday.domain.post.post.entity.Post;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.xml.stream.events.Comment;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -41,6 +47,15 @@ public class Member {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
-    private LocalDateTime dateOfRelationshipStart;
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfRelationshipStart;
+    private LocalDate dateOfBirth;
+
+    @OneToMany(mappedBy = "member")
+    private List<Course> courses;
+
+    @OneToMany(mappedBy = "member")
+    private List<Reply> reply;
+
+    @OneToMany(mappedBy = "member")
+    private List<Post> posts;
 }
