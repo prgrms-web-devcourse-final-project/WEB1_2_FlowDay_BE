@@ -62,7 +62,9 @@ public class Reply {
 
     public void setPost(Post post) {
         this.post = post;
-        post.getReplys().add(this);
+        if (post != null) {
+            post.getReplys().add(this);
+        }
     }
 
 
@@ -77,8 +79,18 @@ public class Reply {
     public void increaseLikeCount() {
         this.likeCount++;
     }
+
     public void decreaseLikeCount() {
         this.likeCount--;
     }
 
+    public void removeParent(Reply reply) {
+        reply.getParent().getChildren().remove(this);
+        reply.setParent(null);
+    }
+
+    public void removePost(Reply reply) {
+        reply.getPost().getReplys().remove(this);
+        reply.setPost(null);
+    }
 }

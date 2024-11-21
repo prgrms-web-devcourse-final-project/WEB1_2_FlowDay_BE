@@ -152,7 +152,6 @@ class ReplyServiceTest {
         replyService.removeReply(response.getReplyId(),member.getId()); // 부모 댓글 삭제
         Reply parentReply = replyRepository.findById(response.getReplyId()).get();
 
-        em.flush();
 
         //then
         Assertions.assertThat(parentReply.getChildren().size()).isEqualTo(0);

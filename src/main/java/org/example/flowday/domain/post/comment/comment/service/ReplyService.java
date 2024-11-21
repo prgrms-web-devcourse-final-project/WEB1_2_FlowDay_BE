@@ -52,7 +52,9 @@ public class ReplyService {
         Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyTaskException);
         verifyMemberAuthority(memberId, reply);
         if (reply.getParent() != null) {
-            //  reply.getParent().getChildren().remove(reply);
+            reply.removeParent(reply);
+            reply.removePost(reply);
+
             replyRepository.delete(reply);
         } else {
             reply.updateDeleteMsg();
