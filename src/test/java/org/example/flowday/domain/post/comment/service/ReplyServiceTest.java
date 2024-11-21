@@ -147,8 +147,8 @@ class ReplyServiceTest {
 
 
         //when
-        replyService.removeReply(response2.getReplyId()); // 자식 댓글 삭제
-        replyService.removeReply(response.getReplyId()); // 부모 댓글 삭제
+        replyService.removeReply(response2.getReplyId(),member.getId()); // 자식 댓글 삭제
+        replyService.removeReply(response.getReplyId(),member.getId()); // 부모 댓글 삭제
         Reply parentReply = replyRepository.findById(response.getReplyId()).get();
 
         em.flush();

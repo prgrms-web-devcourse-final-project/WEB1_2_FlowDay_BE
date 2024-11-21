@@ -32,15 +32,15 @@ public class ReplyController {
     }
 
     @PatchMapping("/{replyId}")
-    public ResponseEntity<ReplyDTO.updateResponse> updateReply(@RequestBody ReplyDTO.updateRequest request, @PathVariable Long replyId) {
-        ReplyDTO.updateResponse response = replyService.updateReply(request, replyId);
+    public ResponseEntity<ReplyDTO.updateResponse> updateReply(@RequestBody ReplyDTO.updateRequest request, @PathVariable Long replyId , @RequestParam Long memberId ) {
+        ReplyDTO.updateResponse response = replyService.updateReply(request, replyId,memberId);
 
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{replyId}")
-    public ResponseEntity<String> deleteReply(@PathVariable Long replyId) {
-        replyService.removeReply(replyId);
+    public ResponseEntity<String> deleteReply(@PathVariable Long replyId , @RequestParam Long memberId) {
+        replyService.removeReply(replyId , memberId);
 
         return ResponseEntity.ok("댓글이 삭제되었습니다 ");
     }

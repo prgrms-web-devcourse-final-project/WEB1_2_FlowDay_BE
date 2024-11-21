@@ -10,6 +10,7 @@ import org.example.flowday.domain.post.comment.exception.ReplyTaskException;
 import org.example.flowday.domain.post.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.repository.PostRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,7 @@ public class ReplyService {
     private final PostRepository postRepository;
 
     @Transactional
-    public ReplyDTO.createResponse saveReply(ReplyDTO.createRequest request, Long memberId , Long postId) {
+    public ReplyDTO.createResponse saveReply(ReplyDTO.createRequest request, Long memberId, Long postId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다"));
         Reply parent = null;
@@ -49,11 +50,11 @@ public class ReplyService {
 
 
     @Transactional
-    public void removeReply(Long replyId) {
+    public void removeReply(Long replyId , Long memberId) {
         Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyException);
-
+        verifyMemberAuthority(memberId, reply);
         if (reply.getParent() != null) {
-          //  reply.getParent().getChildren().remove(reply);
+            //  reply.getParent().getChildren().remove(reply);
             replyRepository.delete(reply);
         } else {
             reply.updateDeleteMsg();
@@ -62,12 +63,22 @@ public class ReplyService {
     }
 
     @Transactional
-    public ReplyDTO.updateResponse updateReply(ReplyDTO.updateRequest request , Long replyId ) {
+    public ReplyDTO.updateResponse updateReply(ReplyDTO.updateRequest request, Long replyId, Long memberId) {
         Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyException);
-        reply.updateContent(request.getContent());
-        replyRepository.save(reply);
 
-        return new ReplyDTO.updateResponse("댓글이 수정 되었습니다 ",request.getContent()  );
+        verifyMemberAuthority(memberId, reply);
+
+        reply.updateContent(request.getContent());
+
+        return new ReplyDTO.updateResponse("댓글이 수정되었습니다", request.getContent());
+
+
+    }
+
+    private void verifyMemberAuthority(Long memberId, Reply reply) {
+        if (!memberId.equals(reply.getMember().getId())) {
+            throw ReplyException.REPLY_AUTHORITED.getReplyException();
+        }
     }
 
 
@@ -76,7 +87,7 @@ public class ReplyService {
 
         List<Reply> replies = replyRepository.findAllReplies(postId);
 
-        Map<Long , ReplyDTO.Response > replyMap = new HashMap<>();
+        Map<Long, ReplyDTO.Response> replyMap = new HashMap<>();
         List<ReplyDTO.Response> result = new ArrayList<>();
 
         for (Reply reply : replies) {
@@ -87,7 +98,7 @@ public class ReplyService {
                 result.add(dto);
             } else {
                 ReplyDTO.Response parentDTO = replyMap.get(reply.getParent().getId());
-                if(parentDTO != null) {
+                if (parentDTO != null) {
                     parentDTO.getChildren().add(dto);
                 }
 
@@ -97,10 +108,6 @@ public class ReplyService {
         return result;
 
     }
-
-
-
-
 
 
 }
