@@ -50,7 +50,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.memberRepository = memberRepository;
-        setFilterProcessesUrl("/api/members/login"); // 이 경로로 로그인 요청을 처리하도록 설정
+        setFilterProcessesUrl("/api/v1/members/login"); // 이 경로로 로그인 요청을 처리하도록 설정
         setUsernameParameter("loginId");  // 로그인 ID 파라미터 이름 설정
         setPasswordParameter("pw");       // 비밀번호 파라미터 이름 설정
     }
@@ -107,18 +107,19 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                         "id",securityUser.getId(),
                         "loginId",username,
                         "role", role),
-                60 * 60 * 1000L);
+                60 * 60 * 1000L); //1시간
         String refreshToken = jwtUtil.createJwt(Map.of(
                         "category","RefreshToken",
                         "loginId",username,
                         "role", role),
-                60 * 60 * 1000L);
+                60 * 60 * 100000L); //100시간
 
         Optional<Member> member = memberRepository.findByLoginId(username);
         member.get().setRefreshToken(refreshToken);
         memberRepository.save(member.get());
 
         response.setHeader("access", "Bearer " + accessToken);
+        response.setHeader("refresh", "Bearer " + refreshToken);
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("{\"message\":\"Login successful\"}");
     }
