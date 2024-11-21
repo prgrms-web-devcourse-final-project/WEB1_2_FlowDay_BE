@@ -29,8 +29,16 @@ public class JwtUtil {
         return (String) getClaims(token).get("loginId");
     }
 
-    public Integer getId(String token) {
-        return (Integer) getClaims(token).get("id");
+    public Long getId(String token) {
+        Object id = getClaims(token).get("id");
+
+        if (id instanceof Long) {
+            return (Long) id;
+        } else if (id instanceof Integer) {
+            return ((Integer) id).longValue();  // Integer를 Long으로 변환
+        }
+        
+        return null;
     }
 
     public String getRole(String token) {
