@@ -5,6 +5,8 @@ import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.comment.dto.ReplyDTO;
 import org.example.flowday.domain.post.comment.entity.Reply;
+import org.example.flowday.domain.post.comment.exception.ReplyException;
+import org.example.flowday.domain.post.comment.exception.ReplyTaskException;
 import org.example.flowday.domain.post.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.repository.PostRepository;
@@ -33,7 +35,7 @@ public class ReplyService {
 
 
         if (request.getParentId() != null) {
-            parent = replyRepository.findById(request.getParentId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 댓글입니다"));
+            parent = replyRepository.findById(request.getParentId()).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyException);
         }
 
         Reply reply = request.toEntity(member, parent, post);
@@ -48,7 +50,7 @@ public class ReplyService {
 
     @Transactional
     public void removeReply(Long replyId) {
-        Reply reply = replyRepository.findById(replyId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다"));
+        Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyException);
 
         if (reply.getParent() != null) {
           //  reply.getParent().getChildren().remove(reply);
@@ -61,7 +63,7 @@ public class ReplyService {
 
     @Transactional
     public ReplyDTO.updateResponse updateReply(ReplyDTO.updateRequest request , Long replyId ) {
-        Reply reply = replyRepository.findById(replyId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다"));
+        Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyException);
         reply.updateContent(request.getContent());
         replyRepository.save(reply);
 
@@ -70,6 +72,8 @@ public class ReplyService {
 
 
     public List<ReplyDTO.Response> findAllByPost(Long postId) {
+        postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 입니다"));
+
         List<Reply> replies = replyRepository.findAllReplies(postId);
 
         Map<Long , ReplyDTO.Response > replyMap = new HashMap<>();
