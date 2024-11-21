@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.dto.MemberDTO;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.service.MemberService;
+import org.example.flowday.global.security.util.JwtUtil;
 import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,39 +23,91 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/members")
+@RequestMapping("/api/v1/members")
 public class MemberController {
 
     private final MemberService memberService;
-    //메일 발송을 위한 JavaMailSender
-    private final JavaMailSender mailSender;
 
-    public MemberController(MemberService memberService, JavaMailSender mailSender) {
+    public MemberController(MemberService memberService) {
         this.memberService = memberService;
-        this.mailSender = mailSender;
     }
 
+    // 보안 관련 엔드 포인트
+
+
+    // 토큰 재발급
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refreshAccessToken(@RequestBody String refreshToken) {
+        try {
+            // JwtService를 통해 Access Token 갱신
+            String newAccessToken = memberService.refreshAccessToken(refreshToken);
+            // 새로 발급된 토큰 반환
+            return ResponseEntity.ok("Bearer " + newAccessToken);
+        } catch (IllegalArgumentException e) {
+            // 예외 발생 시 401 Unauthorized 응답
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            // 기타 예외 발생 시 400 Bad Request 응답
+            return new ResponseEntity<>("Failed to refresh token", HttpStatus.BAD_REQUEST);
+        }
+    }
 
     // 회원 가입
-    @PostMapping
+    @PostMapping("/register")
     //Entity -> DTO
     public ResponseEntity<MemberDTO.CreateResponseDTO> createMember(@RequestBody MemberDTO.CreateRequestDTO dto) {
         return ResponseEntity.ok(memberService.createMember(dto.toEntity()));
     }
 
-    // 회원 조회 (ID로 조회)
-    @GetMapping("/{id}")
-    //Entity -> DTO
-    public ResponseEntity<MemberDTO.ReadResponseDTO> getMember(@PathVariable Long id) {
-        return ResponseEntity.ok(memberService.getMember(id));
+    // 이메일로 아이디 찾기
+    @GetMapping("/findId")
+    public ResponseEntity<MemberDTO.FindIdResponseDTO> findId(@RequestBody String email){
+        return ResponseEntity.ok(memberService.getMemberByEmail(email));
+    }
+
+    // 비밀번호 찾기
+    @PostMapping("/findPW")
+    public ResponseEntity<String> findPw(@RequestBody MemberDTO.FindPWRequestDTO request) {
+        try {
+            // EmailService를 통해 임시 비밀번호 이메일 발송
+            memberService.sendTempPasswordEmail(request.getLoginId(), request.getEmail());
+
+            return ResponseEntity.ok("임시 비밀번호를 이메일로 전송했습니다");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("임시 비밀번호 전송을 실패하였습니다");
+        }
+    }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@AuthenticationPrincipal SecurityUser user){
+        memberService.logout(user.getId());
+        return ResponseEntity.ok("logout");
     }
 
 
+
+
+
+
+
+    // 내 정보 관련 엔드 포인트
+
+
+    // 회원 조회 (마이 페이지)
+    @GetMapping("/")
+    public ResponseEntity<MemberDTO.MyPageResponseDTO> getMyPage(@AuthenticationPrincipal SecurityUser user) {
+        return ResponseEntity.ok(memberService.getMyPage(user.getId()));
+    }
+
     // 회원 수정
-    @PutMapping("/{id}")
-    public ResponseEntity<Member> updateMember(@PathVariable Long id, @RequestBody MemberDTO.UpdateRequestDTO dto) {
+    @PutMapping("/")
+    public ResponseEntity<Member> updateMember(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestBody MemberDTO.UpdateRequestDTO dto
+    ) {
         try {
-            Member updated = memberService.updateMember(id, dto.toEntity());
+            Member updated = memberService.updateMember(user.getId(), dto.toEntity());
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -62,9 +115,9 @@ public class MemberController {
     }
 
     // 회원 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
-        memberService.deleteMember(id);
+    @DeleteMapping("/")
+    public ResponseEntity<Void> deleteMember(@AuthenticationPrincipal SecurityUser user) {
+        memberService.deleteMember(user.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -76,43 +129,84 @@ public class MemberController {
         return ResponseEntity.ok(memberService.changeProfileImage(user.getId(), image));
     }
 
-    // 이메일로 아이디 찾기
-    @GetMapping("/findId")
-    public ResponseEntity<MemberDTO.FindIdResponseDTO> findId(@RequestBody String email){
-        return ResponseEntity.ok(memberService.getMemberByEmail(email));
-    }
-
-    // 로그인id, 이메일로 비밀번호 변경 메일 발송
-    @PostMapping("/findPW")
-    public ResponseEntity<String> findPw(@RequestBody MemberDTO.FindPWRequestDTO request) {
-        String templatePassword = memberService.setTemplatePassword(request.getLoginId(), request.getEmail());
-
-        String title = "FlowDay 비밀번호 재설정 이메일 입니다.";
-        String from= "jy037211@gmail.com";
-        String to = request.getEmail();
-        String content =
-                System.lineSeparator() +
-                        System.lineSeparator() +
-                        "임시 비밀번호로 로그인 후 꼭 새로운 비밀번호로 설정해주시기 바랍니다."
-                        + System.lineSeparator() +
-                        System.lineSeparator() +
-                        "임시비밀번호는 " +templatePassword+ " 입니다. "
-                        + System.lineSeparator();
-
+    // 생일 수정(등록)
+    @PutMapping("/birthday")
+    public ResponseEntity<String> updateBirthday(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestBody MemberDTO.UpdateBirthdayRequestDTO dto
+    ) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, "UTF-8");
-
-            messageHelper.setFrom(from);
-            messageHelper.setTo(to);
-            messageHelper.setSubject(title);
-            messageHelper.setText(content);
-
-            mailSender.send(message);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("임시 비밀번호 전송을 실패하였습니다" );
+            memberService.updateBirthday(user.getId(), dto);
+            return ResponseEntity.ok("birthday updated");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok("임시 비밀번호를 이메일로 전송했습니다");
     }
+
+
+
+
+
+
+
+    // 연인 관련 엔드 포인트
+
+
+    //연인 등록
+    // 테스트 전용 ( 알림 도메인 완성시 변경 예정 )
+    @GetMapping("/partner/{name}")
+    public ResponseEntity<MemberDTO.FindPartnerResponseDTO> getMemberByName(@PathVariable String name) {
+        return ResponseEntity.ok(memberService.getPartner(name));
+    }
+
+    // 만나기 시작한 날 수정
+    @PutMapping("/relationship")
+    public ResponseEntity<String> updateRelationshipStartDate(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestBody MemberDTO.UpdateRelationshipStartDateRequestDTO dto
+    ) {
+        try {
+            memberService.updateRelationshipStartDate(user.getId(), dto);
+            return ResponseEntity.ok("start date updated");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    // 파트너 ID 수정
+    @PutMapping("/partnerUpdate")
+    public ResponseEntity<String> updatePartnerId(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestBody MemberDTO.UpdatePartnerIdRequestDTO dto
+    ) {
+        try {
+            memberService.updatePartnerId(user.getId(), dto);
+            return ResponseEntity.ok("partner updated");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    // 연결 끊기
+    @PutMapping("/disconnect")
+    public ResponseEntity<String> disconnect(@AuthenticationPrincipal SecurityUser user, Boolean stat){
+        memberService.disconnectPartner(user.getId(), stat);
+        return ResponseEntity.ok("disconnected");
+    }
+
+
+
+
+
+
+
+    // 기타
+
+
+    // 회원 조회 (ID로 조회)
+    @GetMapping("/{id}")
+    public ResponseEntity<MemberDTO.ReadResponseDTO> getMember(@PathVariable Long id) {
+        return ResponseEntity.ok(memberService.getMember(id));
+    }
+
 }
