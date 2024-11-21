@@ -1,5 +1,7 @@
 package org.example.flowday.domain.post.comment.comment.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +19,8 @@ public class ReplyDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class createRequest {
+        @NotBlank(message = "댓글 내용을 작성해주세요")
+        @Size(min = 1, max = 500, message = "내용은 1자에서 500자 사이여야 합니다.")
         private String content;
         private Long parentId;
 
@@ -66,6 +70,8 @@ public class ReplyDTO {
     @Getter
     @NoArgsConstructor
     public static class updateRequest {
+        @NotBlank(message = "수정 할 댓글 내용을 작성해주세요")
+        @Size(min = 1, max = 500, message = "내용은 1자에서 500자 사이여야 합니다.")
         private String content;
     }
 

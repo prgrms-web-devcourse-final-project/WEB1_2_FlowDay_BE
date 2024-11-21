@@ -43,8 +43,10 @@ public class SecurityConfig {
         this.memberRepository = memberRepository;
     }
 
+    //AuthenticationManager Bean 등록
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+
         return configuration.getAuthenticationManager();
     }
 
@@ -55,7 +57,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(csrf -> csrf
