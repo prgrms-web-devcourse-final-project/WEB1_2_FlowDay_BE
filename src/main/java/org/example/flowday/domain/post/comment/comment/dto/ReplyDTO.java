@@ -1,10 +1,10 @@
-package org.example.flowday.domain.post.comment.dto;
+package org.example.flowday.domain.post.comment.comment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.flowday.domain.member.entity.Member;
-import org.example.flowday.domain.post.comment.entity.Reply;
+import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.post.entity.Post;
 
 import java.time.LocalDateTime;
@@ -38,6 +38,7 @@ public class ReplyDTO {
         private String msg;
         private String content;
         private String memberName;
+        private int likeCount;
         private Long parentId;
         private Long postId;
         private Long replyId;
@@ -55,6 +56,7 @@ public class ReplyDTO {
             this.postId=reply.getPost().getId();
             this.createdAt=reply.getCreatedAt();
             this.replyId=reply.getId();
+            this.likeCount=reply.getLikeCount();
         }
 
 
@@ -86,6 +88,7 @@ public class ReplyDTO {
         private Long id;
         private String content;
         private String memberName;
+        private int likeCount;
         private LocalDateTime createdAt;
         private List<Response> children;
 
@@ -93,6 +96,7 @@ public class ReplyDTO {
             id = reply.getId();
             content = reply.getContent();
             memberName = reply.getMember().getName();
+            likeCount = reply.getLikeCount();
             createdAt = reply.getCreatedAt();
             children = new ArrayList<>();
 

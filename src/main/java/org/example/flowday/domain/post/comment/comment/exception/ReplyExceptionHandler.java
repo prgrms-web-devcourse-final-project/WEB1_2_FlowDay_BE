@@ -1,4 +1,4 @@
-package org.example.flowday.domain.post.comment.exception;
+package org.example.flowday.domain.post.comment.comment.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,13 +1,11 @@
-package org.example.flowday.domain.post.comment.repository;
+package org.example.flowday.domain.post.comment.comment.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.entity.QMember;
-import org.example.flowday.domain.post.comment.entity.QReply;
-import org.example.flowday.domain.post.comment.entity.Reply;
+import org.example.flowday.domain.post.comment.comment.entity.QReply;
+import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.post.entity.QPost;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

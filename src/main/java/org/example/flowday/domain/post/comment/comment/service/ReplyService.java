@@ -1,16 +1,14 @@
-package org.example.flowday.domain.post.comment.service;
+package org.example.flowday.domain.post.comment.comment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.repository.MemberRepository;
-import org.example.flowday.domain.post.comment.dto.ReplyDTO;
-import org.example.flowday.domain.post.comment.entity.Reply;
-import org.example.flowday.domain.post.comment.exception.ReplyException;
-import org.example.flowday.domain.post.comment.exception.ReplyTaskException;
-import org.example.flowday.domain.post.comment.repository.ReplyRepository;
+import org.example.flowday.domain.post.comment.comment.dto.ReplyDTO;
+import org.example.flowday.domain.post.comment.comment.entity.Reply;
+import org.example.flowday.domain.post.comment.comment.exception.ReplyException;
+import org.example.flowday.domain.post.comment.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.repository.PostRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +34,7 @@ public class ReplyService {
 
 
         if (request.getParentId() != null) {
-            parent = replyRepository.findById(request.getParentId()).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyException);
+            parent = replyRepository.findById(request.getParentId()).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyTaskException);
         }
 
         Reply reply = request.toEntity(member, parent, post);
@@ -51,7 +49,7 @@ public class ReplyService {
 
     @Transactional
     public void removeReply(Long replyId , Long memberId) {
-        Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyException);
+        Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyTaskException);
         verifyMemberAuthority(memberId, reply);
         if (reply.getParent() != null) {
             //  reply.getParent().getChildren().remove(reply);
@@ -64,7 +62,7 @@ public class ReplyService {
 
     @Transactional
     public ReplyDTO.updateResponse updateReply(ReplyDTO.updateRequest request, Long replyId, Long memberId) {
-        Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyException);
+        Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyTaskException);
 
         verifyMemberAuthority(memberId, reply);
 
@@ -77,7 +75,7 @@ public class ReplyService {
 
     private void verifyMemberAuthority(Long memberId, Reply reply) {
         if (!memberId.equals(reply.getMember().getId())) {
-            throw ReplyException.REPLY_AUTHORITED.getReplyException();
+            throw ReplyException.REPLY_AUTHORITED.getReplyTaskException();
         }
     }
 

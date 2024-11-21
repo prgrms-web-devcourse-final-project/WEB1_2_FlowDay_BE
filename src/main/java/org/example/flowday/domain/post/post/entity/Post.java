@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.flowday.domain.course.entity.Course;
 import org.example.flowday.domain.member.entity.Member;
-import org.example.flowday.domain.post.comment.entity.Reply;
+import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.tag.entity.Tag;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;

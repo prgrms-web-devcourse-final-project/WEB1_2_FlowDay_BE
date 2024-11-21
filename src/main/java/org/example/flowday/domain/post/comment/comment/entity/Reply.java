@@ -1,11 +1,10 @@
-package org.example.flowday.domain.post.comment.entity;
+package org.example.flowday.domain.post.comment.comment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -23,6 +22,9 @@ public class Reply {
     private Long id;
 
     private String content;
+
+    private int likeCount;
+
     @CreatedDate
     private LocalDateTime createdAt;
 
@@ -44,12 +46,13 @@ public class Reply {
         setPost(post);
         this.content = content;
         this.member = member;
+        this.likeCount = 0;
         setParent(parent);
     }
 
     /*
-    ** 연관관계 편의 메서드
-    */
+     ** 연관관계 편의 메서드
+     */
     public void setParent(Reply parent) {
         this.parent = parent;
         if (parent != null) {
@@ -63,16 +66,19 @@ public class Reply {
     }
 
 
-
-
-
-
     public void updateContent(String content) {
         this.content = content;
     }
 
     public void updateDeleteMsg() {
         this.content = "작성자에 의해 삭제되었습니다";
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+    public void decreaseLikeCount() {
+        this.likeCount--;
     }
 
 }
