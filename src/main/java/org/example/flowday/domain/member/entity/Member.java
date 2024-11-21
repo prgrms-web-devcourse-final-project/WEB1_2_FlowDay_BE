@@ -27,8 +27,11 @@ public class Member {
 
     private String pw;
     private String email;
+    @Column(unique = true)
     private String name;
     private String phoneNum;
+    private Long partnerId;
+    private String profileImage;
 
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
@@ -38,4 +41,6 @@ public class Member {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
+    private LocalDateTime dateOfRelationshipStart;
+    private LocalDateTime dateOfBirth;
 }
