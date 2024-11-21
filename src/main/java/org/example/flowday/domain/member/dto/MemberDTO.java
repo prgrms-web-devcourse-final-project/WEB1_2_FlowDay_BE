@@ -1,16 +1,24 @@
 package org.example.flowday.domain.member.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.entity.Member;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 public class MemberDTO {
 
     @Data
     public static class StringResponseDTO {
-        private Map<String, String> response;
+        private String response;
+        public StringResponseDTO(String response) {
+            this.response = response;
+        }
     }
 
     @Data
@@ -38,9 +46,20 @@ public class MemberDTO {
     }
 
     @Data
+    @AllArgsConstructor
+    public static class CreateResponseDTO {
+        private Long id;
+        private String loginId;
+        private String email;
+        private String name;
+        private String phoneNum;
+    }
+
+    @Data
+    @NoArgsConstructor
     public static class LoginRequestDTO {
         private String loginId;
-        private String password;
+        private String pw;
     }
 
     @Data
@@ -62,7 +81,32 @@ public class MemberDTO {
         }
     }
 
+    @Data
+    @AllArgsConstructor
     public static class ReadResponseDTO {
+        private String profileImage;
+        private String name;
+        private Long partnerId;
+        private LocalDateTime dateOfRelationshipStart;
+        private LocalDateTime dateOfBirth;
+    }
 
+    @Data
+    @AllArgsConstructor
+    public static class ChangeImageResponseDTO{
+        private Long id;
+        private String mImage;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class FindIdResponseDTO {
+        private String loginId;
+    }
+
+    @Data
+    public static class FindPWRequestDTO {
+        private String loginId;
+        private String email;
     }
 }
