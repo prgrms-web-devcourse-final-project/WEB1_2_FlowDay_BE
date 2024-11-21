@@ -48,15 +48,18 @@ public class JwtFilter extends OncePerRequestFilter {
             String loginId = principal.getUsername();
 
             Long id = memberRepository.findIdByLoginId(loginId).get();
+            String role = principal.getAuthorities().iterator().next().getAuthority();
 
             String token = jwtUtil.createJwt(
-                    Map.of("category","AccessToken",
+                    Map.of("category","accessToken",
                             "id",id,
                             "loginId",principal.getUsername(),
-                            "role",principal.getAuthorities())
+                            "role", role)
                     , 60 * 60 * 1000L);
             System.out.println(id);
             response.setHeader("Authorization", "Bearer " + token);
+
+            return;
         }
 
 
@@ -77,25 +80,25 @@ public class JwtFilter extends OncePerRequestFilter {
 
         System.out.println("authorization now");
         //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(token)) {
-            System.out.println("Access token expired");
+        try {
+            if(!jwtUtil.isExpired(token)) {
+                Date expirationTime = jwtUtil.getExpiration(token);
 
-            // 토큰 만료 메시지 전송 후 필터 종료
-            PrintWriter writer = response.getWriter();
-            writer.print("Token expired");
+                long remainingTime = expirationTime.getTime() - System.currentTimeMillis();
+                long minutes = remainingTime / 60000;
+                long seconds = (remainingTime % 60000) / 1000;
+
+                String formattedTime = String.format("만료까지 남은 시간 : %02d:%02d", minutes, seconds);
+                System.out.println(formattedTime);
+            }
+        }  catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        } else {
-            Date expirationTime = jwtUtil.getExpiration(token);
-
-            long remainingTime = expirationTime.getTime() - System.currentTimeMillis();
-            long minutes = remainingTime / 60000;
-            long seconds = (remainingTime % 60000) / 1000;
-
-            String formattedTime = String.format("만료까지 남은 시간 : %02d:%02d", minutes, seconds);
-            System.out.println(formattedTime);
+            System.out.println(e.getMessage());
+            response.getWriter().print("Access Denied");
+            return;
         }
 
-        Integer id = jwtUtil.getId(token);
+        Long id = jwtUtil.getId(token);
         String username = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
         String category = jwtUtil.getCategory(token);
