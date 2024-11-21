@@ -77,8 +77,8 @@ public class SecurityConfig {
                         )
                         .permitAll()
                         .requestMatchers(
-                                "/api/members/login",
-                                "/api/members",
+                                "/api/v1/members/login",
+                                "/api/v1/members",
                                 "/oauth2/**"
                         ).permitAll()
                         .anyRequest().hasRole("USER"));
