@@ -2,7 +2,6 @@ package org.example.flowday.global.security.util;
 
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
