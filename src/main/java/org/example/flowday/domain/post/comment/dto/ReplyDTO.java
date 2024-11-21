@@ -1,4 +1,4 @@
-package org.example.flowday.domain.post.comment;
+package org.example.flowday.domain.post.comment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +18,6 @@ public class ReplyDTO {
     @AllArgsConstructor
     public static class createRequest {
         private String content;
-        private Long postId;
         private Long parentId;
 
 
@@ -41,6 +40,7 @@ public class ReplyDTO {
         private String memberName;
         private Long parentId;
         private Long postId;
+        private Long replyId;
         private LocalDateTime createdAt;
 
         public createResponse (Reply reply , String msg) {
@@ -54,6 +54,7 @@ public class ReplyDTO {
             }
             this.postId=reply.getPost().getId();
             this.createdAt=reply.getCreatedAt();
+            this.replyId=reply.getId();
         }
 
 
@@ -64,7 +65,6 @@ public class ReplyDTO {
     @NoArgsConstructor
     public static class updateRequest {
         private String content;
-        private Long replyId;
     }
 
     @Getter

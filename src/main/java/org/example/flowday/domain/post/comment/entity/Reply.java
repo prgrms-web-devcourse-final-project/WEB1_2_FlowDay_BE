@@ -63,9 +63,8 @@ public class Reply {
     }
 
 
-    public void deleteContent(String content) {
-        this.content = content;
-    }
+
+
 
 
     public void updateContent(String content) {

@@ -3,7 +3,7 @@ package org.example.flowday.domain.post.comment.service;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.repository.MemberRepository;
-import org.example.flowday.domain.post.comment.ReplyDTO;
+import org.example.flowday.domain.post.comment.dto.ReplyDTO;
 import org.example.flowday.domain.post.comment.entity.Reply;
 import org.example.flowday.domain.post.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.post.entity.Post;
@@ -26,9 +26,9 @@ public class ReplyService {
     private final PostRepository postRepository;
 
     @Transactional
-    public ReplyDTO.createResponse saveReply(ReplyDTO.createRequest request, long memberId) {
+    public ReplyDTO.createResponse saveReply(ReplyDTO.createRequest request, Long memberId , Long postId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다"));
-        Post post = postRepository.findById(request.getPostId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다"));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다"));
         Reply parent = null;
 
 
@@ -47,12 +47,11 @@ public class ReplyService {
 
 
     @Transactional
-    public void removeReply(long replyId) {
+    public void removeReply(Long replyId) {
         Reply reply = replyRepository.findById(replyId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다"));
-        Long parentId = reply.getParent().getId();
 
-        if (parentId != null) {
-            reply.getParent().getChildren().remove(reply);
+        if (reply.getParent() != null) {
+          //  reply.getParent().getChildren().remove(reply);
             replyRepository.delete(reply);
         } else {
             reply.updateDeleteMsg();
@@ -61,12 +60,12 @@ public class ReplyService {
     }
 
     @Transactional
-    public ReplyDTO.updateResponse updateReply(ReplyDTO.updateRequest request ) {
-        Reply reply = replyRepository.findById(request.getReplyId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다"));
+    public ReplyDTO.updateResponse updateReply(ReplyDTO.updateRequest request , Long replyId ) {
+        Reply reply = replyRepository.findById(replyId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다"));
         reply.updateContent(request.getContent());
         replyRepository.save(reply);
 
-        return new ReplyDTO.updateResponse(request.getContent() , "댓글이 수정 되었습니다 ");
+        return new ReplyDTO.updateResponse("댓글이 수정 되었습니다 ",request.getContent()  );
     }
 
 
