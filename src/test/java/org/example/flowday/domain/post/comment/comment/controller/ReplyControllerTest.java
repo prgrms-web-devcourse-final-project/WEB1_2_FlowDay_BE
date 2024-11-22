@@ -173,7 +173,7 @@ public class ReplyControllerTest {
     @Test
     @DisplayName("POST /api/v1/replies/{postId} - 성공")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
-    void createReply_Success() throws Exception {
+    void createChildReply_Success() throws Exception {
         // 요청 DTO 생성
         ReplyDTO.createRequest request = new ReplyDTO.createRequest();
         request.setContent("새 댓글");
@@ -197,6 +197,34 @@ public class ReplyControllerTest {
                 .andExpect(jsonPath("$.replyId", notNullValue()))
                 .andExpect(jsonPath("$.createdAt", notNullValue()));
     }
+    @Test
+    @DisplayName("POST /api/v1/replies/{postId} - 성공")
+    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
+    void createParentReply_Success() throws Exception {
+        // 요청 DTO 생성
+        ReplyDTO.createRequest request = new ReplyDTO.createRequest();
+        request.setContent("새 댓글");
+        request.setParentId(null);
+
+        // WHEN
+        ResultActions resultActions = mockMvc.perform(post("/api/v1/replies/{postId}", testPost.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.msg", is("댓글이 생성되었습니다")))
+                .andExpect(jsonPath("$.content", is("새 댓글")))
+                .andExpect(jsonPath("$.memberName", is("테스트유저")))
+                .andExpect(jsonPath("$.likeCount", is(0)))
+                .andExpect(jsonPath("$.parentId",nullValue()))
+                .andExpect(jsonPath("$.postId", is(testPost.getId().intValue())))
+                .andExpect(jsonPath("$.replyId", notNullValue()))
+                .andExpect(jsonPath("$.createdAt", notNullValue()));
+    }
+
 
 
     @Test
