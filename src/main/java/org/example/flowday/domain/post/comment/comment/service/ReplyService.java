@@ -48,17 +48,21 @@ public class ReplyService {
 
 
     @Transactional
-    public void removeReply(Long replyId , Long memberId) {
+    public ReplyDTO.deleteResponse removeReply(Long replyId , Long memberId) {
         Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyTaskException);
         verifyMemberAuthority(memberId, reply);
+        ReplyDTO.deleteResponse deleteResponse;
         if (reply.getParent() != null) {
             reply.removeParent(reply);
             reply.removePost(reply);
 
             replyRepository.delete(reply);
+            deleteResponse = new ReplyDTO.deleteResponse("자식 댓글 삭제 완료", "댓글이 삭제되었습니다");
         } else {
             reply.updateDeleteMsg();
+            deleteResponse = new ReplyDTO.deleteResponse("부모 댓글 삭제 완료", "작성자에 의해 댓글이 삭제되었습니다");
         }
+        return deleteResponse;
 
     }
 

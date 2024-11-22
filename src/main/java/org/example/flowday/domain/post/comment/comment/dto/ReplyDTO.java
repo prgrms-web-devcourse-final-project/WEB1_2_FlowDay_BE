@@ -69,6 +69,7 @@ public class ReplyDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class updateRequest {
         @NotBlank(message = "수정 할 댓글 내용을 작성해주세요")
         @Size(min = 1, max = 500, message = "내용은 1자에서 500자 사이여야 합니다.")
@@ -108,5 +109,13 @@ public class ReplyDTO {
 
         }
 
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class deleteResponse {
+        private String msg;
+        private String content;
     }
 }

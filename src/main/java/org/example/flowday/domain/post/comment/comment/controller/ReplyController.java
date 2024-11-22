@@ -61,10 +61,10 @@ public class ReplyController {
     }
 
     @DeleteMapping("/{replyId}")
-    public ResponseEntity<String> deleteReply(@PathVariable Long replyId , @RequestParam Long memberId) {
-        replyService.removeReply(replyId , memberId);
+    public ResponseEntity<ReplyDTO.deleteResponse> deleteReply(@PathVariable Long replyId , @RequestParam Long memberId) {
+        ReplyDTO.deleteResponse response = replyService.removeReply(replyId, memberId);
 
-        return ResponseEntity.ok("댓글이 삭제되었습니다 ");
+        return ResponseEntity.ok(response);
     }
 
 

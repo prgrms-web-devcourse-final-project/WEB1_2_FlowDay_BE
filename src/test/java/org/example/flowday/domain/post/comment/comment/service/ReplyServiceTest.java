@@ -1,4 +1,4 @@
-package org.example.flowday.domain.post.comment.service;
+package org.example.flowday.domain.post.comment.comment.service;
 
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
