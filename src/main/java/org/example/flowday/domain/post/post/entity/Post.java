@@ -26,6 +26,9 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member member;
+
     private String title;
 
     private String city;

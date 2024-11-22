@@ -167,7 +167,7 @@ public class CourseService {
     // 회원 별 코스 목록 조회
     public List<CourseResDTO> findCourseByMember(Long memberId) {
         Member member = memberRepository.findById(memberId).orElse(null);
-        Long partnerId = member.getPartner() != null ? member.getPartner().getId() : null;
+        Long partnerId = member.getPartnerId() != null ? member.getPartnerId() : null;
 
         List<Course> memberCourses = courseRepository.findAllByMemberId(memberId);
         List<Course> partnerCourses = partnerId != null

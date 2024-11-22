@@ -76,12 +76,12 @@ public class WishPlaceService {
     // 회원 별 위시 플레이스 목록 조회
     public List<WishPlaceResDTO> getMemberAndPartnerWishPlaces(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
-        Member partner = member.getPartner();
+        Long partnerId = member.getPartnerId();
 
         List<WishPlace> wishPlaces = new ArrayList<>(wishPlaceRepository.findAllByMemberId(memberId));
 
-        if (partner != null) {
-            wishPlaces.addAll(wishPlaceRepository.findAllByMemberId(partner.getId()));
+        if (partnerId != null) {
+            wishPlaces.addAll(wishPlaceRepository.findAllByMemberId(partnerId));
         }
 
         return wishPlaces.stream()
