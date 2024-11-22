@@ -1,5 +1,6 @@
 package org.example.flowday.domain.post.comment.likecomment.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
@@ -9,13 +10,12 @@ import org.example.flowday.domain.post.comment.likecomment.repository.LikeReplyR
 import org.example.flowday.domain.post.comment.likecomment.service.LikeReplyService;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.repository.PostRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) // @BeforeAll을 인스턴스 메서드로 사용하기 위해 추가
 public class LikeReplyControllerTest {
 
     @Autowired
@@ -52,29 +53,28 @@ public class LikeReplyControllerTest {
     @Autowired
     private ReplyRepository replyRepository;
 
-    private Member testMember;
-    private Member otherMember;
-    private Post testPost;
-    private Reply testReply;
     @Autowired
     private LikeReplyService likeReplyService;
 
-    @BeforeEach
+    @Autowired
+    private ObjectMapper objectMapper;
+
+
+    private Member testMember;
+    private Post testPost;
+    private Reply testReply;
+
+    @BeforeAll
     void setUp() {
         // 테스트에 필요한 회원 생성
         testMember = Member.builder()
                 .name("테스트유저")
+                .loginId("testuser@example.com")
                 .email("testuser@example.com")
                 .pw("password")
                 .build();
         memberRepository.save(testMember);
 
-        otherMember = Member.builder()
-                .name("다른유저")
-                .email("otheruser@example.com")
-                .pw("password")
-                .build();
-        memberRepository.save(otherMember);
 
         // 테스트에 필요한 게시글 생성
         testPost = Post.builder()
@@ -95,10 +95,10 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/likes/{replyId} - 좋아요 생성 성공")
+    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_Success() throws Exception {
         // WHEN
         ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/{replyId}", testReply.getId())
-                        .param("memberId", testMember.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
@@ -116,31 +116,11 @@ public class LikeReplyControllerTest {
         assertThat(updatedReply.getLikeCount()).isEqualTo(1);
     }
 
-    @Test
-    @DisplayName("POST /api/v1/likes/{replyId} - 회원 존재하지 않음")
-    void createLikeReply_MemberNotFound() throws Exception {
-        // WHEN
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/{replyId}", testReply.getId())
-                        .param("memberId", "9999") // 존재하지 않는 회원 ID
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print());
 
-        // THEN
-        resultActions
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("해당 멤버가 없습니다")));
-
-        // 좋아요가 생성되지 않았는지 확인
-        boolean exists = likeReplyRepository.findByReplyAndMember(testReply, testMember).isPresent();
-        assertThat(exists).isFalse();
-
-        // 댓글의 좋아요 수가 변하지 않았는지 확인
-        Reply updatedReply = replyRepository.findById(testReply.getId()).orElseThrow();
-        assertThat(updatedReply.getLikeCount()).isEqualTo(0);
-    }
 
     @Test
     @DisplayName("POST /api/v1/likes/{replyId} - 댓글 존재하지 않음")
+    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_ReplyNotFound() throws Exception {
         // WHEN
         ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/{replyId}", 9999L) // 존재하지 않는 댓글 ID
@@ -164,6 +144,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/likes/{replyId} - 이미 좋아요를 누른 경우")
+    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_AlreadyLiked() throws Exception {
         // 좋아요 생성
         likeReplyService.saveLikeReply(testMember.getId() , testReply.getId());
@@ -186,6 +167,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/likes/{replyId} - 좋아요 삭제 성공")
+    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_Success() throws Exception {
         // 사전에 좋아요 생성
         LikeReply existingLike = LikeReply.builder()
@@ -218,27 +200,11 @@ public class LikeReplyControllerTest {
         assertThat(updatedReply.getLikeCount()).isEqualTo(0);
     }
 
-    @Test
-    @DisplayName("DELETE /api/v1/likes/{replyId} - 회원 존재하지 않음")
-    void deleteLikeReply_MemberNotFound() throws Exception {
-        // WHEN
-        ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/{replyId}", testReply.getId())
-                        .param("memberId", "9999") // 존재하지 않는 회원 ID
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print());
 
-        // THEN
-        resultActions
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("해당 멤버가 없습니다")));
-
-        // 댓글의 좋아요 수가 변하지 않았는지 확인
-        Reply updatedReply = replyRepository.findById(testReply.getId()).orElseThrow();
-        assertThat(updatedReply.getLikeCount()).isEqualTo(0);
-    }
 
     @Test
     @DisplayName("DELETE /api/v1/likes/{replyId} - 댓글 존재하지 않음")
+    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_ReplyNotFound() throws Exception {
         // WHEN
         ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/{replyId}", 9999L) // 존재하지 않는 댓글 ID
@@ -258,6 +224,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/likes/{replyId} - 좋아요 존재하지 않음")
+    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_LikeNotFound() throws Exception {
         // WHEN
         ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/{replyId}", testReply.getId())

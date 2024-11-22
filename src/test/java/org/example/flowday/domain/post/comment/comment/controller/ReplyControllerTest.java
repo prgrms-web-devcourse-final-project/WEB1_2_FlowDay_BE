@@ -153,7 +153,7 @@ public class ReplyControllerTest {
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 
-    // **GET /api/v1/replies/{postId} - 존재하지 않는 게시글**
+
     @Test
     @DisplayName("GET /api/v1/replies/{postId} - 존재하지 않는 게시글")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
