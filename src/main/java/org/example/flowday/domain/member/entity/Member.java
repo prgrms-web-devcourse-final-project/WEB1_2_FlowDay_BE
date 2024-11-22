@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.example.flowday.domain.course.entity.Course;
+import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.springframework.data.annotation.CreatedDate;
@@ -58,4 +58,8 @@ public class Member {
 
     @OneToMany(mappedBy = "writer")
     private List<Post> posts;
+
+    @OneToOne
+    @JoinColumn(name = "partner_id", referencedColumnName = "id", nullable = true)
+    private Member partner;
 }
