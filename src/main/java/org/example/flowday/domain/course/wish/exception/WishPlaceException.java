@@ -1,7 +1,7 @@
 package org.example.flowday.domain.course.wish.exception;
 
 public enum WishPlaceException {
-    NOT_FOUND("VOTE NOT_FOUND", 404);
+    NOT_FOUND("WISHPLACE NOT_FOUND", 404);
 
     private WishPlaceTaskException wishPlaceTaskException;
 
