@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.post.entity.Post;
@@ -16,6 +17,7 @@ import java.util.List;
 public class ReplyDTO {
 
     @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class createRequest {
@@ -68,6 +70,7 @@ public class ReplyDTO {
 
 
     @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class updateRequest {
