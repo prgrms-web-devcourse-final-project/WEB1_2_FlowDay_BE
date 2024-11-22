@@ -7,7 +7,8 @@ public enum MemberException {
     MEMBER_IMAGE_NOT_MODIFIED("이미지 변경 실패", HttpStatus.BAD_REQUEST),
     MEMBER_IMAGE_NOT_SAVED("이미지 저장 실패", HttpStatus.BAD_REQUEST),
     MEMBER_NAME_NOT_FOUND("해당 이름으로 회원을 찾을 수 없습니다", HttpStatus.NOT_FOUND),
-    MEMBER_EMAIL_NOT_FOUND("해당 이메일로 회원을 찾을 수 없습니다", HttpStatus.NOT_FOUND);
+    MEMBER_EMAIL_NOT_FOUND("해당 이메일로 회원을 찾을 수 없습니다", HttpStatus.NOT_FOUND),
+    LOGINID_ALREADY_EXIST("이미 존재하는 로그인 아이디 입니다",HttpStatus.BAD_REQUEST);
 
     private final String message;
     private final HttpStatus status;
