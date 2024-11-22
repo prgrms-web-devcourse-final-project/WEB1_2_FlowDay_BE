@@ -2,8 +2,8 @@ package org.example.flowday.domain.member.service;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.example.flowday.domain.course.entity.Course;
-import org.example.flowday.domain.course.entity.Status;
+import org.example.flowday.domain.course.course.entity.Course;
+import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.member.dto.MemberDTO;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;

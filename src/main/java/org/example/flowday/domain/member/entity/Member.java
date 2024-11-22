@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.example.flowday.domain.course.entity.Course;
+import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.post.comment.entity.Reply;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.springframework.data.annotation.CreatedDate;
