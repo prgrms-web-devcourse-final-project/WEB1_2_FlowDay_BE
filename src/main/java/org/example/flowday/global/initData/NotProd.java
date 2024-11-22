@@ -53,7 +53,7 @@ public class NotProd {
                 .email("test@test.com")
                 .pw("1234")
                 .phoneNum("010-1234-1234")
-                .role(Role.USER)
+                .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(member);
 
@@ -62,7 +62,7 @@ public class NotProd {
                 .email("test@test.com")
                 .pw("1234")
                 .phoneNum("010-1234-1234")
-                .role(Role.USER)
+                .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(member2);
 

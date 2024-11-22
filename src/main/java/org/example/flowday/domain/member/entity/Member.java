@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.entity.Course;
-import org.example.flowday.domain.post.comment.entity.Reply;
+import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -56,6 +56,6 @@ public class Member {
     @OneToMany(mappedBy = "member")
     private List<Reply> reply;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "writer")
     private List<Post> posts;
 }
