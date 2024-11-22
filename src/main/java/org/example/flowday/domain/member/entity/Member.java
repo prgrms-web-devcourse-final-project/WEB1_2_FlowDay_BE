@@ -38,4 +38,8 @@ public class Member {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    @OneToOne
+    @JoinColumn(name = "partner_id", referencedColumnName = "id", nullable = true)
+    private Member partner;
 }
