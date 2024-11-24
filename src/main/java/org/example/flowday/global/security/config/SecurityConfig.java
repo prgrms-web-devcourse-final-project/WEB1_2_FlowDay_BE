@@ -1,8 +1,12 @@
 package org.example.flowday.global.security.config;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.filter.JwtFilter;
 import org.example.flowday.global.security.filter.LoginFilter;
+import org.example.flowday.global.security.handler.CustomAuthenticationFailureHandler;
+import org.example.flowday.global.security.util.JwtUtil;
+import org.example.flowday.global.security.util.oauth2.service.CustomOAuth2UserService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +17,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
@@ -26,15 +31,23 @@ public class SecurityConfig {
     //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration) {
+    private final CustomOAuth2UserService customOAuth2UserService;
+
+    private final MemberRepository memberRepository;
+
+    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomOAuth2UserService customOAuth2UserService, MemberRepository memberRepository, CustomAuthenticationFailureHandler authenticationFailureHandler) {
 
         this.authenticationConfiguration = authenticationConfiguration;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.memberRepository = memberRepository;
+        this.authenticationFailureHandler = authenticationFailureHandler;
+
     }
 
-    //AuthenticationManager Bean 등록
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-
         return configuration.getAuthenticationManager();
     }
 
@@ -44,7 +57,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil) throws Exception {
 
         http
                 .csrf(csrf -> csrf
@@ -65,11 +78,29 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/h2-console/**")
                         )
                         .permitAll()
-                        .requestMatchers("/api/members/login","/api/members").permitAll()
-                        .anyRequest().authenticated());
+                        .requestMatchers(
+                                "/api/v1/members/login",
+                                "/api/v1/members/register",
+                                "/oauth2/**"
+                        ).permitAll()
+                        .anyRequest().hasRole("USER"));
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(
+                        new LoginFilter(
+                                authenticationManager(authenticationConfiguration),
+                                jwtUtil,
+                                memberRepository,
+                                authenticationFailureHandler),
+                                        UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .addFilterBefore(new JwtFilter(jwtUtil, memberRepository), OAuth2AuthorizationRequestRedirectFilter.class);
+
+        http
+                .oauth2Login((oauth2) -> oauth2
+                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+                                .userService(customOAuth2UserService)));
 
         http
                 .headers(
