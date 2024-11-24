@@ -50,6 +50,7 @@ public class Member {
     private LocalDate relationshipDt;
     private LocalDate birthDt;
 
+
     @OneToMany(mappedBy = "member")
     private List<Course> courses;
 
