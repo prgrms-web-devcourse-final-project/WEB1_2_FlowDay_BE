@@ -2,9 +2,9 @@ package org.example.flowday.domain.post.post.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.flowday.domain.course.entity.Course;
+import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.member.entity.Member;
-import org.example.flowday.domain.post.comment.entity.Reply;
+import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.tag.entity.Tag;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -19,11 +19,15 @@ import java.util.List;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member member;
 
     private String title;
 
@@ -48,9 +52,11 @@ public class Post {
     private Course course;
 
     @OneToMany(mappedBy = "post" , cascade = CascadeType.ALL , orphanRemoval = true)
+    @Builder.Default
     private List<Tag> tags = new ArrayList<>();
 
     @OneToMany(mappedBy = "post" , cascade = CascadeType.ALL , orphanRemoval = true)
+    @Builder.Default
     private List<Reply> replys = new ArrayList<>();
 
 }

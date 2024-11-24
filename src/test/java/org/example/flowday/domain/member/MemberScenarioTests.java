@@ -224,7 +224,7 @@ public class MemberScenarioTests {
     @Order(4)
     void testUpdatePartnerId() throws Exception {
         // 파트너 ID 수정 요청을 위한 DTO 생성
-        MemberDTO.UpdatePartnerIdRequestDTO updateDto = new MemberDTO.UpdatePartnerIdRequestDTO(2L);
+        MemberDTO.UpdatePartnerIdRequestDTO updateDto = new MemberDTO.UpdatePartnerIdRequestDTO(4L);
 
         // PUT 요청을 보낼 URL 설정
         url = "http://localhost:" + port + "/api/v1/members/partnerUpdate"; // 실제 엔드포인트 사용
@@ -257,7 +257,7 @@ public class MemberScenarioTests {
 
         // GET 요청 보내기
         HttpEntity<Object> entity = new HttpEntity<>(headers);
-        MemberDTO.MyPageResponseDTO response = memberService.getMyPage(1L);
+        MemberDTO.MyPageResponseDTO response = memberService.getMyPage(3L);
 
         assertThat(response).isNotNull();
         assertThat(response.getName()).isEqualTo("User One");
