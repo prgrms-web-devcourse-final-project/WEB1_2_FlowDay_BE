@@ -47,8 +47,9 @@ public class Member {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
-    private LocalDate dateOfRelationshipStart;
-    private LocalDate dateOfBirth;
+    private LocalDate relationshipDt;
+    private LocalDate birthDt;
+
 
     @OneToMany(mappedBy = "member")
     private List<Course> courses;
@@ -58,6 +59,4 @@ public class Member {
 
     @OneToMany(mappedBy = "writer")
     private List<Post> posts;
-
-
 }

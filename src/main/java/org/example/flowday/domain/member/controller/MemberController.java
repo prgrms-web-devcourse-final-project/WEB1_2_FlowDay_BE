@@ -102,13 +102,12 @@ public class MemberController {
 
     // 회원 수정
     @PutMapping("/")
-    public ResponseEntity<Member> updateMember(
+    public ResponseEntity<MemberDTO.UpdateResponseDTO> updateMember(
             @AuthenticationPrincipal SecurityUser user,
             @RequestBody MemberDTO.UpdateRequestDTO dto
     ) {
         try {
-            Member updated = memberService.updateMember(user.getId(), dto.toEntity());
-            return ResponseEntity.ok(updated);
+            return ResponseEntity.ok(memberService.updateMember(user.getId(), dto.toEntity()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -116,9 +115,8 @@ public class MemberController {
 
     // 회원 삭제
     @DeleteMapping("/")
-    public ResponseEntity<Void> deleteMember(@AuthenticationPrincipal SecurityUser user) {
-        memberService.deleteMember(user.getId());
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteMember(@AuthenticationPrincipal SecurityUser user) {
+        return ResponseEntity.ok(memberService.deleteMember(user.getId()));
     }
 
     // 프로필 이미지 수정

@@ -18,8 +18,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "m1.name AS name, " +
             "m2.profileImage AS partnerImage, " +
             "m2.name AS partnerName, " +
-            "m1.dateOfRelationshipStart, " +
-            "m1.dateOfBirth " +
+            "m1.relationshipDt, " +
+            "m1.birthDt " +
             "FROM Member m1 " +
             "INNER JOIN Member m2 ON m1.partnerId = m2.id " +
             "WHERE m1.id = :id")
@@ -31,7 +31,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m.id FROM Member m WHERE m.loginId = :loginId")
     Optional<Long> findIdByLoginId(String loginId);
 
-    @Query("SELECT m.id, m.name, m.email, m.phoneNum, m.profileImage FROM Member m WHERE m.name = :name")
+//    @Query("SELECT m.id, m.name, m.email, m.phoneNum, m.profileImage FROM Member m WHERE m.name = :name")
     Optional<Member> findByName(String name);
 
     @Query("SELECT m.loginId FROM Member m WHERE m.email = :email")
