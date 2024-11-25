@@ -10,6 +10,7 @@ import org.example.flowday.domain.course.wish.entity.WishPlace;
 import org.example.flowday.domain.course.wish.exception.WishPlaceException;
 import org.example.flowday.domain.course.wish.repository.WishPlaceRepository;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,7 @@ public class WishPlaceService {
 
     // 위시 플레이스 생성
     public void saveWishPlace(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElse(null);
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException);
 
         WishPlace wishPlace = WishPlace.builder()
                 .member(member)
@@ -75,7 +76,7 @@ public class WishPlaceService {
 
     // 회원 별 위시 플레이스 목록 조회
     public List<WishPlaceResDTO> getMemberAndPartnerWishPlaces(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException);
         Long partnerId = member.getPartnerId();
 
         List<WishPlace> wishPlaces = new ArrayList<>(wishPlaceRepository.findAllByMemberId(memberId));

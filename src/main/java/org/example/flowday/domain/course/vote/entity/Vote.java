@@ -20,15 +20,13 @@ public class Vote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Course cannot be null")
     @ManyToOne
-    @JoinColumn(name = "course_id")
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @NotBlank(message = "Title cannot be blank")
     private String title;
 
     @OneToMany(mappedBy = "vote", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<Spot> spots = new ArrayList<>();
+    private List<Spot> spots;
 }
 

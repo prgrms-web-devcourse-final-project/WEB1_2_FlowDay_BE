@@ -16,6 +16,7 @@ import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -41,7 +42,7 @@ public class CourseService {
     // 코스 생성
     public CourseResDTO saveCourse(CourseReqDTO courseReqDTO) {
         try {
-            Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElse(null);
+            Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElseThrow(MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException);
             Course course = Course.builder()
                     .member(member)
                     .title(courseReqDTO.getTitle())
@@ -166,7 +167,7 @@ public class CourseService {
 
     // 회원 별 코스 목록 조회
     public List<CourseResDTO> findCourseByMember(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElse(null);
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException);
         Long partnerId = member.getPartnerId() != null ? member.getPartnerId() : null;
 
         List<Course> memberCourses = courseRepository.findAllByMemberId(memberId);
