@@ -79,7 +79,7 @@ public class PostService {
 
     // 모든 게시글 조회 최신순
     public Page<PostResponseDTO> getAllPosts(Pageable pageable) {
-        Page<Post> posts = postRepository.findAll(pageable);
+        Page<Post> posts = postRepository.searchLatestPost(pageable);
 
         return posts.map(post -> postMapper.toResponseDTO(post , null));
 

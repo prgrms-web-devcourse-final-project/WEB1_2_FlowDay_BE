@@ -41,7 +41,7 @@ public class PostController {
 
     // 모든 게시글 최신순 조회
     @GetMapping("/all/latest")
-    public ResponseEntity<Page<PostResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page , int pageSize) {
+    public ResponseEntity<Page<PostResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page , @RequestParam(defaultValue = "20")int pageSize) {
         Pageable pageable  = PageRequest.of(page, pageSize);
         Page<PostResponseDTO> result = postService.getAllPosts(pageable);
 

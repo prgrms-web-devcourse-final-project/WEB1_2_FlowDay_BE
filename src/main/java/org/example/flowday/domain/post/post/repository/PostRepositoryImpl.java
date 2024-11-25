@@ -32,7 +32,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom{
                 .fetch()
                 .size();
 
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(content, pageable ,total);
 
 
     }
