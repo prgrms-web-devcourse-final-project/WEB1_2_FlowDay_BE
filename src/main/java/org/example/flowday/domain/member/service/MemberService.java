@@ -27,6 +27,7 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -44,6 +45,7 @@ public class MemberService {
     // refreshToken을 사용하여 새로운 Access Token 생성
     public String refreshAccessToken(String refreshToken) {
 
+
         if (refreshToken == null || !refreshToken.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Invalid token format");
         }
@@ -59,24 +61,39 @@ public class MemberService {
         String loginId = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
-        // 새 accessToken 생성
-        return jwtUtil.createJwt(Map.of(
-                        "category", "accessToken",
-                        "id", id,
-                        "loginId", loginId,
-                        "role", role),
-                60 * 60 * 1000L);
-    }
+        String storedToken = memberRepository.findRefreshTokenByLoginId(loginId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+        if (storedToken.equals(token)) {
 
+            // 새 accessToken 생성
+            return jwtUtil.createJwt(Map.of(
+                            "category", "accessToken",
+                            "id", id,
+                            "loginId", loginId,
+                            "role", role),
+                    60 * 60 * 1000L);
+        } else {
+            return "Invalid token";
+        }
+    }
     // 회원 가입
     @Transactional
-    public MemberDTO.CreateResponseDTO createMember(Member member) {
+    public MemberDTO.CreateResponseDTO createMember(Member member) throws MemberTaskException {
+        member.filterAndValidate(member);
+        // 중복 회원 검사
+        if (memberRepository.existsByLoginId(member.getLoginId())) {
+            throw MemberException.LOGINID_ALREADY_EXIST.getMemberTaskException();
+        }
 
+        // 비밀번호 인코딩
         member.setPw(passwordEncoder.encode(member.getPw()));
+
+        // 기본 역할 설정
         member.setRole(Role.ROLE_USER);
 
+        // 회원 저장
         Member savedMember = memberRepository.save(member);
 
+        // 성공적으로 저장된 회원의 정보를 응답 DTO로 변환하여 반환
         return new MemberDTO.CreateResponseDTO(
                 savedMember.getId(),
                 savedMember.getLoginId(),
@@ -84,16 +101,15 @@ public class MemberService {
                 savedMember.getName(),
                 savedMember.getPhoneNum()
         );
-
     }
 
     // 이메일로 아이디 조회
     public MemberDTO.FindIdResponseDTO getMemberByEmail(String email) {
 
         return new MemberDTO.FindIdResponseDTO(
-                memberRepository.findLoginIdByEmail(email)
+                memberRepository.findByEmail(email)
                         .orElseThrow(
-                                MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException)
+                                MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException).getLoginId()
         );
 
     }
@@ -192,16 +208,16 @@ public class MemberService {
         String name = (String) resultMap.get("name");
         String partnerImage = (String) resultMap.get("partnerImage");
         String partnerName = (String) resultMap.get("partnerName");
-        LocalDate dateOfRelationshipStart = (LocalDate) resultMap.get("dateOfRelationshipStart");
-        LocalDate dateOfBirth = (LocalDate) resultMap.get("dateOfBirth");
+        LocalDate relationshipDt = (LocalDate) resultMap.get("relationshipDt");
+        LocalDate birthDt = (LocalDate) resultMap.get("birthDt");
 
-        return new MemberDTO.MyPageResponseDTO(profileImage, name, partnerImage, partnerName, dateOfRelationshipStart, dateOfBirth);
+        return new MemberDTO.MyPageResponseDTO(profileImage, name, partnerImage, partnerName, relationshipDt, birthDt);
 
     }
 
     // 회원 수정
     @Transactional
-    public Member updateMember(Long id, Member updatedMember) {
+    public MemberDTO.UpdateResponseDTO updateMember(Long id, Member updatedMember) {
 
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
@@ -221,17 +237,23 @@ public class MemberService {
         if (updatedMember.getName() != null && !updatedMember.getName().isEmpty()) {
             member.setName(updatedMember.getName());
         }
+        Member updateMember = memberRepository.save(member);
 
-        return memberRepository.save(member);
+        return new MemberDTO.UpdateResponseDTO(
+                member.getLoginId(),
+                member.getEmail(),
+                member.getName(),
+                member.getPhoneNum()
+        );
 
     }
 
     // 회원 삭제
     @Transactional
-    public void deleteMember(Long id) {
+    public String deleteMember(Long id) {
 
         memberRepository.deleteById(id);
-
+        return "Deleted Successfully";
     }
 
     //이미지 변경
@@ -285,13 +307,14 @@ public class MemberService {
 
     // 생일 변경
     @Transactional
-    public void updateBirthday(Long id, MemberDTO.UpdateBirthdayRequestDTO dto) {
+    public void updateBirthday(Long id, LocalDate birthday) {
 
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
+        System.out.println("=============================="+birthday);
 
-        if (dto.getDateOfBirth() != null) {
-            member.setDateOfBirth(dto.getDateOfBirth());
+        if (birthday != null) {
+            member.setBirthDt(birthday);
         }
 
         memberRepository.save(member);
@@ -326,8 +349,8 @@ public class MemberService {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
 
-        if (dto.getDateOfRelationshipStart() != null) {
-            member.setDateOfRelationshipStart(dto.getDateOfRelationshipStart());
+        if (dto.getRelationshipDt() != null) {
+            member.setRelationshipDt(dto.getRelationshipDt());
         }
 
         memberRepository.save(member);
@@ -389,8 +412,8 @@ public class MemberService {
                     member.getName(),
                     member.getProfileImage(),
                     member.getPartnerId(),
-                    member.getDateOfRelationshipStart(),
-                    member.getDateOfBirth()
+                    member.getRelationshipDt(),
+                    member.getBirthDt()
             );
         } catch (Exception e) {
             throw new RuntimeException("Error getting member", e);
