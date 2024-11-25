@@ -1,23 +1,28 @@
 package org.example.flowday.domain.post.tag.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.flowday.domain.post.post.entity.Post;
 
+import java.util.List;
+
 @Entity
+@Table(name = "tags")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Tag {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
 
+    @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Post post;
+    @ManyToMany(mappedBy = "tags")
+    private List<Post> posts;
 }

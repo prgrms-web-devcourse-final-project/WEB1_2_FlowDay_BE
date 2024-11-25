@@ -30,3 +30,9 @@ logging:
     org.hibernate.orm.jdbc.bind: TRACE
     org.hibernate.orm.jdbc.extract: TRACE
     org.springframework.transaction.interceptor: TRACE
+
+# 추가된 파일 업로드 경로 설정
+file:
+  local:
+    upload:
+      path: ./local_image_storage

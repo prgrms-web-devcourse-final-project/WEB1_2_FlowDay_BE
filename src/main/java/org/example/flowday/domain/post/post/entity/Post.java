@@ -1,9 +1,13 @@
 package org.example.flowday.domain.post.post.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import lombok.*;
 import org.example.flowday.domain.course.course.entity.Course;
-import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.post.likes.entity.LikeEntity;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.tag.entity.Tag;
 import org.springframework.data.annotation.CreatedDate;
@@ -15,48 +19,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "posts")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Post {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Member member;
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
 
-    private String title;
-
+    @Column(name = "city", nullable = false, length = 20)
     private String city;
 
-    private String content;
+    @Column(name = "title", nullable = false, columnDefinition = "TEXT")
+    private String title;
+
+    @Column(name = "contents", nullable = false, columnDefinition = "TEXT")
+    private String contents;
 
     @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    private Status status;
+    @Column(name = "course_id", nullable = false)
+    private Long courseId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Member writer;
-
-    @OneToOne()
-    @JoinColumn(name="course_id" , referencedColumnName = "id")
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @OneToMany(mappedBy = "post" , cascade = CascadeType.ALL , orphanRemoval = true)
-    @Builder.Default
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reply> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LikeEntity> likes =  new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "post_tags",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     private List<Tag> tags = new ArrayList<>();
-
-    @OneToMany(mappedBy = "post" , cascade = CascadeType.ALL , orphanRemoval = true)
-    @Builder.Default
-    private List<Reply> replys = new ArrayList<>();
-
 }
