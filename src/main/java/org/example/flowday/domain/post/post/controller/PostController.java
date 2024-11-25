@@ -6,6 +6,9 @@ import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.service.PostService;
 import org.example.flowday.global.security.util.SecurityUser;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,12 +39,15 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    // 모든 게시글 조회 , 추후 페이징 처리
-//    @GetMapping
-//    public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
-//        List<PostResponseDTO> posts = postService.getAllPosts();
-//        return new ResponseEntity<>(posts, HttpStatus.OK);
-//    }
+    // 모든 게시글 최신순 조회
+    @GetMapping("/all/latest")
+    public ResponseEntity<Page<PostResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page , int pageSize) {
+        Pageable pageable  = PageRequest.of(page, pageSize);
+        Page<PostResponseDTO> result = postService.getAllPosts(pageable);
+
+        return ResponseEntity.ok().body(result);
+
+    }
 
     // 게시글 수정
 //    @PutMapping("/{id}")

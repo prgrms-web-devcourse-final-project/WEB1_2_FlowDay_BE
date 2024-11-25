@@ -15,6 +15,8 @@ import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.mapper.PostMapper;
 import org.example.flowday.domain.post.post.repository.PostRepository;
 import org.example.flowday.global.security.util.SecurityUser;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
@@ -75,15 +77,13 @@ public class PostService {
 
     }
 
-    // 모든 게시글 조회
-//    public List<PostResponseDTO> getAllPosts() {
-//        List<Post> posts = postRepository.findAll();
-//        List<PostResponseDTO> responseDTOList = new ArrayList<>();
-//        for (Post post : posts) {
-//            responseDTOList.add(postMapper.toResponseDTO(post));
-//        }
-//        return responseDTOList;
-//    }
+    // 모든 게시글 조회 최신순
+    public Page<PostResponseDTO> getAllPosts(Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+
+        return posts.map(post -> postMapper.toResponseDTO(post , null));
+
+    }
 
     // 게시글 수정
 //    @Transactional
