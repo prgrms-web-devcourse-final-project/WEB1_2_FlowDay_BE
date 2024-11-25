@@ -19,7 +19,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
         if (exception instanceof BadCredentialsException) {
             // BadCredentialsException에 대한 구체적인 처리
-            response.getWriter().write("Authentication error: 잘못된 ID 혹은 PW 입니다");
+            response.getWriter().write("잘못된 ID 혹은 PW 입니다");
         } else {
             // 일반적인 UsernameNotFoundException 처리
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
