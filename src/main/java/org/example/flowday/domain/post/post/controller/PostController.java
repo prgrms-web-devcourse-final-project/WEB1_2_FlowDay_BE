@@ -15,33 +15,33 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
     // 게시글 생성
-    @PostMapping
+    @PostMapping("")
     public ResponseEntity<PostResponseDTO> createPost(@Valid @RequestBody PostRequestDTO postRequestDto , @AuthenticationPrincipal SecurityUser user) {
         PostResponseDTO createdPost = postService.createPost(postRequestDto,user.getId());
-        return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
     // 게시글 단건 조회
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id) {
-        Optional<PostResponseDTO> post = postService.getPostById(id);
-        return post.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id ) {
+        PostResponseDTO result = postService.getPostById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    // 모든 게시글 조회
-    @GetMapping
-    public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
-        List<PostResponseDTO> posts = postService.getAllPosts();
-        return new ResponseEntity<>(posts, HttpStatus.OK);
-    }
+    // 모든 게시글 조회 , 추후 페이징 처리
+//    @GetMapping
+//    public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
+//        List<PostResponseDTO> posts = postService.getAllPosts();
+//        return new ResponseEntity<>(posts, HttpStatus.OK);
+//    }
 
     // 게시글 수정
 //    @PutMapping("/{id}")

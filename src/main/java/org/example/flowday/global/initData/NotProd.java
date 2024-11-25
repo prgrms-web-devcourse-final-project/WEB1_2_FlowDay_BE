@@ -2,6 +2,13 @@ package org.example.flowday.global.initData;
 
 
 import lombok.RequiredArgsConstructor;
+import org.example.flowday.domain.course.course.dto.CourseReqDTO;
+import org.example.flowday.domain.course.course.entity.Course;
+import org.example.flowday.domain.course.course.entity.Status;
+import org.example.flowday.domain.course.course.repository.CourseRepository;
+import org.example.flowday.domain.course.course.service.CourseService;
+import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
+import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
@@ -17,6 +24,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Configuration
 @RequiredArgsConstructor
 @Profile("!prod")
@@ -30,6 +42,10 @@ public class NotProd {
     private final ReplyRepository  replyRepository;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final CourseRepository  courseRepository;
+    private final SpotRepository spotRepository;
+    @Autowired
+    private CourseService courseService;
 
 
     @Bean
@@ -42,7 +58,7 @@ public class NotProd {
     @Transactional
     public void work1() {
 
-        if (postRepository.findAll().size() > 0) {
+        if (memberRepository.findAll().size() > 0) {
             return;
         }
 
@@ -50,7 +66,8 @@ public class NotProd {
         // given - 테스트에 필요한 데이터 준비
         Member member = Member.builder()
                 .name("member1")
-                .email("test@test.com")
+                .email("test1@test.com")
+                .loginId("login1")
                 .pw("1234")
                 .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
@@ -59,29 +76,53 @@ public class NotProd {
 
         Member member2 = Member.builder()
                 .name("member2")
-                .email("test@test.com")
+                .email("test2@test.com")
+                .loginId("login2")
                 .pw("1234")
                 .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(member2);
 
+        // 장소 생성
+        SpotReqDTO spot1 = SpotReqDTO.builder()
+                .city("서울 종로")
+                .placeId("place1")
+                .name("카페")
+                .comment("코멘트")
+                .sequence(1)
+                .build();
+        SpotReqDTO spot2 = SpotReqDTO.builder()
+                .city("서울 종로")
+                .placeId("place2")
+                .name("밥집")
+                .comment("코멘트")
+                .sequence(1)
+                .build();
+        SpotReqDTO spot3 = SpotReqDTO.builder()
+                .city("서울 종로")
+                .placeId("place3")
+                .name("영화관")
+                .comment("코멘트")
+                .sequence(1)
+                .build();
+
+        List<SpotReqDTO> spots = new ArrayList<>();
+        spots.add(spot1);
+        spots.add(spot2);
+
+        CourseReqDTO courseRequest = CourseReqDTO.builder()
+                .color("color")
+                .title("코스1")
+                .date(LocalDate.now())
+                .status(Status.COUPLE)
+                .memberId(member.getId())
+                .spots(spots)
+                .build();
+
+        courseService.saveCourse(courseRequest);
 
 
-//        //게시글 생성
-//        Post post = Post.builder()
-//                .title("post1")
-//                .contents("Test Post Content")
-//                .build();
-//        postRepository.save(post);
-//
-//        Post post2 = Post.builder()
-//                .title("post2")
-//                .contents("Test Post Content")
-//                .build();
-//        postRepository.save(post2);
-//
-//
     }
 }
 
