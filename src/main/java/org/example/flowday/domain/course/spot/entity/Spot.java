@@ -1,7 +1,6 @@
 package org.example.flowday.domain.course.spot.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.vote.entity.Vote;
@@ -17,17 +16,10 @@ public class Spot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Place Id cannot be blank")
     private String placeId;
-
-    @NotBlank(message = "Name cannot be blank")
     private String name;
-
-    @NotBlank(message = "City cannot be blank")
     private String city;
-
     private String comment;
-
     private int sequence;
 
     @ManyToOne
