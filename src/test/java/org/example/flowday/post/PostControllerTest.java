@@ -1,9 +1,10 @@
 package org.example.flowday.domain.post.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.flowday.domain.post.dto.PostRequestDTO;
-import org.example.flowday.domain.post.dto.PostResponseDTO;
-import org.example.flowday.domain.post.service.PostService;
+import org.example.flowday.domain.post.post.dto.PostRequestDTO;
+import org.example.flowday.domain.post.post.dto.PostResponseDTO;
+import org.example.flowday.domain.post.post.controller.PostController;
+import org.example.flowday.domain.post.post.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
