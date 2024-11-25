@@ -27,6 +27,7 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -44,6 +45,7 @@ public class MemberService {
     // refreshToken을 사용하여 새로운 Access Token 생성
     public String refreshAccessToken(String refreshToken) {
 
+
         if (refreshToken == null || !refreshToken.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Invalid token format");
         }
@@ -59,18 +61,24 @@ public class MemberService {
         String loginId = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
-        // 새 accessToken 생성
-        return jwtUtil.createJwt(Map.of(
-                        "category", "accessToken",
-                        "id", id,
-                        "loginId", loginId,
-                        "role", role),
-                60 * 60 * 1000L);
-    }
+        String storedToken = memberRepository.findRefreshTokenByLoginId(loginId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+        if (storedToken.equals(token)) {
 
+            // 새 accessToken 생성
+            return jwtUtil.createJwt(Map.of(
+                            "category", "accessToken",
+                            "id", id,
+                            "loginId", loginId,
+                            "role", role),
+                    60 * 60 * 1000L);
+        } else {
+            return "Invalid token";
+        }
+    }
     // 회원 가입
     @Transactional
-    public MemberDTO.CreateResponseDTO createMember(Member member) {
+    public MemberDTO.CreateResponseDTO createMember(Member member) throws MemberTaskException {
+        member.filterAndValidate(member);
         // 중복 회원 검사
         if (memberRepository.existsByLoginId(member.getLoginId())) {
             throw MemberException.LOGINID_ALREADY_EXIST.getMemberTaskException();
@@ -99,9 +107,9 @@ public class MemberService {
     public MemberDTO.FindIdResponseDTO getMemberByEmail(String email) {
 
         return new MemberDTO.FindIdResponseDTO(
-                memberRepository.findLoginIdByEmail(email)
+                memberRepository.findByEmail(email)
                         .orElseThrow(
-                                MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException)
+                                MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException).getLoginId()
         );
 
     }
@@ -299,13 +307,14 @@ public class MemberService {
 
     // 생일 변경
     @Transactional
-    public void updateBirthday(Long id, MemberDTO.UpdateBirthdayRequestDTO dto) {
+    public void updateBirthday(Long id, LocalDate birthday) {
 
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
+        System.out.println("=============================="+birthday);
 
-        if (dto.getBirthDt() != null) {
-            member.setBirthDt(dto.getBirthDt());
+        if (birthday != null) {
+            member.setBirthDt(birthday);
         }
 
         memberRepository.save(member);
