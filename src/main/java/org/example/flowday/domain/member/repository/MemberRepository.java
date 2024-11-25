@@ -21,7 +21,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "m1.relationshipDt, " +
             "m1.birthDt " +
             "FROM Member m1 " +
-            "INNER JOIN Member m2 ON m1.partnerId = m2.id " +
+            "LEFT JOIN Member m2 ON m1.partnerId = m2.id " +
             "WHERE m1.id = :id")
     Optional<Map<String, Object>> findMyPageById(@Param("id") Long id);
 
@@ -34,8 +34,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 //    @Query("SELECT m.id, m.name, m.email, m.phoneNum, m.profileImage FROM Member m WHERE m.name = :name")
     Optional<Member> findByName(String name);
 
-    @Query("SELECT m.loginId FROM Member m WHERE m.email = :email")
-    Optional<String> findLoginIdByEmail(String email);
+
+    Optional<Member> findByEmail(String email);
+
     Optional<Member> findByLoginIdAndEmail(String loginId , String email);
 
 }
