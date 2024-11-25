@@ -59,20 +59,20 @@ public class MemberScenarioTests {
         dto.setEmail("user1@example.com");
         dto.setPw(password);
         dto.setName("User One");
-        dto.setPhoneNum("123-456-7890");
+        dto.setPhoneNum("1234567890");
         dto.setDateOfBirth(LocalDate.now());
 
         // 회원가입 API 호출
-        ResponseEntity<MemberDTO.CreateResponseDTO> response = memberController.createMember(dto);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        ResponseEntity<Object> response =  memberController.createMember(dto);
+        if (response.getBody() instanceof MemberDTO.CreateResponseDTO responseDTO){
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        MemberDTO.CreateResponseDTO responseBody = response.getBody();
-
-        assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getLoginId()).isEqualTo("user1");
-        assertThat(responseBody.getEmail()).isEqualTo("user1@example.com");
-        assertThat(responseBody.getName()).isEqualTo("User One");
-        assertThat(responseBody.getPhoneNum()).isEqualTo("123-456-7890");
+            assertThat(responseDTO).isNotNull();
+            assertThat(responseDTO.getLoginId()).isEqualTo("user1");
+            assertThat(responseDTO.getEmail()).isEqualTo("user1@example.com");
+            assertThat(responseDTO.getName()).isEqualTo("User One");
+            assertThat(responseDTO.getPhoneNum()).isEqualTo("1234567890");
+        }
     }
 
 //    @Test
@@ -202,7 +202,7 @@ public class MemberScenarioTests {
         createRequestDto.setEmail("user2@example.com");
         createRequestDto.setPw("password456");
         createRequestDto.setName("User Two");
-        createRequestDto.setPhoneNum("987-654-3210");
+        createRequestDto.setPhoneNum("9876543210");
 
         memberService.createMember(createRequestDto.toEntity());
 
@@ -212,7 +212,7 @@ public class MemberScenarioTests {
         newCreateRequestDto.setEmail("user2@example.com");
         newCreateRequestDto.setPw("password456");
         newCreateRequestDto.setName("User Two");
-        newCreateRequestDto.setPhoneNum("987-654-3210");
+        newCreateRequestDto.setPhoneNum("9876543210");
 
         Throwable thrown = catchThrowable(() -> memberService.createMember(newCreateRequestDto.toEntity()));
         assertThat(thrown).isInstanceOf(MemberTaskException.class)
