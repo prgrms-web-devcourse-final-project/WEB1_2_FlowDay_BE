@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.service.PostService;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,8 +23,8 @@ public class PostController {
 
     // 게시글 생성
     @PostMapping
-    public ResponseEntity<PostResponseDTO> createPost(@Valid @RequestBody PostRequestDTO postRequestDto) {
-        PostResponseDTO createdPost = postService.createPost(postRequestDto);
+    public ResponseEntity<PostResponseDTO> createPost(@Valid @RequestBody PostRequestDTO postRequestDto , @AuthenticationPrincipal SecurityUser user) {
+        PostResponseDTO createdPost = postService.createPost(postRequestDto,user.getId());
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
 
@@ -42,16 +44,16 @@ public class PostController {
     }
 
     // 게시글 수정
-    @PutMapping("/{id}")
-    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequestDTO updatedPostDto) {
-        PostResponseDTO post = postService.updatePost(id, updatedPostDto);
-        return new ResponseEntity<>(post, HttpStatus.OK);
-    }
+//    @PutMapping("/{id}")
+//    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequestDTO updatedPostDto) {
+//        PostResponseDTO post = postService.updatePost(id, updatedPostDto);
+//        return new ResponseEntity<>(post, HttpStatus.OK);
+//    }
 
     // 게시글 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        postService.deletePost(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+//        postService.deletePost(id);
+//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//    }
 }

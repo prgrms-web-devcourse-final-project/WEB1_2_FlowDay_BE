@@ -15,6 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.xml.stream.events.Comment;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -54,10 +55,10 @@ public class Member {
     private List<Course> courses;
 
     @OneToMany(mappedBy = "member")
-    private List<Reply> reply;
+    private List<Reply> reply = new ArrayList<>();
 
     @OneToMany(mappedBy = "writer")
-    private List<Post> posts;
+    private List<Post> posts = new ArrayList<>();
 
 
 }

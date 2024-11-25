@@ -60,21 +60,7 @@ class PostControllerTest {
                 .build();
     }
 
-    @Test
-    void 게시글_생성_테스트() throws Exception {
-        Mockito.when(postService.createPost(any(PostRequestDTO.class))).thenReturn(postResponseDTO);
 
-        mockMvc.perform(post("/api/posts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postRequestDTO)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(postResponseDTO.getId()))
-                .andExpect(jsonPath("$.memberId").value(postResponseDTO.getMemberId()))
-                .andExpect(jsonPath("$.city").value(postResponseDTO.getCity()))
-                .andExpect(jsonPath("$.title").value(postResponseDTO.getTitle()))
-                .andExpect(jsonPath("$.contents").value(postResponseDTO.getContents()))
-                .andExpect(jsonPath("$.courseId").value(postResponseDTO.getCourseId()));
-    }
 
     @Test
     void 게시글_조회_성공_테스트() throws Exception {

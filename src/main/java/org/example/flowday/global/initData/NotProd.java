@@ -68,20 +68,20 @@ public class NotProd {
 
 
 
-        //게시글 생성
-        Post post = Post.builder()
-                .title("post1")
-                .content("Test Post Content")
-                .build();
-        postRepository.save(post);
-
-        Post post2 = Post.builder()
-                .title("post2")
-                .content("Test Post Content")
-                .build();
-        postRepository.save(post2);
-
-
+//        //게시글 생성
+//        Post post = Post.builder()
+//                .title("post1")
+//                .contents("Test Post Content")
+//                .build();
+//        postRepository.save(post);
+//
+//        Post post2 = Post.builder()
+//                .title("post2")
+//                .contents("Test Post Content")
+//                .build();
+//        postRepository.save(post2);
+//
+//
     }
 }
 

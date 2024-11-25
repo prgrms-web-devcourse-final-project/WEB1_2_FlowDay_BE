@@ -7,9 +7,10 @@ import jakarta.persistence.Table;
 
 import lombok.*;
 import org.example.flowday.domain.course.course.entity.Course;
-import org.example.flowday.domain.post.likes.entity.LikeEntity;
+import org.example.flowday.domain.member.entity.Member;
+//import org.example.flowday.domain.post.likes.entity.LikeEntity;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
-import org.example.flowday.domain.post.tag.entity.Tag;
+//import org.example.flowday.domain.post.tag.entity.Tag;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -30,13 +31,8 @@ public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
-
-    @Column(name = "city", nullable = false, length = 20)
     private String city;
 
     @Column(name = "title", nullable = false, columnDefinition = "TEXT")
@@ -44,6 +40,9 @@ public class Post {
 
     @Column(name = "contents", nullable = false, columnDefinition = "TEXT")
     private String contents;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -53,24 +52,25 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "course_id", nullable = false)
-    private Long courseId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
+    private Member writer;
+
+    @OneToOne(fetch = FetchType.LAZY)
     private Course course;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reply> comments = new ArrayList<>();
+    private List<Reply> replies = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LikeEntity> likes =  new ArrayList<>();
+//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<LikeEntity> likes =  new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "post_tags",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private List<Tag> tags = new ArrayList<>();
+//    @ManyToMany
+//    @JoinTable(
+//            name = "post_tags",
+//            joinColumns = @JoinColumn(name = "post_id"),
+//            inverseJoinColumns = @JoinColumn(name = "tag_id")
+//    )
+//    private List<Tag> tags = new ArrayList<>();
+
+
 }
