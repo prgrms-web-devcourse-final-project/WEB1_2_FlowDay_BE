@@ -1,5 +1,6 @@
 package org.example.flowday.domain.member.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -80,6 +81,17 @@ public class MemberDTO {
     }
 
     @Data
+    public static class TokenRefreshRequestDTO {
+        private String token;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class TokenRefreshResponseDTO {
+        private String token;
+    }
+
+    @Data
     @AllArgsConstructor
     public static class UpdateResponseDTO {
         private String loginId;
@@ -115,6 +127,11 @@ public class MemberDTO {
     public static class ChangeImageResponseDTO{
         private Long id;
         private String mImage;
+    }
+
+    @Data
+    public static class FindIdRequestDTO {
+        private String email;
     }
 
     @Data
