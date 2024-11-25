@@ -21,7 +21,7 @@ public class SecurityUserService implements UserDetailsService {
         System.out.println("Looking for user with loginId: " + loginId);
         Member member = memberRepository.findByLoginId(loginId).orElseThrow(() -> {
             System.out.println("User not found with loginId: " + loginId);
-            return new UsernameNotFoundException("User not found with loginId: " + loginId);
+            return new UsernameNotFoundException("User not found with loginId");
         });
         System.out.println("find successful");
         return new SecurityUser(member);

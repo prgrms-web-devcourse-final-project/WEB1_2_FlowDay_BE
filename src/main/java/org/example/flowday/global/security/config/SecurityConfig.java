@@ -5,6 +5,7 @@ import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.global.security.filter.JwtFilter;
 import org.example.flowday.global.security.filter.LoginFilter;
 import org.example.flowday.global.security.handler.CustomAuthenticationFailureHandler;
+import org.example.flowday.global.security.handler.CustomAuthenticationSuccessHandler;
 import org.example.flowday.global.security.util.JwtUtil;
 import org.example.flowday.global.security.util.oauth2.service.CustomOAuth2UserService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -37,12 +38,20 @@ public class SecurityConfig {
 
     private final CustomAuthenticationFailureHandler authenticationFailureHandler;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomOAuth2UserService customOAuth2UserService, MemberRepository memberRepository, CustomAuthenticationFailureHandler authenticationFailureHandler) {
+    private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+
+    public SecurityConfig(
+            AuthenticationConfiguration authenticationConfiguration,
+            CustomOAuth2UserService customOAuth2UserService,
+            MemberRepository memberRepository,
+            CustomAuthenticationFailureHandler authenticationFailureHandler,
+            CustomAuthenticationSuccessHandler authenticationSuccessHandler) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.customOAuth2UserService = customOAuth2UserService;
         this.memberRepository = memberRepository;
         this.authenticationFailureHandler = authenticationFailureHandler;
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
 
     }
 
@@ -81,7 +90,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/members/login",
                                 "/api/v1/members/register",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/api/v1/members/refresh",
+                                "/error?continue"
                         ).permitAll()
                         .anyRequest().hasRole("USER"));
 
@@ -90,9 +101,9 @@ public class SecurityConfig {
                         new LoginFilter(
                                 authenticationManager(authenticationConfiguration),
                                 jwtUtil,
-                                memberRepository,
-                                authenticationFailureHandler),
-                                        UsernamePasswordAuthenticationFilter.class);
+                                memberRepository),
+                                        UsernamePasswordAuthenticationFilter.class)
+        ;
 
         http
                 .addFilterBefore(new JwtFilter(jwtUtil, memberRepository), OAuth2AuthorizationRequestRedirectFilter.class);
@@ -100,7 +111,9 @@ public class SecurityConfig {
         http
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService)));
+                                .userService(customOAuth2UserService))
+                        .successHandler(authenticationSuccessHandler)
+                        .failureHandler(authenticationFailureHandler));
 
         http
                 .headers(
