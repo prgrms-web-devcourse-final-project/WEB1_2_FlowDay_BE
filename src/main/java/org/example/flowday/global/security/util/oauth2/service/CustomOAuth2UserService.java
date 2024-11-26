@@ -54,12 +54,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             Member userEntity = new Member();
             userEntity.setLoginId(username);
             userEntity.setRole(Role.ROLE_USER);
-            userEntity.setRefreshToken(jwtUtil.createJwt(Map.of(
-                            "category","RefreshToken",
-                            "loginId",username,
-                            "role", "ROLE_USER"),
-                    60 * 60 * 1000L));
-
 
             memberRepository.save(userEntity);
 
@@ -67,11 +61,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         else {
 
             existData.get().setLoginId(username);
-            existData.get().setRefreshToken(jwtUtil.createJwt(Map.of(
-                            "category","RefreshToken",
-                            "loginId",username,
-                            "role", "ROLE_USER"),
-                    60 * 60 * 1000L));
 
             memberRepository.save(existData.get());
         }
