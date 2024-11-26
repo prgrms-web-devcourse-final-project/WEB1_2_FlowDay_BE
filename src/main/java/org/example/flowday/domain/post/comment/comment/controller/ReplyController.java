@@ -1,5 +1,7 @@
 package org.example.flowday.domain.post.comment.comment.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.post.comment.comment.dto.ReplyDTO;
@@ -19,16 +21,19 @@ import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping("/api/v1/replies")
+@Tag(name = "Reply", description = "댓글 관련 api")
 @RequiredArgsConstructor
 public class ReplyController {
     private final ReplyService replyService;
 
+    @Operation(summary = "조회")
     @GetMapping("/{postId}")
     public ResponseEntity<List<ReplyDTO.Response>> getRepliesByPostId(@PathVariable Long postId) {
         List<ReplyDTO.Response> replies = replyService.findAllByPost(postId);
         return ResponseEntity.ok(replies);
     }
 
+    @Operation(summary = "작성")
     @PostMapping("/{postId}")
     public ResponseEntity<?> createReply(@RequestBody @Valid ReplyDTO.createRequest request , BindingResult bindingResult, @PathVariable Long postId,
                                          @AuthenticationPrincipal SecurityUser user) {
@@ -47,6 +52,7 @@ public class ReplyController {
 
     }
 
+    @Operation(summary = "수정")
     @PatchMapping("/{replyId}")
     public ResponseEntity<?> updateReply(@RequestBody @Valid ReplyDTO.updateRequest request,BindingResult bindingResult , @PathVariable Long replyId ,
                                          @AuthenticationPrincipal SecurityUser user) {
@@ -64,6 +70,7 @@ public class ReplyController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "삭제")
     @DeleteMapping("/{replyId}")
     public ResponseEntity<ReplyDTO.deleteResponse> deleteReply(@PathVariable Long replyId , @AuthenticationPrincipal SecurityUser user) {
         ReplyDTO.deleteResponse response = replyService.removeReply(replyId, user.getId());

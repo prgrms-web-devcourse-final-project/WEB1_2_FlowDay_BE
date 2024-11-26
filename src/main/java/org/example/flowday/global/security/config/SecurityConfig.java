@@ -81,7 +81,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/members/login",
                                 "/api/v1/members",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().hasRole("USER"));
 
