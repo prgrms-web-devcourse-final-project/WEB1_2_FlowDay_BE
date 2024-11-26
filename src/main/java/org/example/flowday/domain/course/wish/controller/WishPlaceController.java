@@ -3,8 +3,11 @@ package org.example.flowday.domain.course.wish.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
+import org.example.flowday.domain.course.wish.exception.WishPlaceException;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
+import org.example.flowday.domain.member.entity.Member;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +21,14 @@ public class WishPlaceController {
 
     // 위시 플레이스에 장소 추가
     @PostMapping
-    public ResponseEntity<WishPlaceResDTO> addSpotToWishPlace(@RequestBody WishPlaceReqDTO wishPlaceReqDTO) {
+    public ResponseEntity<WishPlaceResDTO> addSpotToWishPlace(
+            @RequestBody WishPlaceReqDTO wishPlaceReqDTO,
+            @AuthenticationPrincipal Member user
+    ) {
+        if(!user.getId().equals(wishPlaceReqDTO.getMemberId())) {
+            throw WishPlaceException.FORBIDDEN.get();
+        }
+
         WishPlaceResDTO updatedWishPlace = wishPlaceService.updateSpotInWishPlace(wishPlaceReqDTO);
         return ResponseEntity.ok(updatedWishPlace);
     }
@@ -27,8 +37,13 @@ public class WishPlaceController {
     @DeleteMapping("/member/{memberId}/spot/{spotId}")
     public ResponseEntity<Void> removeSpotFromWishPlace(
             @PathVariable Long memberId,
-            @PathVariable Long spotId
+            @PathVariable Long spotId,
+            @AuthenticationPrincipal Member user
     ) {
+        if(!user.getId().equals(memberId)) {
+            throw WishPlaceException.FORBIDDEN.get();
+        }
+
         wishPlaceService.removeSpotFromWishPlace(memberId, spotId);
         return ResponseEntity.noContent().build();
     }
