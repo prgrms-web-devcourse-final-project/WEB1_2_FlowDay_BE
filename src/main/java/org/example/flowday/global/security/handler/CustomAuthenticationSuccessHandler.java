@@ -1,6 +1,5 @@
 package org.example.flowday.global.security.handler;
 
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,15 +9,11 @@ import org.example.flowday.global.security.util.JwtUtil;
 import org.example.flowday.global.security.util.SecurityUser;
 import org.example.flowday.global.security.util.oauth2.dto.CustomOAuth2User;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
@@ -67,7 +62,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                         "role", role),
                 60 * 60 * 1000L); //1시간
         String refreshToken = jwtUtil.createJwt(Map.of(
-                        "category","RefreshToken",
+                        "category","refreshToken",
                         "id",id,
                         "loginId",loginId,
                         "role", role),
