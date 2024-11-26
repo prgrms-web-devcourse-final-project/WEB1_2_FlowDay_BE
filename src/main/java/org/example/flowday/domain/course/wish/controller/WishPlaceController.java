@@ -5,9 +5,10 @@ import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.exception.WishPlaceException;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
-import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.exception.MemberException;
+import org.example.flowday.domain.member.repository.MemberRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,14 +19,17 @@ import java.util.List;
 public class WishPlaceController {
 
     private final WishPlaceService wishPlaceService;
+    private final MemberRepository memberRepository;
 
     // 위시 플레이스에 장소 추가
     @PostMapping
     public ResponseEntity<WishPlaceResDTO> addSpotToWishPlace(
             @RequestBody WishPlaceReqDTO wishPlaceReqDTO,
-            @AuthenticationPrincipal Member user
+            Authentication authentication
     ) {
-        if(!user.getId().equals(wishPlaceReqDTO.getMemberId())) {
+        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+
+        if(!id.equals(wishPlaceReqDTO.getMemberId())) {
             throw WishPlaceException.FORBIDDEN.get();
         }
 
@@ -38,9 +42,11 @@ public class WishPlaceController {
     public ResponseEntity<Void> removeSpotFromWishPlace(
             @PathVariable Long memberId,
             @PathVariable Long spotId,
-            @AuthenticationPrincipal Member user
+            Authentication authentication
     ) {
-        if(!user.getId().equals(memberId)) {
+        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+
+        if(!id.equals(memberId)) {
             throw WishPlaceException.FORBIDDEN.get();
         }
 
