@@ -68,9 +68,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                         "role", role),
                 60 * 60 * 100000L); //100시간
 
-        Optional<Member> member = memberRepository.findByLoginId(loginId);
-        member.get().setRefreshToken(refreshToken);
-        memberRepository.save(member.get());
+        memberRepository.updateRefreshToken(loginId, refreshToken);
 
         response.setHeader("Authorization", "Bearer " + accessToken);
         response.setHeader("Refresh-Token", "Bearer " + refreshToken);
