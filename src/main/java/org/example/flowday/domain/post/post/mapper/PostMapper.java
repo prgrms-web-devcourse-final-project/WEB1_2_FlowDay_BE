@@ -3,6 +3,7 @@ package org.example.flowday.domain.post.post.mapper;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.post.post.dto.GenFileResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.entity.Post;
@@ -25,16 +26,18 @@ public class PostMapper {
                 .build();
     }
 
-    public PostResponseDTO toResponseDTO(Post post , List<SpotResDTO> spots) {
+    public PostResponseDTO toResponseDTO(Post post , List<SpotResDTO> spots , List<GenFileResponseDTO> images) {
         return PostResponseDTO.builder()
                 .id(post.getId())
-                .writerName(post.getWriter().getName())
-                .city(post.getCity())
                 .title(post.getTitle())
                 .contents(post.getContents())
+                .city(post.getCity())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
+                .writerName(post.getWriter().getName())
+                .courseId(post.getCourse() != null ? post.getCourse().getId() : null)
                 .spots(spots)
+                .images(images)
                 .build();
     }
 }

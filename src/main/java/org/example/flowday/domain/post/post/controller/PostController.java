@@ -8,11 +8,13 @@ import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.service.PostService;
+import org.example.flowday.global.fileupload.service.GenFileService;
 import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,22 +34,16 @@ public class PostController {
     private final PostService postService;
 
     // 게시글 생성
-    @PostMapping("")
-    public ResponseEntity<PostResponseDTO> createPost(@Valid @ModelAttribute  PostRequestDTO postRequestDto , @AuthenticationPrincipal SecurityUser user)  {
-        PostResponseDTO createdPost = postService.createPost(postRequestDto,user.getId());
-
-        List<MultipartFile> images = postRequestDto.getImages();
-        for (MultipartFile multipartFile : images) {
-            log.warn( "images: " , multipartFile);
-        }
-
+    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PostResponseDTO> createPost(@Valid @ModelAttribute PostRequestDTO postRequestDto, @AuthenticationPrincipal SecurityUser user) {
+        PostResponseDTO createdPost = postService.createPost(postRequestDto, user.getId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
     // 게시글 단건 조회
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id ) {
+    public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id) {
         PostResponseDTO result = postService.getPostById(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
@@ -55,8 +51,8 @@ public class PostController {
 
     // 모든 게시글 최신순 조회
     @GetMapping("/all/latest")
-    public ResponseEntity<Page<PostResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page , @RequestParam(defaultValue = "20")int pageSize) {
-        Pageable pageable  = PageRequest.of(page, pageSize);
+    public ResponseEntity<Page<PostResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
         Page<PostResponseDTO> result = postService.getAllPosts(pageable);
 
         return ResponseEntity.ok().body(result);
@@ -79,7 +75,7 @@ public class PostController {
 
     @GetMapping("/{id}/json/forDebug")
     @ResponseBody
-    public Map<String,Object> showDetailJson(Model model, @PathVariable Long id) {
+    public Map<String, Object> showDetailJson(Model model, @PathVariable Long id) {
         return postService.getForPrintArticleById(id);
     }
 

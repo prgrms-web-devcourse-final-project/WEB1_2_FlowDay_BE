@@ -18,7 +18,9 @@ public class PostResponseDTO {
     private String city;
     private String title;
     private String contents;
+    private Long courseId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<SpotResDTO> spots;
+    private List<GenFileResponseDTO> images;
 }

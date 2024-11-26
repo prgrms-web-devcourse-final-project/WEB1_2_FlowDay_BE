@@ -127,17 +127,17 @@ public class NotProd {
         CourseResDTO courseResDTO = courseService.saveCourse(courseRequest);
         Course course = courseRepository.findById(courseResDTO.getId()).get();
 
-        Post post = Post.builder()
-                .writer(member)
-                .contents("게시글 내용")
-                .title("게시글 제목 ")
-                .status(org.example.flowday.domain.post.post.entity.Status.PUBLIC)
-                .course(course)
-                .build();
-        Post savePost = postRepository.save(post);
-
-        postService.addGenFileByUrl(savePost, "common", "inbody", 1, "https://picsum.photos/200/300");
-        postService.addGenFileByUrl(savePost, "common", "inbody", 2, "https://picsum.photos/200/300");
+//        Post post = Post.builder()
+//                .writer(member)
+//                .contents("게시글 내용")
+//                .title("게시글 제목 ")
+//                .status(org.example.flowday.domain.post.post.entity.Status.PUBLIC)
+//                .course(course)
+//                .build();
+//        Post savePost = postRepository.save(post);
+//
+//        postService.addGenFileByUrl(savePost, "common", "inbody", 1, "https://picsum.photos/200/300");
+//        postService.addGenFileByUrl(savePost, "common", "inbody", 2, "https://picsum.photos/200/300");
 
 
     }

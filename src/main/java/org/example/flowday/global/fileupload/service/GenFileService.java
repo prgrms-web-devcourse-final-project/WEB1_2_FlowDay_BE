@@ -32,6 +32,7 @@ public class GenFileService {
     public List<GenFile> saveFiles(Post post, List<MultipartFile> images) {
         String relTypeCode = "post";
         long relId = post.getId();
+        int fileNo=1;
 
         List<GenFile> genfiles = new ArrayList<>();
         for (MultipartFile image : images) {
@@ -43,7 +44,6 @@ public class GenFileService {
             String type2Code = "inBody";
             String originFileName = image.getOriginalFilename();
             String fileExt = Util.file.getExt(originFileName);
-            int fileNo = 1;
             int fileSize = (int) image.getSize();
 
             String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd"));
@@ -56,7 +56,7 @@ public class GenFileService {
                     .relId(relId)
                     .typeCode(typeCode)
                     .type2Code(type2Code)
-                    .fileNo(fileNo)
+                    .fileNo(fileNo++)
                     .fileSize(fileSize)
                     .fileDir(fileDir)
                     .fileExt(fileExt)
@@ -135,6 +135,10 @@ public class GenFileService {
                         genFile -> genFile.getTypeCode() + "__" + genFile.getType2Code() + "__" + genFile.getFileNo(),
                         genFile -> genFile
                 ));
+    }
+
+    public List<GenFile> getFilesByPost(Post post) {
+        return genFileRepository.findByRelTypeCodeAndRelId("post", post.getId());
     }
 }
 
