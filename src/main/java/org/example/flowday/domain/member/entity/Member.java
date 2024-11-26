@@ -74,9 +74,6 @@ public class Member {
         if( !isValidCharacters(member.loginId) ) {
             throw MemberException.INVALID_CHAR_FORMAT.getMemberTaskException();
         }
-        if( !isValidCharacters(member.loginId) ) {
-            throw MemberException.INVALID_CHAR_FORMAT.getMemberTaskException();
-        }
         if (!isValidEmail(member.email)) {
             throw MemberException.INVALID_EMAIL_FORMAT.getMemberTaskException();
         }
@@ -93,7 +90,6 @@ public class Member {
         }
         return false;
     }
-
 
     // 이메일 유효성 검사
     private boolean isValidEmail(String email) {

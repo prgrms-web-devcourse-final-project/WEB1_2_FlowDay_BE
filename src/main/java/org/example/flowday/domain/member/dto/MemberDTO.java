@@ -26,7 +26,7 @@ public class MemberDTO {
         private String pw;
         @NotBlank(message = "닉네임은 필수 입력 값 입니다")
         private String name;
-        @NotBlank(message = "전화번호는 필수 입력 값 입니다")
+        @NotBlank(message = "전화번호는 필수 입력 값 입니다") // 삭제 가능성
         private String phoneNum;
         @NotBlank(message = "생년월일은 필수 입력 값 입니다")
         private LocalDate dateOfBirth;

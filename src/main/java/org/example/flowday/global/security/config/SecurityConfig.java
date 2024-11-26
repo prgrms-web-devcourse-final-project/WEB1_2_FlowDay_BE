@@ -92,7 +92,9 @@ public class SecurityConfig {
                                 "/api/v1/members/register",
                                 "/oauth2/**",
                                 "/api/v1/members/refresh",
-                                "/error?continue"
+                                "/error?continue",
+                                "/swagger-ui/**",
+                                "/v3/api-docs"
                         ).permitAll()
                         .anyRequest().hasRole("USER"));
 
@@ -106,7 +108,7 @@ public class SecurityConfig {
         ;
 
         http
-                .addFilterBefore(new JwtFilter(jwtUtil, memberRepository), OAuth2AuthorizationRequestRedirectFilter.class);
+                .addFilterBefore(new JwtFilter(jwtUtil), OAuth2AuthorizationRequestRedirectFilter.class);
 
         http
                 .oauth2Login((oauth2) -> oauth2

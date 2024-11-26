@@ -34,7 +34,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 //    @Query("SELECT m.id, m.name, m.email, m.phoneNum, m.profileImage FROM Member m WHERE m.name = :name")
     Optional<Member> findByName(String name);
 
-
     Optional<Member> findByEmail(String email);
 
     Optional<Member> findByLoginIdAndEmail(String loginId , String email);

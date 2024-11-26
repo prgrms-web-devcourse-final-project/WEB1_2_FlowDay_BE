@@ -2,11 +2,9 @@ package org.example.flowday.domain.member.controller;
 
 
 import org.example.flowday.domain.member.dto.MemberDTO;
-import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.member.service.MemberService;
 import org.example.flowday.global.security.util.SecurityUser;
-import org.hibernate.mapping.Any;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.util.Objects;
 
 @RestController

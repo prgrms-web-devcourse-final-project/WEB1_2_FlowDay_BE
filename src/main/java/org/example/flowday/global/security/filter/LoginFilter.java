@@ -7,26 +7,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import org.example.flowday.domain.member.dto.MemberDTO;
-import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.global.security.handler.CustomAuthenticationFailureHandler;
 import org.example.flowday.global.security.handler.CustomAuthenticationSuccessHandler;
 import org.example.flowday.global.security.util.JwtUtil;
-import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
