@@ -41,8 +41,9 @@ public class CourseService {
 
     // 코스 생성
     public CourseResDTO saveCourse(CourseReqDTO courseReqDTO) {
+        Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+
         try {
-            Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
             Course course = Course.builder()
                     .member(member)
                     .title(courseReqDTO.getTitle())
@@ -156,6 +157,41 @@ public class CourseService {
         }
     }
 
+    // 코스에 장소 1개 추가
+    public CourseResDTO addSpot(Long courseId, SpotReqDTO spotReqDTO) {
+        Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
+
+        try {
+            List<Integer> existingSequences = spotRepository.findAllByCourseIdAndVoteIsNull(courseId).stream()
+                    .map(Spot::getSequence)
+                    .toList();
+
+            int sequence = existingSequences.isEmpty() ? 1 : existingSequences.stream().max(Integer::compareTo).orElse(0) + 1;
+
+            Spot spot = Spot.builder()
+                    .placeId(spotReqDTO.getPlaceId())
+                    .name(spotReqDTO.getName())
+                    .city(spotReqDTO.getCity())
+                    .comment(spotReqDTO.getComment())
+                    .sequence(sequence)
+                    .course(course)
+                    .build();
+
+            spotRepository.save(spot);
+
+            List<Spot> updatedSpots = spotRepository.findAllByCourseIdAndVoteIsNull(courseId);
+            List<SpotResDTO> spotResDTOs = updatedSpots.stream()
+                    .map(SpotResDTO::new)
+                    .toList();
+
+            return new CourseResDTO(course, spotResDTOs);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw SpotException.NOT_CREATED.get();
+        }
+    }
+
     // 코스 삭제
     public CourseResDTO removeCourse(Long courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
@@ -210,6 +246,18 @@ public class CourseService {
         List<Object> paginatedList = combinedCourses.subList(start, end);
 
         return new PageImpl<>(paginatedList, pageable, combinedCourses.size());
+    }
+
+    // 그만 보기 시 상대방의 코스 비공개로 상태 변경
+    public void updateCourseStatusToPrivate(Long courseId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
+
+        try {
+            course.changeStatus(Status.PRIVATE);
+            courseRepository.save(course);
+        } catch (Exception e) {
+            throw CourseException.NOT_UPDATED.get();
+        }
     }
 
     // 연인 관계 해지 시 모든 코스 비공개로 변경
