@@ -168,18 +168,6 @@ public class MemberService {
 
     }
 
-    // 로그아웃
-    @Transactional
-    public void logout (Long id){
-
-        Member member = memberRepository.findById(id).get();
-
-        member.setRefreshToken(null);
-
-        memberRepository.save(member);
-
-    }
-
 
 
 
