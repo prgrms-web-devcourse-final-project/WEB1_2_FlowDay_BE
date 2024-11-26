@@ -36,6 +36,7 @@ public class GenFile {
     private String originFileName;  // 원본 파일 이름
 
 
+
     public String getFileName() {
         return getId() + "." + getFileExt();
     }

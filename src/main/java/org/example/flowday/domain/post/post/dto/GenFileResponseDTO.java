@@ -14,4 +14,5 @@ public class GenFileResponseDTO {
     private int fileSize;
     private String fileExt;
 
+
 }
