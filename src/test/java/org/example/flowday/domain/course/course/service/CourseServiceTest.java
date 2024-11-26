@@ -57,6 +57,7 @@ class CourseServiceTest {
     private Member partner;
     private WishPlace wishPlace2;
     private Spot spot;
+    private Spot addSpot;
     private Course course;
     private Course course2;
     private Course course3;
@@ -108,6 +109,12 @@ class CourseServiceTest {
                 .name("장소 이름1")
                 .city("서울")
                 .sequence(1)
+                .build();
+
+        addSpot = Spot.builder()
+                .placeId("ChIJgUbEo1")
+                .name("성심당")
+                .city("서울")
                 .build();
 
         course = Course.builder()
@@ -225,6 +232,29 @@ class CourseServiceTest {
         assertThat(result.getSpots()).hasSize(2);
     }
 
+    @DisplayName("코스에 장소 추가 테스트")
+    @Test
+    void addSpotToCourse() {
+        Long courseId = 1L;
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+
+        SpotReqDTO spotReqDTO = SpotReqDTO.builder()
+                .placeId("ChIJgUbEo1")
+                .name("성심당")
+                .city("서울")
+                .build();
+
+        courseService.addSpot(courseId, spotReqDTO);
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(spotRepository.findAllByCourseIdAndVoteIsNull(courseId)).thenReturn(List.of(addSpot));
+
+        verify(spotRepository, times(1)).save(any(Spot.class));
+        assertThat(course.getSpots().get(0).getSequence()).isEqualTo(1);
+    }
+
+
     @DisplayName("코스 삭제 테스트")
     @Test
     void removeCourse() {
@@ -297,6 +327,20 @@ class CourseServiceTest {
 
         List<Object> content = result.getContent();
         assertThat(content).hasSize(4);
+    }
+
+    @DisplayName("그만 보기 시 상대방의 코스를 비공개로 상태 변경")
+    @Test
+    void updateCourseStatusToPrivate() {
+        Long courseId = 3L;
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course3));
+
+        courseService.updateCourseStatusToPrivate(courseId);
+
+        assertThat(course3.getStatus()).isEqualTo(Status.PRIVATE);
+
+        verify(courseRepository, times(1)).save(course3);
     }
 
     @DisplayName("연인 관계 해지 시 모든 코스 비공개로 변경 테스트")
