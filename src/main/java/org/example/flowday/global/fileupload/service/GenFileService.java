@@ -84,10 +84,12 @@ public class GenFileService {
                     .fileDir(fileDir)
                     .fileExt(fileExt)
                     .originFileName(originFileName)
+                    .s3FileName(s3FileName) // 실제 S3 파일 이름 저장
                     .build();
 
             genFileRepository.save(genFile);
             genFiles.add(genFile);
+
         }
 
         return genFiles;

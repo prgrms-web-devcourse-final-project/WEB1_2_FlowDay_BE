@@ -34,6 +34,7 @@ public class GenFile {
     private String fileExt;         // 파일 확장자
     private String fileDir;         // 파일 경로
     private String originFileName;  // 원본 파일 이름
+    private String s3FileName;      // 실제 S3에 업로드된 파일 이름 (UUID 포함)
 
 
 
