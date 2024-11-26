@@ -18,6 +18,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         response.setContentType("text/plain;charset=UTF-8");
 
         if (exception instanceof BadCredentialsException) {
+            System.out.println(exception.getMessage());
             // BadCredentialsException에 대한 구체적인 처리
             response.getWriter().write("잘못된 ID 혹은 PW 입니다");
         } else {
