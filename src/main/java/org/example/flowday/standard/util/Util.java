@@ -29,6 +29,7 @@ public class Util {
 
     public static class file {
 
+        //이미지 확장자 파싱
         public static String getExt(String filename) {
             return Optional.ofNullable(filename)
                     .filter(f -> f.contains("."))
@@ -36,6 +37,7 @@ public class Util {
                     .orElse("");
         }
 
+        // URL의 이미지 다운로드
         public static String downloadImg(String url, String filePath) {
             // 디렉토리 생성
             File parentDir = new File(filePath).getParentFile();

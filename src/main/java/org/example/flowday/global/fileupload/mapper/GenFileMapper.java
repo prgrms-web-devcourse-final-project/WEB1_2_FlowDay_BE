@@ -1,4 +1,4 @@
-package org.example.flowday.domain.post.post.mapper;
+package org.example.flowday.global.fileupload.mapper;
 
 import org.example.flowday.domain.post.post.dto.GenFileResponseDTO;
 import org.example.flowday.global.fileupload.entity.GenFile;

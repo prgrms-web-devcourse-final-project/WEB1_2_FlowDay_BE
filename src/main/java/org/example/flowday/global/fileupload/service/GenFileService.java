@@ -95,60 +95,64 @@ public class GenFileService {
         return genFiles;
     }
 
-
-    public void addGenFileByUrl(String relTypeCode, Long relId, String typeCode, String type2Code, int fileNo, String url) {
-        String fileDir = getCurrentDirName(relTypeCode);
-
-        String downFilePath = Util.file.downloadImg(url, AppConfig.GET_FILE_DIR_PATH + "/" + fileDir + "/" + UUID.randomUUID());
-
-        File downloadedFile = new File(downFilePath);
-
-        String originFileName = downloadedFile.getName();
-        String fileExt = Util.file.getExt(originFileName);
-        int fileSize = 0;
-        try {
-            fileSize = (int) Files.size(Paths.get(downFilePath));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        GenFile genFile = GenFile
-                .builder()
-                .relTypeCode(relTypeCode)
-                .relId(relId)
-                .typeCode(typeCode)
-                .type2Code(type2Code)
-                .fileNo(fileNo)
-                .fileSize(fileSize)
-                .fileDir(fileDir)
-                .fileExt(fileExt)
-                .originFileName(originFileName)
-                .build();
-
-        genFileRepository.save(genFile);
-
-        String filePath = AppConfig.GET_FILE_DIR_PATH + "/" + fileDir + "/" + genFile.getFileName();
-
-        File file = new File(filePath);
-
-        file.getParentFile().mkdirs();
-
-        downloadedFile.renameTo(file);
-    }
-
-    public Map<String , GenFile> getRelGenFileMap(Post post) {
-        List<GenFile> genFiles = genFileRepository.findByRelTypeCodeAndRelId("post", post.getId());
-
-        return genFiles
-                .stream()
-                .collect(Collectors.toMap(
-                        genFile -> genFile.getTypeCode() + "__" + genFile.getType2Code() + "__" + genFile.getFileNo(),
-                        genFile -> genFile
-                ));
-    }
-
+    //원하는 객체의 List<GenFile> 조회
     public List<GenFile> getFilesByPost(Post post) {
         return genFileRepository.findByRelTypeCodeAndRelId("post", post.getId());
     }
+
+
+    //URL의 사진 꺼내오기
+//    public void addGenFileByUrl(String relTypeCode, Long relId, String typeCode, String type2Code, int fileNo, String url) {
+//        String fileDir = getCurrentDirName(relTypeCode);
+//
+//        String downFilePath = Util.file.downloadImg(url, AppConfig.GET_FILE_DIR_PATH + "/" + fileDir + "/" + UUID.randomUUID());
+//
+//        File downloadedFile = new File(downFilePath);
+//
+//        String originFileName = downloadedFile.getName();
+//        String fileExt = Util.file.getExt(originFileName);
+//        int fileSize = 0;
+//        try {
+//            fileSize = (int) Files.size(Paths.get(downFilePath));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        GenFile genFile = GenFile
+//                .builder()
+//                .relTypeCode(relTypeCode)
+//                .relId(relId)
+//                .typeCode(typeCode)
+//                .type2Code(type2Code)
+//                .fileNo(fileNo)
+//                .fileSize(fileSize)
+//                .fileDir(fileDir)
+//                .fileExt(fileExt)
+//                .originFileName(originFileName)
+//                .build();
+//
+//        genFileRepository.save(genFile);
+//
+//        String filePath = AppConfig.GET_FILE_DIR_PATH + "/" + fileDir + "/" + genFile.getFileName();
+//
+//        File file = new File(filePath);
+//
+//        file.getParentFile().mkdirs();
+//
+//        downloadedFile.renameTo(file);
+//    }
+//
+//    public Map<String , GenFile> getRelGenFileMap(Post post) {
+//        List<GenFile> genFiles = genFileRepository.findByRelTypeCodeAndRelId("post", post.getId());
+//
+//        return genFiles
+//                .stream()
+//                .collect(Collectors.toMap(
+//                        genFile -> genFile.getTypeCode() + "__" + genFile.getType2Code() + "__" + genFile.getFileNo(),
+//                        genFile -> genFile
+//                ));
+//    }
+
+
 }
 

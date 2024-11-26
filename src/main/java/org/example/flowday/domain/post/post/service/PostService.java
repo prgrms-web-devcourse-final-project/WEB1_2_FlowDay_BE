@@ -13,27 +13,17 @@ import org.example.flowday.domain.post.post.dto.GenFileResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.entity.Post;
-import org.example.flowday.domain.post.post.mapper.GenFileMapper;
+import org.example.flowday.global.fileupload.mapper.GenFileMapper;
 import org.example.flowday.domain.post.post.mapper.PostMapper;
 import org.example.flowday.domain.post.post.repository.PostRepository;
-import org.example.flowday.global.config.AppConfig;
 import org.example.flowday.global.fileupload.entity.GenFile;
-import org.example.flowday.global.fileupload.repository.GenFileRepository;
 import org.example.flowday.global.fileupload.service.GenFileService;
-import org.example.flowday.global.security.util.SecurityUser;
-import org.example.flowday.standard.util.Util;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -133,22 +123,23 @@ public class PostService {
     }
 
 
-    public void addGenFileByUrl(Post post, String typeCode, String type2Code, int fileNo, String url) {
-        genFileService.addGenFileByUrl("post", post.getId(), typeCode, type2Code, fileNo, url);
-    }
+//    public void addGenFileByUrl(Post post, String typeCode, String type2Code, int fileNo, String url) {
+//        genFileService.addGenFileByUrl("post", post.getId(), typeCode, type2Code, fileNo, url);
+//    }
+//
+//    public Post getPosteById(Long id) {
+//        return postRepository.findById(id).orElse(null);
+//    }
 
-    public Post getPosteById(Long id) {
-        return postRepository.findById(id).orElse(null);
-    }
-
-    public Map<String,Object> getForPrintArticleById(Long id) {
-        Post post = getPosteById(id);
-        Map<String, GenFile> genFileMap = genFileService.getRelGenFileMap(post);
-
-
-        post.getExtra().put("genFileMap", genFileMap);
-
-        return post.getExtra();
-    }
+    //디버깅용
+//    public Map<String,Object> getForPrintPostById(Long id) {
+//        Post post = getPosteById(id);
+//        Map<String, GenFile> genFileMap = genFileService.getRelGenFileMap(post);
+//
+//
+//        post.getExtra().put("genFileMap", genFileMap);
+//
+//        return post.getExtra();
+//    }
 
 }
