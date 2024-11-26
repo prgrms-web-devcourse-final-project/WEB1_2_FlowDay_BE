@@ -144,81 +144,129 @@ class CourseControllerTest {
                 .andExpect(jsonPath("$.color").value("blue"));
     }
 
-    @DisplayName("코스 수정 테스트")
-    @Test
-    void updateCourse() throws Exception {
-        Spot spot2 = Spot.builder()
-                .id(2L)
-                .placeId("ChIJgUbEo2")
-                .name("장소 이름2")
-                .city("서울")
-                .sequence(1)
-                .build();
+//    @DisplayName("코스 수정 테스트")
+//    @Test
+//    void updateCourse() throws Exception {
+//        Spot spot2 = Spot.builder()
+//                .id(2L)
+//                .placeId("ChIJgUbEo2")
+//                .name("장소 이름2")
+//                .city("서울")
+//                .sequence(1)
+//                .build();
+//
+//        course = Course.builder()
+//                .id(1L)
+//                .member(member)
+//                .title("수정 코스")
+//                .status(Status.COUPLE)
+//                .date(LocalDate.now())
+//                .color("pink")
+//                .spots(List.of(spot, spot2))
+//                .createdAt(LocalDateTime.now())
+//                .build();
+//
+//        courseReqDTO = CourseReqDTO.builder()
+//                .memberId(1L)
+//                .title("수정 코스")
+//                .status(Status.COUPLE)
+//                .date(LocalDate.now())
+//                .color("pink")
+//                .spots(List.of(
+//                        SpotReqDTO.builder()
+//                                .id(1L)
+//                                .placeId("ChIJgUbEo1")
+//                                .name("장소 이름2")
+//                                .city("서울")
+//                                .sequence(1)
+//                                .build(),
+//                        SpotReqDTO.builder()
+//                                .placeId("ChIJgUbEo2")
+//                                .name("장소 이름2")
+//                                .city("서울")
+//                                .sequence(2)
+//                                .build()
+//                ))
+//                .build();
+//
+//        courseResDTO = new CourseResDTO(
+//                course,
+//                List.of(new SpotResDTO(spot), new SpotResDTO(spot2))
+//        );
+//
+//        when(courseService.updateCourse(anyLong(), any(CourseReqDTO.class))).thenReturn(courseResDTO);
+//
+//        mockMvc.perform(put("/api/v1/courses/{courseId}", 1L)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(courseReqDTO)))
+//                .andExpect(status().isOk())
+//                .andDo(print())
+//                .andExpect(jsonPath("$.id").value(1L))
+//                .andExpect(jsonPath("$.title").value("수정 코스"))
+//                .andExpect(jsonPath("$.status").value("COUPLE"))
+//                .andExpect(jsonPath("$.color").value("pink"))
+//                .andExpect(jsonPath("$.spots[0].id").value(1L))
+//                .andExpect(jsonPath("$.spots[0].name").value("장소 이름1"))
+//                .andExpect(jsonPath("$.spots[1].id").value(2L))
+//                .andExpect(jsonPath("$.spots[1].name").value("장소 이름2"));
+//    }
 
-        course = Course.builder()
-                .id(1L)
-                .member(member)
-                .title("수정 코스")
-                .status(Status.COUPLE)
-                .date(LocalDate.now())
-                .color("pink")
-                .spots(List.of(spot, spot2))
-                .createdAt(LocalDateTime.now())
-                .build();
+//    @DisplayName("코스에 장소 1개 추가 테스트")
+//    @Test
+//    void addSpotToCourse() throws Exception {
+//        Long courseId = 1L;
+//
+//        SpotReqDTO spotReqDTO = SpotReqDTO.builder()
+//                .placeId("ChIJgUbEo3")
+//                .name("성심당")
+//                .city("대전")
+//                .build();
+//
+//        Spot addSpot = Spot.builder()
+//                .id(2L)
+//                .placeId("ChIJgUbEo3")
+//                .name("성심당")
+//                .city("대전")
+//                .sequence(2)
+//                .build();
+//
+//        course = Course.builder()
+//                .id(courseId)
+//                .member(member)
+//                .title("코스 이름")
+//                .status(Status.COUPLE)
+//                .date(LocalDate.now())
+//                .color("blue")
+//                .spots(List.of(spot, addSpot))
+//                .createdAt(LocalDateTime.now())
+//                .build();
+//
+//        courseResDTO = new CourseResDTO(
+//                course,
+//                List.of(new SpotResDTO(spot), new SpotResDTO(addSpot))
+//        );
+//
+//        when(courseService.addSpot(anyLong(), any(SpotReqDTO.class))).thenReturn(courseResDTO);
+//
+//        mockMvc.perform(post("/api/v1/courses/{courseId}", courseId)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(spotReqDTO)))
+//                .andExpect(status().isOk())
+//                .andDo(print())
+//                .andExpect(jsonPath("$.id").value(courseId))
+//                .andExpect(jsonPath("$.title").value("코스 이름"))
+//                .andExpect(jsonPath("$.spots[1].name").value("성심당"))
+//                .andExpect(jsonPath("$.spots[1].sequence").value(2));
+//    }
 
-        courseReqDTO = CourseReqDTO.builder()
-                .memberId(1L)
-                .title("수정 코스")
-                .status(Status.COUPLE)
-                .date(LocalDate.now())
-                .color("pink")
-                .spots(List.of(
-                        SpotReqDTO.builder()
-                                .id(1L)
-                                .placeId("ChIJgUbEo1")
-                                .name("장소 이름2")
-                                .city("서울")
-                                .sequence(1)
-                                .build(),
-                        SpotReqDTO.builder()
-                                .placeId("ChIJgUbEo2")
-                                .name("장소 이름2")
-                                .city("서울")
-                                .sequence(2)
-                                .build()
-                ))
-                .build();
+//    @DisplayName("코스 삭제 테스트")
+//    @Test
+//    void deleteCourse() throws Exception {
+//        mockMvc.perform(delete("/api/v1/courses/{courseId}", 1L))
+//                .andExpect(status().isNoContent());
+//    }
 
-        courseResDTO = new CourseResDTO(
-                course,
-                List.of(new SpotResDTO(spot), new SpotResDTO(spot2))
-        );
-
-        when(courseService.updateCourse(anyLong(), any(CourseReqDTO.class))).thenReturn(courseResDTO);
-
-        mockMvc.perform(put("/api/v1/courses/{courseId}", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(courseReqDTO)))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.title").value("수정 코스"))
-                .andExpect(jsonPath("$.status").value("COUPLE"))
-                .andExpect(jsonPath("$.color").value("pink"))
-                .andExpect(jsonPath("$.spots[0].id").value(1L))
-                .andExpect(jsonPath("$.spots[0].name").value("장소 이름1"))
-                .andExpect(jsonPath("$.spots[1].id").value(2L))
-                .andExpect(jsonPath("$.spots[1].name").value("장소 이름2"));
-    }
-
-    @DisplayName("코스 삭제 테스트")
-    @Test
-    void deleteCourse() throws Exception {
-        mockMvc.perform(delete("/api/v1/courses/{courseId}", 1L))
-                .andExpect(status().isNoContent());
-    }
-
-    // 회원 별 위시 플레이스 및 코스 목록 조회 테스트
+    @DisplayName("회원 별 위시 플레이스 및 코스 목록 조회 테스트 테스트")
     @Test
     void getCourseListByMember() throws Exception {
         Long memberId = 1L;

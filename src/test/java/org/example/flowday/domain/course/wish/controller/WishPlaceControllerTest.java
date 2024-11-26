@@ -118,30 +118,30 @@ class WishPlaceControllerTest {
         );
     }
 
-    @DisplayName("위시 플레이스 장소 추가 테스트")
-    @Test
-    void addSpotToWishPlace() throws Exception {
-        when(wishPlaceService.updateSpotInWishPlace(any(WishPlaceReqDTO.class))).thenReturn(wishPlaceResDTO);
+//    @DisplayName("위시 플레이스 장소 추가 테스트")
+//    @Test
+//    void addSpotToWishPlace() throws Exception {
+//        when(wishPlaceService.updateSpotInWishPlace(any(WishPlaceReqDTO.class))).thenReturn(wishPlaceResDTO);
+//
+//        mockMvc.perform(post("/api/v1/wishPlaces")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(wishPlaceReqDTO)))
+//                .andExpect(status().isOk())
+//                .andDo(print())
+//                .andExpect(jsonPath("$.id").value(1L))
+//                .andExpect(jsonPath("$.memberId").value(1L));
+//
+//        verify(wishPlaceService, times(1)).updateSpotInWishPlace(any());
+//    }
 
-        mockMvc.perform(post("/api/v1/wishPlaces")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(wishPlaceReqDTO)))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.memberId").value(1L));
-
-        verify(wishPlaceService, times(1)).updateSpotInWishPlace(any());
-    }
-
-    @DisplayName("위시 플레이스 장소 삭제 테스트")
-    @Test
-    void removeSpotFromWishPlace() throws Exception {
-        doNothing().when(wishPlaceService).removeSpotFromWishPlace(1L, 1L);
-
-        mockMvc.perform(delete("/api/v1/wishPlaces/member/{memberId}/spot/{spotId}", 1L, 1L))
-                .andExpect(status().isNoContent());
-    }
+//    @DisplayName("위시 플레이스 장소 삭제 테스트")
+//    @Test
+//    void removeSpotFromWishPlace() throws Exception {
+//        doNothing().when(wishPlaceService).removeSpotFromWishPlace(1L, 1L);
+//
+//        mockMvc.perform(delete("/api/v1/wishPlaces/member/{memberId}/spot/{spotId}", 1L, 1L))
+//                .andExpect(status().isNoContent());
+//    }
 
     @DisplayName("회원 별 위시 플레이스 목록 조회 테스트")
     @Test

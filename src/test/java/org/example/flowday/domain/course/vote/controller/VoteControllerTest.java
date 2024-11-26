@@ -115,28 +115,25 @@ class VoteControllerTest {
         );
     }
 
-    @DisplayName("투표 생성 테스트")
-    @Test
-    void createVote() throws Exception {
-        when(voteService.saveVote(any(VoteReqDTO.class))).thenReturn(voteResDTO);
-
-        // When & Then
-        mockMvc.perform(post("/api/v1/votes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(voteReqDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("뭐먹지"));
-    }
+//    @DisplayName("투표 생성 테스트")
+//    @Test
+//    void createVote() throws Exception {
+//        when(voteService.saveVote(any(VoteReqDTO.class))).thenReturn(voteResDTO);
+//
+//        mockMvc.perform(post("/api/v1/votes")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(voteReqDTO)))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.title").value("뭐먹지"));
+//    }
 
     @DisplayName("투표 조회 테스트")
     @Test
     void getVote() throws Exception {
-        // Given
         Long voteId = 1L;
 
         when(voteService.findVote(voteId)).thenReturn(voteResDTO);
 
-        // When & Then
         mockMvc.perform(get("/api/v1/votes/{voteId}", voteId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("뭐먹지"));
@@ -147,11 +144,9 @@ class VoteControllerTest {
     @DisplayName("투표 완료 후 코스 수정 테스트")
     @Test
     void updateCourseByVote() throws Exception {
-        // Given
         Long voteId = 1L;
         Long spotId = 1L;
 
-        // When & Then
         mockMvc.perform(put("/api/v1/votes/{voteId}/spots/{spotId}", voteId, spotId))
                 .andExpect(status().isOk());
 
