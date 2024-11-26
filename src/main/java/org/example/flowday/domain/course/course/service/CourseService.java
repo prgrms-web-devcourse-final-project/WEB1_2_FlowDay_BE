@@ -42,7 +42,7 @@ public class CourseService {
     // 코스 생성
     public CourseResDTO saveCourse(CourseReqDTO courseReqDTO) {
         try {
-            Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElseThrow(MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException);
+            Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
             Course course = Course.builder()
                     .member(member)
                     .title(courseReqDTO.getTitle())
@@ -167,7 +167,7 @@ public class CourseService {
 
     // 회원 별 코스 목록 조회
     public List<CourseResDTO> findCourseByMember(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException);
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         Long partnerId = member.getPartnerId() != null ? member.getPartnerId() : null;
 
         List<Course> memberCourses = courseRepository.findAllByMemberId(memberId);

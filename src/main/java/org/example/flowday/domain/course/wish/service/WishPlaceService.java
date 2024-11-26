@@ -30,7 +30,7 @@ public class WishPlaceService {
 
     // 위시 플레이스 생성
     public void saveWishPlace(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException);
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
         WishPlace wishPlace = WishPlace.builder()
                 .member(member)
@@ -76,7 +76,7 @@ public class WishPlaceService {
 
     // 회원 별 위시 플레이스 목록 조회
     public List<WishPlaceResDTO> getMemberAndPartnerWishPlaces(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException);
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         Long partnerId = member.getPartnerId();
 
         List<WishPlace> wishPlaces = new ArrayList<>(wishPlaceRepository.findAllByMemberId(memberId));
