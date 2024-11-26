@@ -14,7 +14,12 @@ import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.mapper.PostMapper;
 import org.example.flowday.domain.post.post.repository.PostRepository;
+import org.example.flowday.global.config.AppConfig;
+import org.example.flowday.global.fileupload.entity.GenFile;
+import org.example.flowday.global.fileupload.repository.GenFileRepository;
+import org.example.flowday.global.fileupload.service.GenFileService;
 import org.example.flowday.global.security.util.SecurityUser;
+import org.example.flowday.standard.util.Util;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +27,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +42,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final MemberRepository memberRepository;
     private final CourseRepository courseRepository;
+    private final GenFileService  genFileService;
 
     // 게시글 생성
     @Transactional
@@ -101,4 +109,23 @@ public class PostService {
     public void deletePost(Long id) {
         postRepository.deleteById(id);
     }
+
+    public void addGenFileByUrl(Post post, String typeCode, String type2Code, int fileNo, String url) {
+        genFileService.addGenFileByUrl("post", post.getId(), typeCode, type2Code, fileNo, url);
+    }
+
+    public Post getPosteById(Long id) {
+        return postRepository.findById(id).orElse(null);
+    }
+
+    public Map<String,Object> getForPrintArticleById(Long id) {
+        Post post = getPosteById(id);
+        Map<String, GenFile> genFileMap = genFileService.getRelGenFileMap(post);
+
+        post.getExtra().put("age", 22);
+        post.getExtra().put("genFileMap", genFileMap);
+
+        return post.getExtra();
+    }
+
 }

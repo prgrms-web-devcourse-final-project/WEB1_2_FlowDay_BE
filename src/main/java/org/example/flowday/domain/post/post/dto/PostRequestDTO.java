@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.example.flowday.domain.post.post.entity.Status;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartRequest;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,5 +29,6 @@ public class PostRequestDTO {
 
     private Status status;
 
-    private MultipartFile image;
+    private List<MultipartFile> images;
+
 }

@@ -3,6 +3,7 @@ package org.example.flowday.global.initData;
 
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.course.dto.CourseReqDTO;
+import org.example.flowday.domain.course.course.dto.CourseResDTO;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.course.course.repository.CourseRepository;
@@ -16,6 +17,7 @@ import org.example.flowday.domain.post.comment.comment.repository.ReplyRepositor
 import org.example.flowday.domain.post.comment.comment.service.ReplyService;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.repository.PostRepository;
+import org.example.flowday.domain.post.post.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Configuration
 @RequiredArgsConstructor
@@ -44,6 +47,7 @@ public class NotProd {
     private final MemberRepository memberRepository;
     private final CourseRepository  courseRepository;
     private final SpotRepository spotRepository;
+    private final PostService postService;
     @Autowired
     private CourseService courseService;
 
@@ -120,7 +124,20 @@ public class NotProd {
                 .spots(spots)
                 .build();
 
-        courseService.saveCourse(courseRequest);
+        CourseResDTO courseResDTO = courseService.saveCourse(courseRequest);
+        Course course = courseRepository.findById(courseResDTO.getId()).get();
+
+        Post post = Post.builder()
+                .writer(member)
+                .contents("게시글 내용")
+                .title("게시글 제목 ")
+                .status(org.example.flowday.domain.post.post.entity.Status.PUBLIC)
+                .course(course)
+                .build();
+        Post savePost = postRepository.save(post);
+
+        postService.addGenFileByUrl(savePost, "common", "inbody", 1, "https://picsum.photos/200/300");
+        postService.addGenFileByUrl(savePost, "common", "inbody", 2, "https://picsum.photos/200/300");
 
 
     }

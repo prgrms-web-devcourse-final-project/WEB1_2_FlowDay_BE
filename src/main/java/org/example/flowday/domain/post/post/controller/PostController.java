@@ -1,9 +1,12 @@
 package org.example.flowday.domain.post.post.controller;
 
+import ch.qos.logback.core.model.Model;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
+import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.service.PostService;
 import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.data.domain.Page;
@@ -13,21 +16,32 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartRequest;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
+@Slf4j
 public class PostController {
 
     private final PostService postService;
 
     // 게시글 생성
     @PostMapping("")
-    public ResponseEntity<PostResponseDTO> createPost(@Valid @RequestBody PostRequestDTO postRequestDto , @AuthenticationPrincipal SecurityUser user) {
+    public ResponseEntity<PostResponseDTO> createPost(@Valid @ModelAttribute  PostRequestDTO postRequestDto , @AuthenticationPrincipal SecurityUser user)  {
         PostResponseDTO createdPost = postService.createPost(postRequestDto,user.getId());
+
+        List<MultipartFile> images = postRequestDto.getImages();
+        for (MultipartFile multipartFile : images) {
+            log.warn( "images: " , multipartFile);
+        }
+
+
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
@@ -62,4 +76,11 @@ public class PostController {
 //        postService.deletePost(id);
 //        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 //    }
+
+    @GetMapping("/{id}/json/forDebug")
+    @ResponseBody
+    public Map<String,Object> showDetailJson(Model model, @PathVariable Long id) {
+        return postService.getForPrintArticleById(id);
+    }
+
 }

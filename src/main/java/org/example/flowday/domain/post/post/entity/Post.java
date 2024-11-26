@@ -17,7 +17,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "posts")
@@ -51,6 +53,9 @@ public class Post {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Transient
+    private Map<String, Object> extra = new LinkedHashMap<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Member writer;
