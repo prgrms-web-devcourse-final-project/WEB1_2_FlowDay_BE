@@ -1,13 +1,14 @@
 package org.example.flowday.global.security.util;
 
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.Map;
 
 @Service
 public class SecurityUserService implements UserDetailsService {
@@ -21,13 +22,21 @@ public class SecurityUserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {
         System.out.println("Looking for user with loginId: " + loginId);
-        Optional<Member> member = memberRepository.findByLoginId(loginId);
-        if (member.isPresent()) {
-            System.out.println("find successful");
-            return new SecurityUser(member.get());
-        } else {
-            System.out.println("find failed");
-            throw new UsernameNotFoundException("User not found with loginId: " + loginId);
-        }
+        Map<String,Object> result = memberRepository.findSecurityInfoByLoginId(loginId).orElseThrow(() -> {
+
+            System.out.println("User not found with loginId: " + loginId);
+
+            return new UsernameNotFoundException("User not found with loginId");
+
+        });
+        System.out.println("find successful");
+
+        Member member = new Member();
+        member.setId((Long) result.get("id"));
+        member.setLoginId(loginId);
+        member.setPw(String.valueOf(result.get("pw")));
+        member.setRole((Role) result.get("role"));
+
+        return new SecurityUser(member);
     }
 }

@@ -1,11 +1,14 @@
 package org.example.flowday.domain.member.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.course.entity.Course;
+import org.example.flowday.domain.member.exception.MemberException;
+import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,6 +20,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import org.springframework.format.annotation.DateTimeFormat;
+
 @Entity
 @Data
 @Builder
@@ -24,6 +31,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
 public class Member {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,8 +55,10 @@ public class Member {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
-    private LocalDate dateOfRelationshipStart;
-    private LocalDate dateOfBirth;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate relationshipDt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+    private LocalDate birthDt;
 
     @OneToMany(mappedBy = "member")
     private List<Course> courses;
@@ -60,4 +70,34 @@ public class Member {
     private List<Post> posts;
 
 
+    public void filterAndValidate(Member member) throws MemberTaskException {
+        if( !isValidCharacters(member.loginId) ) {
+            throw MemberException.INVALID_CHAR_FORMAT.getMemberTaskException();
+        }
+        if (!isValidEmail(member.email)) {
+            throw MemberException.INVALID_EMAIL_FORMAT.getMemberTaskException();
+        }
+        if (!isValidPhoneNumber(member.phoneNum)) {
+            throw MemberException.INVALID_PHONENUM_FORMAT.getMemberTaskException();
+        }
+    }
+
+    // 특수문자 필터링 메소드
+    private Boolean isValidCharacters(String input) {
+        if (input != null) {
+            // 특수문자 필터링: 알파벳, 숫자, @, ., -, _, +, 공백만 허용
+            return !input.matches(".*[^a-zA-Z0-9@._ -].*");
+        }
+        return false;
+    }
+
+    // 이메일 유효성 검사
+    private boolean isValidEmail(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+    }
+
+    // 전화번호 유효성 검사 (예시: 숫자만 허용)
+    private boolean isValidPhoneNumber(String phoneNum) {
+        return phoneNum != null && phoneNum.matches("^[0-9]+$");
+    }
 }
