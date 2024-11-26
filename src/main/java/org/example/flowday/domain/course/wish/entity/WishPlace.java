@@ -1,12 +1,10 @@
 package org.example.flowday.domain.course.wish.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.member.entity.Member;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -21,9 +19,8 @@ public class WishPlace {
 
     @JoinColumn(name = "member_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @NotNull(message = "Member cannot be null")
     private Member member;
 
     @OneToMany(mappedBy = "wishPlace", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Spot> spots = new ArrayList<>();
+    private List<Spot> spots;
 }
