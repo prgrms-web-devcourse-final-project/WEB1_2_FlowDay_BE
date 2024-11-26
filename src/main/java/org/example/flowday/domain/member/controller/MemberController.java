@@ -78,17 +78,24 @@ public class MemberController {
             // EmailService를 통해 임시 비밀번호 이메일 발송
             memberService.sendTempPasswordEmail(request.getLoginId(), request.getEmail());
 
-            return ResponseEntity.ok("임시 비밀번호를 이메일로 전송했습니다");
+            return ResponseEntity.ok("임시 비밀번호를 "+request.getEmail()+"로 전송했습니다");
+        } catch(MemberTaskException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("임시 비밀번호 전송을 실패하였습니다");
         }
     }
 
-    // 로그아웃
+    // 로그인 ( Swagger 전용 )
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@AuthenticationPrincipal SecurityUser user){
+        return ResponseEntity.ok("{\"message\":\"Login successful\"}");
+    }
+
+    // 로그아웃 ( Swagger 전용 )
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@AuthenticationPrincipal SecurityUser user){
-        memberService.logout(user.getId());
-        return ResponseEntity.ok("logout");
+        return ResponseEntity.ok("{\"message\":\"Logout successful\"}");
     }
 
 

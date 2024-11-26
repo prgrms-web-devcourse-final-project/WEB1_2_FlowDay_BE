@@ -123,7 +123,7 @@ public class MemberService {
 
         // 이메일 내용 설정
         String title = "FlowDay 비밀번호 재설정 이메일 입니다.";
-        String from = "jy037211@gmail.com";
+        String from = "FlowDay";
         String content =
                 System.lineSeparator() +
                         System.lineSeparator() +
@@ -146,11 +146,9 @@ public class MemberService {
     }
     // 임시 비밀번호 생성 메서드 ( called by sendTempPasswordEmail )
     @Transactional
-    public String setTemplatePassword(String loginId, String email) {
+    public String setTemplatePassword(String loginId, String email) throws MemberTaskException {
 
         String CHAR_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-
-        Member member = memberRepository.findByLoginIdAndEmail(loginId, email).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
         SecureRandom random = new SecureRandom();
         StringBuilder tempPassword = new StringBuilder(6);
@@ -159,24 +157,14 @@ public class MemberService {
             tempPassword.append(CHAR_SET.charAt(index));
         }
 
-        String templatePassword = tempPassword.toString();
+        String templatePassword = passwordEncoder.encode(tempPassword.toString());
 
-        member.setPw(passwordEncoder.encode(templatePassword));
-        memberRepository.save(member);
-
-        return templatePassword;
-
-    }
-
-    // 로그아웃
-    @Transactional
-    public void logout (Long id){
-
-        Member member = memberRepository.findById(id).get();
-
-        member.setRefreshToken(null);
-
-        memberRepository.save(member);
+        try {
+            memberRepository.UpdatePasswordByLoginIdAndEmail(loginId, email, templatePassword);
+        } catch (Exception e) {
+            throw MemberException.UPDATE_PASSWORD_FAILED.getMemberTaskException();
+        }
+        return tempPassword.toString();
 
     }
 
@@ -332,13 +320,16 @@ public class MemberService {
     // 커플 등록시 이름으로 ID 조회
     public MemberDTO.FindPartnerResponseDTO getPartner(String name) {
 
-        Optional<Member> member = memberRepository.findByName(name);
+        Map<String, Object> result = memberRepository.findByName(name).orElseThrow(MemberException.MEMBER_NAME_NOT_FOUND::getMemberTaskException);
 
-        if (member.isPresent()) {
-            return new MemberDTO.FindPartnerResponseDTO(member.get());
-        } else {
-            throw MemberException.MEMBER_NAME_NOT_FOUND.getMemberTaskException();
-        }
+        Member member = new Member();
+        member.setId((Long) result.get("id"));
+        member.setName((String) result.get("name"));
+        member.setEmail((String) result.get("email"));
+        member.setPhoneNum((String) result.get("num"));
+        member.setProfileImage((String) result.get("image"));
+
+        return new MemberDTO.FindPartnerResponseDTO(member);
 
     }
 

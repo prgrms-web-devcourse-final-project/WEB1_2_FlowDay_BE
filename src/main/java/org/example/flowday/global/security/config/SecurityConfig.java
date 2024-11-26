@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.global.security.filter.JwtFilter;
 import org.example.flowday.global.security.filter.LoginFilter;
+import org.example.flowday.global.security.filter.LogoutFilter;
 import org.example.flowday.global.security.handler.CustomAuthenticationFailureHandler;
 import org.example.flowday.global.security.handler.CustomAuthenticationSuccessHandler;
 import org.example.flowday.global.security.util.JwtUtil;
@@ -81,6 +82,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable);
 
         http
+                .logout(AbstractHttpConfigurer::disable);
+
+        http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 PathRequest.toStaticResources().atCommonLocations(),
@@ -109,6 +113,9 @@ public class SecurityConfig {
 
         http
                 .addFilterBefore(new JwtFilter(jwtUtil), OAuth2AuthorizationRequestRedirectFilter.class);
+
+        http
+                .addFilterAt(new LogoutFilter(jwtUtil, memberRepository), org.springframework.security.web.authentication.logout.LogoutFilter.class);
 
         http
                 .oauth2Login((oauth2) -> oauth2

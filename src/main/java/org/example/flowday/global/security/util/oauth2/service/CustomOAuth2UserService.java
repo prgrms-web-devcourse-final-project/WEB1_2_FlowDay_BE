@@ -48,8 +48,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             return null;
         }
         String username = oAuth2Response.getProvider()+" "+oAuth2Response.getProviderId();
-        Optional<Member> existData = memberRepository.findByLoginId(username);
-        if (existData.isEmpty()) {
+
+        if (!memberRepository.existsByLoginId(username)) {
 
             Member userEntity = new Member();
             userEntity.setLoginId(username);
@@ -57,12 +57,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             memberRepository.save(userEntity);
 
-        }
-        else {
-
-            existData.get().setLoginId(username);
-
-            memberRepository.save(existData.get());
         }
 
         return new CustomOAuth2User(oAuth2Response);
