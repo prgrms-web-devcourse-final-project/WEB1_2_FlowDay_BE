@@ -26,6 +26,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
         List<Post> content = queryFactory.
                 selectFrom(post)
+                .where(post.status.eq(Status.PUBLIC))
                 .orderBy(post.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
