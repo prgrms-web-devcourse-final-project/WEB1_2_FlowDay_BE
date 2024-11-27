@@ -43,7 +43,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
     }
 
     @Override
-    public Page<Post> searchCouplePost(Pageable pageable, Long memberId, Long partnerId) {
+    public Page<Post> searchCouplePost(Pageable pageable , Long memberId , Long partnerId) {
         QPost post = QPost.post;
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -86,6 +86,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
 
         return new PageImpl<>(posts, pageable, posts.size());
+
 
     }
 }

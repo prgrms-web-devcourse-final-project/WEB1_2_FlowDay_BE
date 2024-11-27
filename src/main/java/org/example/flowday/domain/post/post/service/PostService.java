@@ -20,7 +20,6 @@ import org.example.flowday.domain.post.post.repository.PostRepository;
 import org.example.flowday.global.fileupload.entity.GenFile;
 import org.example.flowday.global.fileupload.service.GenFileService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,7 +99,9 @@ public class PostService {
         return postMapper.toResponseDTO(post, spotResDTOs, imageDTOs);
     }
 
-    // 모든 게시글 조회 최신순 - PUBLIC
+
+
+    // 모든 게시글 조회 최신순
     public Page<PostBriefResponseDTO> getAllPosts(Pageable pageable) {
         Page<Post> posts = postRepository.searchLatestPost(pageable);
 

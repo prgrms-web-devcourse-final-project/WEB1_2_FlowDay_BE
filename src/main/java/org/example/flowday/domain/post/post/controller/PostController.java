@@ -19,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
+
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
@@ -62,6 +63,7 @@ public class PostController {
 
         return ResponseEntity.ok().body(result);
     }
+
 
     // Private 조건의 리스트 조회
     @GetMapping("/all/private")
