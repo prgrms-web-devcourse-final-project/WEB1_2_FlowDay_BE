@@ -99,6 +99,8 @@ public class PostService {
         return postMapper.toResponseDTO(post, spotResDTOs, imageDTOs);
     }
 
+
+
     // 모든 게시글 조회 최신순
     public Page<PostBriefResponseDTO> getAllPosts(Pageable pageable) {
         Page<Post> posts = postRepository.searchLatestPost(pageable);
@@ -122,6 +124,21 @@ public class PostService {
             String imageUrl = genFileService.getFirstImageUrlByPost(post);
             return new PostBriefResponseDTO(post, imageUrl);
         });
+
+
+    }
+
+    //내가 작성한 Private 게시글만 보기
+    public Page<PostBriefResponseDTO> findAllPrivate(PageRequest pageable, Long userId) {
+        Member member = memberRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 멤버가 없습니다 "));
+
+        Page<Post> posts = postRepository.searchPrivatePost(pageable, userId);
+
+        return posts.map(post -> {
+            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            return new PostBriefResponseDTO(post, imageUrl);
+        });
+
 
     }
 

@@ -11,4 +11,8 @@ public interface PostRepositoryCustom {
     Page<Post> searchLatestPost(Pageable pageable);
 
     Page<Post> searchCouplePost(Pageable pageable , Long memberId , Long partnerId);
+
+    Page<Post> searchPrivatePost(Pageable pageable, Long userId);
+
+
 }
