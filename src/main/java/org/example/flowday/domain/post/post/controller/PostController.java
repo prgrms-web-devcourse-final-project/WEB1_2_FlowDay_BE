@@ -54,6 +54,16 @@ public class PostController {
 
     }
 
+    // 모든 게시글 인기순 조회
+    @GetMapping("/all/mostLike")
+    public ResponseEntity<Page<PostBriefResponseDTO>> getMostPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<PostBriefResponseDTO> result = postService.getAllPosts(pageable);
+
+        return ResponseEntity.ok().body(result);
+
+    }
+
     //커플 게시글 조회
     @GetMapping("/all/couple")
     public ResponseEntity<Page<PostBriefResponseDTO>> getAllCouplePosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
@@ -64,7 +74,6 @@ public class PostController {
         return ResponseEntity.ok().body(result);
     }
 
-
     // Private 조건의 리스트 조회
     @GetMapping("/all/private")
     public ResponseEntity<Page<PostBriefResponseDTO>> getAllPrivatePosts( @RequestParam(defaultValue = "0") int page , @RequestParam(defaultValue = "20") int pageSize,
@@ -74,6 +83,36 @@ public class PostController {
 
         return ResponseEntity.ok().body(results);
 
+    }
+
+    //나의 게시글 조회
+    @GetMapping("/all")
+    public ResponseEntity<Page<PostBriefResponseDTO>> getAllMyPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
+                                                                        @AuthenticationPrincipal SecurityUser user) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<PostBriefResponseDTO> result = postService.findAllMyPosts(pageable, user.getId());
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    //내가 좋아요 누른 게시글 조회
+    @GetMapping("/all/likes")
+    public ResponseEntity<Page<PostBriefResponseDTO>> getAllMyLikesPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
+                                                                        @AuthenticationPrincipal SecurityUser user) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<PostBriefResponseDTO> result = postService.findAllMyLikePosts(pageable, user.getId());
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    //내가 댓글 단 게시글 조회
+    @GetMapping("/all/reply")
+    public ResponseEntity<Page<PostBriefResponseDTO>> getAllMyReplyPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
+                                                                         @AuthenticationPrincipal SecurityUser user) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<PostBriefResponseDTO> result = postService.findAllMyReplyPosts(pageable, user.getId());
+
+        return ResponseEntity.ok().body(result);
     }
 
 
