@@ -111,6 +111,21 @@ public class PostService {
 
     }
 
+    //커플 게시글 리스트 조회
+    public Page<PostBriefResponseDTO> findAllCouplePosts(Pageable pageable , Long userId) {
+        Member member = memberRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 멤버가 없습니다 "));
+        Long partnerId = (member.getPartnerId() != null) ? member.getPartnerId(): null;
+
+        Page<Post> posts = postRepository.searchCouplePost(pageable, userId, partnerId);
+
+        return posts.map(post -> {
+            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            return new PostBriefResponseDTO(post, imageUrl);
+        });
+
+    }
+
+
 
 
 
@@ -138,6 +153,7 @@ public class PostService {
     public void deletePost(Long id) {
         postRepository.deleteById(id);
     }
+
 
 
 //    public void addGenFileByUrl(Post post, String typeCode, String type2Code, int fileNo, String url) {

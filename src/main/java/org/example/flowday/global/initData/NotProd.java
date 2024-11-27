@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -48,6 +49,7 @@ public class NotProd {
     private final CourseRepository  courseRepository;
     private final SpotRepository spotRepository;
     private final PostService postService;
+    private final PasswordEncoder passwordEncoder;
     @Autowired
     private CourseService courseService;
 
@@ -71,22 +73,30 @@ public class NotProd {
         Member member = Member.builder()
                 .name("member1")
                 .email("test1@test.com")
-                .loginId("login1")
-                .pw("1234")
+                .loginId("test1")
+                .pw(passwordEncoder.encode("1234"))
                 .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
+
         memberRepository.save(member);
 
         Member member2 = Member.builder()
                 .name("member2")
                 .email("test2@test.com")
-                .loginId("login2")
-                .pw("1234")
+                .loginId("test2")
+                .pw(passwordEncoder.encode("1234"))
                 .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(member2);
+
+        member.setPartnerId(member2.getId());
+        member2.setPartnerId(member.getId());
+
+        memberRepository.save(member);
+        memberRepository.save(member2);
+
 
         // 장소 생성
         SpotReqDTO spot1 = SpotReqDTO.builder()
@@ -101,19 +111,20 @@ public class NotProd {
                 .placeId("place2")
                 .name("밥집")
                 .comment("코멘트")
-                .sequence(1)
+                .sequence(2)
                 .build();
         SpotReqDTO spot3 = SpotReqDTO.builder()
                 .city("서울 종로")
                 .placeId("place3")
                 .name("영화관")
                 .comment("코멘트")
-                .sequence(1)
+                .sequence(3)
                 .build();
 
         List<SpotReqDTO> spots = new ArrayList<>();
         spots.add(spot1);
         spots.add(spot2);
+        spots.add(spot3);
 
         CourseReqDTO courseRequest = CourseReqDTO.builder()
                 .color("color")
@@ -126,6 +137,29 @@ public class NotProd {
 
         CourseResDTO courseResDTO = courseService.saveCourse(courseRequest);
         Course course = courseRepository.findById(courseResDTO.getId()).get();
+
+        Post post1 = Post.builder()
+                .writer(member)
+                .title("title 111")
+                .contents("contents 111")
+                .status(org.example.flowday.domain.post.post.entity.Status.COUPLE)
+                .region("seoul1 seoul2")
+                .season("spring summer")
+                .build();
+
+        postRepository.save(post1);
+
+        Post post2 = Post.builder()
+                .writer(member2)
+                .title("title 222")
+                .contents("contents 222")
+                .status(org.example.flowday.domain.post.post.entity.Status.COUPLE)
+                .region("seoul22 seoul22")
+                .season("spring22 summer22")
+                .build();
+
+        postRepository.save(post2);
+
 
 //        Post post = Post.builder()
 //                .writer(member)

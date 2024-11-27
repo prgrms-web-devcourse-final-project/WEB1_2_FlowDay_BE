@@ -54,6 +54,16 @@ public class PostController {
 
     }
 
+    //커플 게시글 조회
+    @GetMapping("/all/couple")
+    public ResponseEntity<Page<PostBriefResponseDTO>> getAllCouplePosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
+                                                                        @AuthenticationPrincipal SecurityUser user) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<PostBriefResponseDTO> result = postService.findAllCouplePosts(pageable, user.getId());
+
+        return ResponseEntity.ok().body(result);
+    }
+
     // 게시글 수정
 //    @PutMapping("/{id}")
 //    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequestDTO updatedPostDto ,@AuthenticationPrincipal SecurityUser user) {
