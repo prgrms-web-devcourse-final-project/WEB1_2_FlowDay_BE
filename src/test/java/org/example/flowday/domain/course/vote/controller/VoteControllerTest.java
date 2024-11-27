@@ -3,104 +3,75 @@ package org.example.flowday.domain.course.vote.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.entity.Status;
+import org.example.flowday.domain.course.course.repository.CourseRepository;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
-import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.vote.dto.VoteReqDTO;
 import org.example.flowday.domain.course.vote.dto.VoteResDTO;
-import org.example.flowday.domain.course.vote.entity.Vote;
 import org.example.flowday.domain.course.vote.service.VoteService;
 import org.example.flowday.domain.member.entity.Member;
-import org.example.flowday.domain.member.entity.Role;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.example.flowday.domain.member.repository.MemberRepository;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VoteControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
     private VoteService voteService;
 
-    @InjectMocks
-    private VoteController voteController;
-
-    private MockMvc mockMvc;
+    @Autowired
     private ObjectMapper objectMapper;
 
     private Member member;
-    private Spot spot;
     private Course course;
-    private Vote vote;
     private VoteReqDTO voteReqDTO;
     private VoteResDTO voteResDTO;
+    @Autowired
+    private CourseRepository courseRepository;
 
-    @BeforeEach
+    @BeforeAll
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(voteController).build();
-        objectMapper = new ObjectMapper();
-
         member = Member.builder()
-                .id(1L)
-                .loginId("testId")
-                .pw("testPw")
-                .email("test@test.com")
                 .name("tester")
-                .phoneNum("010-1234-5678")
-                .refreshToken("refresh_token_value")
-                .role(Role.ROLE_USER)
+                .loginId("testId")
+                .pw("password")
                 .build();
 
-        spot = Spot.builder()
-                .id(1L)
-                .placeId("ChIJgUbEo1")
-                .name("장소 이름1")
-                .city("서울")
-                .sequence(1)
-                .build();
+        memberRepository.save(member);
 
         course = Course.builder()
-                .id(1L)
                 .member(member)
-                .title("Test Course")
+                .title("코스 이름")
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("blue")
-                .spots(List.of(spot))
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        vote = Vote.builder()
-                .id(1L)
-                .course(course)
-                .title("뭐먹지")
-                .spots(List.of(spot))
-                .build();
-
-        voteReqDTO = VoteReqDTO.builder()
-                .courseId(1L)
-                .title("뭐먹지")
                 .spots(Collections.singletonList(
-                        SpotReqDTO.builder()
-                                .id(1L)
+                        Spot.builder()
                                 .placeId("ChIJgUbEo1")
                                 .name("장소 이름1")
                                 .city("서울")
@@ -109,48 +80,59 @@ class VoteControllerTest {
                 ))
                 .build();
 
-        voteResDTO = new VoteResDTO(
-                vote,
-                Collections.singletonList(new SpotResDTO(spot))
-        );
+        courseRepository.save(course);
+
+        voteReqDTO = VoteReqDTO.builder()
+                .courseId(course.getId())
+                .title("뭐먹지")
+                .spots(List.of(
+                        SpotReqDTO.builder()
+                                .id(1L)
+                                .placeId("ChIJgUbEo1")
+                                .name("장소 이름1")
+                                .city("서울")
+                                .sequence(1)
+                                .build(),
+                        SpotReqDTO.builder()
+                                .id(2L)
+                                .placeId("ChIJgUbEo1")
+                                .name("장소 이름2")
+                                .city("대전")
+                                .sequence(2)
+                                .build()
+                ))
+                .build();
+
+        voteResDTO = voteService.saveVote(voteReqDTO);
+
     }
 
-//    @DisplayName("투표 생성 테스트")
-//    @Test
-//    void createVote() throws Exception {
-//        when(voteService.saveVote(any(VoteReqDTO.class))).thenReturn(voteResDTO);
-//
-//        mockMvc.perform(post("/api/v1/votes")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(voteReqDTO)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.title").value("뭐먹지"));
-//    }
+    @DisplayName("투표 생성 테스트")
+    @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    void createVote() throws Exception {
+        mockMvc.perform(post("/api/v1/votes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(voteReqDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("뭐먹지"));
+    }
 
     @DisplayName("투표 조회 테스트")
     @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void getVote() throws Exception {
-        Long voteId = 1L;
-
-        when(voteService.findVote(voteId)).thenReturn(voteResDTO);
-
-        mockMvc.perform(get("/api/v1/votes/{voteId}", voteId))
+        mockMvc.perform(get("/api/v1/votes/{voteId}", voteResDTO.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("뭐먹지"));
-
-        verify(voteService, times(1)).findVote(voteId);
     }
 
     @DisplayName("투표 완료 후 코스 수정 테스트")
     @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void updateCourseByVote() throws Exception {
-        Long voteId = 1L;
-        Long spotId = 1L;
-
-        mockMvc.perform(put("/api/v1/votes/{voteId}/spots/{spotId}", voteId, spotId))
+        mockMvc.perform(put("/api/v1/votes/{voteId}/spots/{spotId}", voteResDTO.getId(), voteResDTO.getSpots().get(1).getId()))
                 .andExpect(status().isOk());
-
-        verify(voteService, times(1)).updateCourseByVote(voteId, spotId);
     }
 
 }
