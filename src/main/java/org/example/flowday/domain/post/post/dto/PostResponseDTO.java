@@ -1,7 +1,6 @@
 package org.example.flowday.domain.post.post.dto;
 
 import lombok.*;
-import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 
 import java.time.LocalDateTime;
@@ -14,10 +13,12 @@ import java.util.List;
 @Builder
 public class PostResponseDTO {
     private Long id;
-    private String writerName;
-    private String city;
+    private String nickName;
+    private String region;
+    private String season;
     private String title;
     private String contents;
+    private String tags;
     private Long courseId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

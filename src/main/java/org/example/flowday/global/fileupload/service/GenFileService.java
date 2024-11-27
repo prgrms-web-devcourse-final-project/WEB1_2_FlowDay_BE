@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.global.config.AppConfig;
 import org.example.flowday.global.fileupload.entity.GenFile;
+import org.example.flowday.global.fileupload.mapper.GenFileMapper;
 import org.example.flowday.global.fileupload.repository.GenFileRepository;
 import org.example.flowday.standard.util.Util;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,6 +100,25 @@ public class GenFileService {
     public List<GenFile> getFilesByPost(Post post) {
         return genFileRepository.findByRelTypeCodeAndRelId("post", post.getId());
     }
+
+    //원하는 객체의 첫번째 이미지 조회
+    public String getFirstImageUrlByPost(Post post) {
+        // 게시글에 연관된 모든 파일을 조회
+        List<GenFile> genFiles = getFilesByPost(post);
+
+        // 이미지가 없다면 null 반환
+        if (genFiles == null || genFiles.isEmpty()) {
+            return null;
+        }
+
+        // 첫 번째 이미지를 대표 이미지로 설정
+        GenFile firstGenFile = genFiles.get(0);
+
+        // DTO로 변환 후 URL 가져오기
+        return GenFileMapper.toResponseDTO(firstGenFile).getUrl();
+    }
+
+
 
 
     //URL의 사진 꺼내오기

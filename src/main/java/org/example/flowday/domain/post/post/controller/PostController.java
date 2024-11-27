@@ -4,6 +4,7 @@ import ch.qos.logback.core.model.Model;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.flowday.domain.post.post.dto.PostBriefResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.service.PostService;
@@ -29,10 +30,10 @@ public class PostController {
 
     // 게시글 생성
     @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<PostResponseDTO> createPost(@Valid @ModelAttribute PostRequestDTO postRequestDto, @AuthenticationPrincipal SecurityUser user) {
+    public ResponseEntity<String> createPost(@Valid @ModelAttribute PostRequestDTO postRequestDto, @AuthenticationPrincipal SecurityUser user) {
         PostResponseDTO createdPost = postService.createPost(postRequestDto, user.getId());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
+        return ResponseEntity.status(HttpStatus.CREATED).body("게시글이 작성되었습니다");
     }
 
     // 게시글 단건 조회
@@ -45,9 +46,9 @@ public class PostController {
 
     // 모든 게시글 최신순 조회
     @GetMapping("/all/latest")
-    public ResponseEntity<Page<PostResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int pageSize) {
+    public ResponseEntity<Page<PostBriefResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
-        Page<PostResponseDTO> result = postService.getAllPosts(pageable);
+        Page<PostBriefResponseDTO> result = postService.getAllPosts(pageable);
 
         return ResponseEntity.ok().body(result);
 
@@ -55,8 +56,8 @@ public class PostController {
 
     // 게시글 수정
 //    @PutMapping("/{id}")
-//    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequestDTO updatedPostDto) {
-//        PostResponseDTO post = postService.updatePost(id, updatedPostDto);
+//    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequestDTO updatedPostDto ,@AuthenticationPrincipal SecurityUser user) {
+//        PostResponseDTO post = postService.updatePost(id, updatedPostDto, user.getId());
 //        return new ResponseEntity<>(post, HttpStatus.OK);
 //    }
 

@@ -35,7 +35,11 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String city;
+    private String region;
+
+    private String season;
+
+    private String tags;
 
     @Column(name = "title", nullable = false, columnDefinition = "TEXT")
     private String title;
@@ -45,6 +49,8 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

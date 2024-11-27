@@ -10,6 +10,7 @@ import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.post.dto.GenFileResponseDTO;
+import org.example.flowday.domain.post.post.dto.PostBriefResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.entity.Post;
@@ -74,6 +75,7 @@ public class PostService {
         return postMapper.toResponseDTO(savedPost, spotResDTOs, imageDTOs);
     }
 
+
     // 게시글 디테일 - ID
     public PostResponseDTO getPostById(Long id) {
         Post post = postRepository.findById(id)
@@ -98,21 +100,36 @@ public class PostService {
     }
 
     // 모든 게시글 조회 최신순
-    public Page<PostResponseDTO> getAllPosts(Pageable pageable) {
+    public Page<PostBriefResponseDTO> getAllPosts(Pageable pageable) {
         Page<Post> posts = postRepository.searchLatestPost(pageable);
 
-        return posts.map(post -> postMapper.toResponseDTO(post , null, null));
+
+        return posts.map(post -> {
+            String imageURL = genFileService.getFirstImageUrlByPost(post);
+            return new PostBriefResponseDTO(post, imageURL);
+        });
 
     }
 
+
+
+
     // 게시글 수정
 //    @Transactional
-//    public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO) {
+//    public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO , Long userId) {
 //        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+//
+//        //게시글 정보 수정
 //        post.setTitle(updatedPostDTO.getTitle());
 //        post.setContents(updatedPostDTO.getContents());
 //        post.setCity(updatedPostDTO.getCity());
-//        post.setCourseId(updatedPostDTO.getCourseId());
+//
+//        // 기존 이미지 처리
+//        List<Long> existingImageIds = updatedPostDTO.getExistingImageIds();
+//        List<GenFile> existingGenFiles = genFileService.getFilesByPost(post);
+//
+//
+//
 //        return postMapper.toResponseDTO(post);
 //    }
 
