@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.member.entity.Member;
-//import org.example.flowday.domain.post.likes.entity.LikeEntity;
+//import org.example.flowday.domain.post.likes.entity.Likes;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 //import org.example.flowday.domain.post.tag.entity.Tag;
 import org.springframework.data.annotation.CreatedDate;
@@ -67,7 +67,7 @@ public class Post {
     private List<Reply> replies = new ArrayList<>();
 
 //    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<LikeEntity> likes =  new ArrayList<>();
+//    private List<Likes> likes =  new ArrayList<>();
 
 //    @ManyToMany
 //    @JoinTable(

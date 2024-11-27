@@ -11,8 +11,13 @@ import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.domain.post.likes.repository.LikeRepository;
 import org.example.flowday.domain.post.post.entity.Post;
+import org.example.flowday.domain.post.post.repository.PostRepository;
 import org.example.flowday.global.security.util.JwtUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +41,8 @@ public class MemberService {
 
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final LikeRepository likeRepository;
+    private final PostRepository postRepository;
     private final JwtUtil jwtUtil;
     private final JavaMailSender mailSender;
     private final WishPlaceService wishPlaceService;
@@ -300,6 +307,18 @@ public class MemberService {
 
         memberRepository.save(member);
 
+    }
+
+    // 좋아요 누른 게시물 조회
+    public Page<Post> getPostsByLikes(Long memberId, int page) {
+        // 1. memberId에 해당하는 모든 postId 가져오기
+        List<Long> postIds = likeRepository.findAllPostIdByMemberId(memberId);
+
+        // 2. 페이지 처리용 Pageable 객체 생성
+        Pageable pageable = PageRequest.of(page, 10);
+
+        // 3. PostRepository에서 postId 리스트를 기반으로 페이지 형태로 게시물 조회
+        return postRepository.findAllByIdIn(postIds, pageable);
     }
 
 

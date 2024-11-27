@@ -1,26 +1,17 @@
 package org.example.flowday.domain.member.controller;
 
 
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.dto.MemberDTO;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.service.MemberService;
-import org.example.flowday.global.security.util.JwtUtil;
+import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.global.security.util.SecurityUser;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/members")
@@ -141,6 +132,15 @@ public class MemberController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    // 좋아요 누른 게시물 조회
+    @GetMapping("/likedPost")
+    public Page<Post> getPostsLikedByMember(
+            @AuthenticationPrincipal SecurityUser user,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        return memberService.getPostsByLikes(user.getId(), page);
     }
 
 

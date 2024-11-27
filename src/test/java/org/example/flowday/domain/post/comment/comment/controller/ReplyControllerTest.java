@@ -81,7 +81,7 @@ public class ReplyControllerTest {
         // 테스트에 필요한 게시글 생성
         testPost = Post.builder()
                 .title("테스트 게시글")
-                .content("게시글 내용")
+                .contents("게시글 내용")
                 .writer(testMember)
                 .build();
         postRepository.save(testPost);
@@ -137,7 +137,7 @@ public class ReplyControllerTest {
         // 새로운 게시글 생성 (댓글 없음)
         Post newPost = Post.builder()
                 .title("새 게시글")
-                .content("새 게시글 내용")
+                .contents("새 게시글 내용")
                 .writer(testMember)
                 .build();
         postRepository.save(newPost);
