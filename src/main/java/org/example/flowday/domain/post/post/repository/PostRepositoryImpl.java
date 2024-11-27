@@ -26,6 +26,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
         List<Post> content = queryFactory.
                 selectFrom(post)
+                .where(post.status.eq(Status.PUBLIC))
                 .orderBy(post.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -65,6 +66,26 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
         return new PageImpl<>(posts, pageable, posts.size());
 
 
+    }
+
+    @Override
+    public Page<Post> searchPrivatePost(Pageable pageable, Long userId) {
+        QPost post = QPost.post;
+
+
+        List<Post> posts = queryFactory
+                .selectFrom(post)
+                .where(
+                        post.status.eq(Status.PRIVATE)
+                                .and(post.writer.id.eq(userId))
+                )
+                .orderBy(post.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+
+        return new PageImpl<>(posts, pageable, posts.size());
 
 
     }

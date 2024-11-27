@@ -64,6 +64,19 @@ public class PostController {
         return ResponseEntity.ok().body(result);
     }
 
+
+    // Private 조건의 리스트 조회
+    @GetMapping("/all/private")
+    public ResponseEntity<Page<PostBriefResponseDTO>> getAllPrivatePosts( @RequestParam(defaultValue = "0") int page , @RequestParam(defaultValue = "20") int pageSize,
+                                                                          @AuthenticationPrincipal SecurityUser user) {
+        PageRequest pageable = PageRequest.of(page, pageSize);
+        Page<PostBriefResponseDTO> results = postService.findAllPrivate(pageable, user.getId());
+
+        return ResponseEntity.ok().body(results);
+
+    }
+
+
     // 게시글 수정
 //    @PutMapping("/{id}")
 //    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequestDTO updatedPostDto ,@AuthenticationPrincipal SecurityUser user) {
