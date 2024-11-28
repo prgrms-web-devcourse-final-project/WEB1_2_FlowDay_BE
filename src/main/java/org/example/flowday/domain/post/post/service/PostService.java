@@ -66,11 +66,11 @@ public class PostService {
         // 이미지 저장 로직 추가
         List<MultipartFile> images = postRequestDTO.getImages();
         if (images != null && !images.isEmpty()) {
-            genFileService.saveFiles(savedPost, images);
+            genFileService.saveFiles(images , "post", savedPost.getId(), "common","inbody");
         }
 
         // 이미지 정보를 포함하여 응답 DTO 생성
-        List<GenFile> genFiles = genFileService.getFilesByPost(savedPost);
+        List<GenFile> genFiles = genFileService.getFilesByPost("post", savedPost.getId());
         List<GenFileResponseDTO> imageDTOs = genFiles.stream()
                 .map(GenFileMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -94,7 +94,7 @@ public class PostService {
         }
 
         // 이미지 정보 가져오기
-        List<GenFile> genFiles = genFileService.getFilesByPost(post);
+        List<GenFile> genFiles = genFileService.getFilesByPost("post",post.getId());
         List<GenFileResponseDTO> imageDTOs = genFiles.stream()
                 .map(GenFileMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -108,7 +108,7 @@ public class PostService {
 
 
         return posts.map(post -> {
-            String imageURL = genFileService.getFirstImageUrlByPost(post);
+            String imageURL = genFileService.getFirstImageUrlByObject("post", post.getId());
             return new PostBriefResponseDTO(post, imageURL);
         });
 
@@ -122,7 +122,7 @@ public class PostService {
         Page<Post> posts = postRepository.searchCouplePost(pageable, userId, partnerId);
 
         return posts.map(post -> {
-            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            String imageUrl = genFileService.getFirstImageUrlByObject("post",post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
 
@@ -136,7 +136,7 @@ public class PostService {
         Page<Post> posts = postRepository.searchPrivatePost(pageable, userId);
 
         return posts.map(post -> {
-            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            String imageUrl = genFileService.getFirstImageUrlByObject("post",post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
 
@@ -177,7 +177,7 @@ public class PostService {
         }
 
         // 기존 이미지 처리
-        List<GenFile> existingGenFiles = genFileService.getFilesByPost(post);
+        List<GenFile> existingGenFiles = genFileService.getFilesByPost("post",post.getId());
         List<MultipartFile> newImages = updatedPostDTO.getImages();
 
         // 기존 이미지 삭제 처리 (새로운 이미지 리스트보다 많은 기존 이미지를 삭제)
@@ -196,12 +196,12 @@ public class PostService {
 
             // 새 이미지 저장
             if (!newImages.isEmpty()) {
-                genFileService.saveFiles(post, newImages);
+                genFileService.saveFiles(newImages , "post", post.getId(), "common","inbody");
             }
         }
 
         // 최종 이미지 정보 수집 후 DTO 변환
-        List<GenFile> updatedGenFiles = genFileService.getFilesByPost(post);
+        List<GenFile> updatedGenFiles = genFileService.getFilesByPost("post",post.getId());
         List<GenFileResponseDTO> imageDTOs = updatedGenFiles.stream()
                 .map(GenFileMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -219,7 +219,7 @@ public class PostService {
         if (userId != post.getWriter().getId()) {
             throw new RuntimeException("작성자만 게시글을 삭제 할 수 있습니다");
         }
-        List<GenFile> genFiles = genFileService.getFilesByPost(post);
+        List<GenFile> genFiles = genFileService.getFilesByPost("post",post.getId());
         for(GenFile genFile : genFiles) {
             genFileService.deleteFileFromS3(genFile.getFileDir(), genFile.getS3FileName());
             genFileRepository.delete(genFile);
