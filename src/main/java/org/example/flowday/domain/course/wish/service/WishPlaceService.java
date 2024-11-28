@@ -77,15 +77,21 @@ public class WishPlaceService {
         if(!userId.equals(memberId)) {
             throw WishPlaceException.FORBIDDEN.get();
         }
-        WishPlace wishPlace = wishPlaceRepository.findByMemberId(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
-        Spot spotToRemove = wishPlace.getSpots().stream()
-                .filter(spot -> spot.getId().equals(spotId))
-                .findFirst()
-                .orElse(null);
+        try {
+            WishPlace wishPlace = wishPlaceRepository.findByMemberId(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
-        wishPlace.getSpots().remove(spotToRemove);
-        spotRepository.delete(spotToRemove);
+            Spot spotToRemove = wishPlace.getSpots().stream()
+                    .filter(spot -> spot.getId().equals(spotId))
+                    .findFirst()
+                    .orElse(null);
+
+            wishPlace.getSpots().remove(spotToRemove);
+            spotRepository.delete(spotToRemove);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw WishPlaceException.NOT_DELETED.get();
+        }
     }
 
     // 회원 별 위시 플레이스 목록 조회
