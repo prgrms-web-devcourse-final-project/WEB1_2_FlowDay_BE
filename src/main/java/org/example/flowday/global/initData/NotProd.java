@@ -104,21 +104,18 @@ public class NotProd {
                 .placeId("place1")
                 .name("카페")
                 .comment("코멘트")
-                .sequence(1)
                 .build();
         SpotReqDTO spot2 = SpotReqDTO.builder()
                 .city("서울 종로")
                 .placeId("place2")
                 .name("밥집")
                 .comment("코멘트")
-                .sequence(2)
                 .build();
         SpotReqDTO spot3 = SpotReqDTO.builder()
                 .city("서울 종로")
                 .placeId("place3")
                 .name("영화관")
                 .comment("코멘트")
-                .sequence(3)
                 .build();
 
         List<SpotReqDTO> spots = new ArrayList<>();
