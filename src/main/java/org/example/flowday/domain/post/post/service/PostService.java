@@ -39,7 +39,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final MemberRepository memberRepository;
     private final CourseRepository courseRepository;
-    private final GenFileService  genFileService;
+    private final GenFileService genFileService;
     private final GenFileRepository genFileRepository;
 
     @Transactional
@@ -66,7 +66,7 @@ public class PostService {
         // 이미지 저장 로직 추가
         List<MultipartFile> images = postRequestDTO.getImages();
         if (images != null && !images.isEmpty()) {
-            genFileService.saveFiles(images , "post", savedPost.getId(), "common","inbody");
+            genFileService.saveFiles(images, "post", savedPost.getId(), "common", "inbody");
         }
 
         // 이미지 정보를 포함하여 응답 DTO 생성
@@ -94,7 +94,7 @@ public class PostService {
         }
 
         // 이미지 정보 가져오기
-        List<GenFile> genFiles = genFileService.getFilesByPost("post",post.getId());
+        List<GenFile> genFiles = genFileService.getFilesByPost("post", post.getId());
         List<GenFileResponseDTO> imageDTOs = genFiles.stream()
                 .map(GenFileMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -115,14 +115,14 @@ public class PostService {
     }
 
     //커플 게시글 리스트 조회
-    public Page<PostBriefResponseDTO> findAllCouplePosts(Pageable pageable , Long userId) {
+    public Page<PostBriefResponseDTO> findAllCouplePosts(Pageable pageable, Long userId) {
         Member member = memberRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 멤버가 없습니다 "));
-        Long partnerId = (member.getPartnerId() != null) ? member.getPartnerId(): null;
+        Long partnerId = (member.getPartnerId() != null) ? member.getPartnerId() : null;
 
         Page<Post> posts = postRepository.searchCouplePost(pageable, userId, partnerId);
 
         return posts.map(post -> {
-            String imageUrl = genFileService.getFirstImageUrlByObject("post",post.getId());
+            String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
 
@@ -136,7 +136,7 @@ public class PostService {
         Page<Post> posts = postRepository.searchPrivatePost(pageable, userId);
 
         return posts.map(post -> {
-            String imageUrl = genFileService.getFirstImageUrlByObject("post",post.getId());
+            String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
 
@@ -144,19 +144,12 @@ public class PostService {
     }
 
 
-
-
-
-    // 게시글 수정
     @Transactional
-    public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO , Long userId) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+    public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO, Long userId) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        if (userId != post.getWriter().getId()) {
-            throw new RuntimeException("작성자만 게시글을 수정 할 수 있습니다");
-        }
-
-        //게시글 정보 수정
+        // 게시글 정보 수정
         post.setTitle(updatedPostDTO.getTitle());
         post.setContents(updatedPostDTO.getContents());
         post.setRegion(updatedPostDTO.getRegion());
@@ -176,17 +169,26 @@ public class PostService {
                     .collect(Collectors.toList());
         }
 
+        post.setCourse(course);
+
         // 기존 이미지 처리
         List<GenFile> existingGenFiles = genFileService.getFilesByPost("post",post.getId());
         List<MultipartFile> newImages = updatedPostDTO.getImages();
 
-        // 기존 이미지 삭제 처리 (새로운 이미지 리스트보다 많은 기존 이미지를 삭제)
-        if (newImages != null) {
+        // 기존 이미지 삭제 처리
+        if (newImages == null || newImages.isEmpty()) {
+            // 새로운 이미지가 없을 경우 기존 모든 이미지 삭제
+            for (GenFile genFileToDelete : existingGenFiles) {
+                genFileService.deleteFileFromS3(genFileToDelete.getFileDir(), genFileToDelete.getS3FileName());
+                genFileRepository.delete(genFileToDelete);
+            }
+        } else {
+            // 새로운 이미지가 있는 경우 기존 이미지와 비교
             int newImageCount = newImages.size();
             int existingImageCount = existingGenFiles.size();
 
+            // 기존 이미지 중 남는 이미지 삭제
             if (existingImageCount > newImageCount) {
-                // 기존 이미지 중 남는 이미지 삭제
                 for (int i = newImageCount; i < existingImageCount; i++) {
                     GenFile genFileToDelete = existingGenFiles.get(i);
                     genFileService.deleteFileFromS3(genFileToDelete.getFileDir(), genFileToDelete.getS3FileName());
@@ -195,10 +197,9 @@ public class PostService {
             }
 
             // 새 이미지 저장
-            if (!newImages.isEmpty()) {
-                genFileService.saveFiles(newImages , "post", post.getId(), "common","inbody");
-            }
+            genFileService.saveFiles(newImages, "post", post.getId(), "common", "inBody");
         }
+
 
         // 최종 이미지 정보 수집 후 DTO 변환
         List<GenFile> updatedGenFiles = genFileService.getFilesByPost("post",post.getId());
@@ -212,15 +213,16 @@ public class PostService {
 
 
 
+
     // 게시글 삭제
     @Transactional
-    public void deletePost(Long id , Long userId) {
+    public void deletePost(Long id, Long userId) {
         Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("post is not exist"));
         if (userId != post.getWriter().getId()) {
             throw new RuntimeException("작성자만 게시글을 삭제 할 수 있습니다");
         }
-        List<GenFile> genFiles = genFileService.getFilesByPost("post",post.getId());
-        for(GenFile genFile : genFiles) {
+        List<GenFile> genFiles = genFileService.getFilesByPost("post", post.getId());
+        for (GenFile genFile : genFiles) {
             genFileService.deleteFileFromS3(genFile.getFileDir(), genFile.getS3FileName());
             genFileRepository.delete(genFile);
         }
@@ -228,7 +230,6 @@ public class PostService {
         postRepository.deleteById(id);
 
     }
-
 
 
 //    public void addGenFileByUrl(Post post, String typeCode, String type2Code, int fileNo, String url) {

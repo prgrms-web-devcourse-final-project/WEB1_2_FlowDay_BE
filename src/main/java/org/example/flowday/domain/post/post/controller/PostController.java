@@ -78,7 +78,6 @@ public class PostController {
     // 게시글 수정
     @PutMapping("/{id}")
     public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @ModelAttribute PostRequestDTO updatedPostDto ,@AuthenticationPrincipal SecurityUser user) {
-        log.debug("게시글 수정 실행");
         PostResponseDTO post = postService.updatePost(id, updatedPostDto, user.getId());
         return new ResponseEntity<>(post, HttpStatus.OK);
     }

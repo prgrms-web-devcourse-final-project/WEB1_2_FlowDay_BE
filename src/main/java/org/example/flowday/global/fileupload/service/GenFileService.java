@@ -135,9 +135,7 @@ public class GenFileService {
     public void deleteFileFromS3(String fileDir, String s3FileName) {
 
         String s3Key = fileDir + "/" + s3FileName;
-
         try {
-
             amazonS3.deleteObject(new DeleteObjectRequest(bucketName, s3Key));
             System.out.println("파일이 성공적으로 삭제되었습니다: " + s3Key);
         } catch (Exception e) {
