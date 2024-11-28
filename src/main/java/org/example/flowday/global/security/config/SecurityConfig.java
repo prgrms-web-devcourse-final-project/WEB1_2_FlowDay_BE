@@ -1,17 +1,18 @@
 package org.example.flowday.global.security.config;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.global.security.filter.JwtFilter;
 import org.example.flowday.global.security.filter.LoginFilter;
+import org.example.flowday.global.security.filter.LogoutFilter;
+import org.example.flowday.global.security.handler.CustomAuthenticationFailureHandler;
+import org.example.flowday.global.security.handler.CustomAuthenticationSuccessHandler;
 import org.example.flowday.global.security.util.JwtUtil;
 import org.example.flowday.global.security.util.oauth2.service.CustomOAuth2UserService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -36,20 +37,29 @@ public class SecurityConfig {
 
     private final MemberRepository memberRepository;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CustomOAuth2UserService customOAuth2UserService, MemberRepository memberRepository) {
+    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
+
+    private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+
+    public SecurityConfig(
+            AuthenticationConfiguration authenticationConfiguration,
+            CustomOAuth2UserService customOAuth2UserService,
+            MemberRepository memberRepository,
+            CustomAuthenticationFailureHandler authenticationFailureHandler,
+            CustomAuthenticationSuccessHandler authenticationSuccessHandler) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.customOAuth2UserService = customOAuth2UserService;
         this.memberRepository = memberRepository;
+        this.authenticationFailureHandler = authenticationFailureHandler;
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
+
     }
 
-    //AuthenticationManager Bean 등록
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-
         return configuration.getAuthenticationManager();
     }
-
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -72,6 +82,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable);
 
         http
+                .logout(AbstractHttpConfigurer::disable);
+
+        http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 PathRequest.toStaticResources().atCommonLocations(),
@@ -79,24 +92,38 @@ public class SecurityConfig {
                         )
                         .permitAll()
                         .requestMatchers(
+                                "/connect/websocket",
                                 "/api/v1/members/login",
-                                "/api/v1/members",
+                                "/api/v1/members/register",
                                 "/oauth2/**",
+                                "/api/v1/members/refresh",
+                                "/error?continue",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().hasRole("USER"));
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, memberRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(
+                        new LoginFilter(
+                                authenticationManager(authenticationConfiguration),
+                                jwtUtil,
+                                memberRepository),
+                                        UsernamePasswordAuthenticationFilter.class)
+        ;
 
         http
-                .addFilterBefore(new JwtFilter(jwtUtil, memberRepository), OAuth2AuthorizationRequestRedirectFilter.class);
+                .addFilterBefore(new JwtFilter(jwtUtil), OAuth2AuthorizationRequestRedirectFilter.class);
+
+        http
+                .addFilterAt(new LogoutFilter(jwtUtil, memberRepository), org.springframework.security.web.authentication.logout.LogoutFilter.class);
 
         http
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService)));
+                                .userService(customOAuth2UserService))
+                        .successHandler(authenticationSuccessHandler)
+                        .failureHandler(authenticationFailureHandler));
 
         http
                 .headers(
