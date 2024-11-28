@@ -61,7 +61,6 @@ public class JwtUtil {
         Claims claims = Jwts
                 .claims()
                 .add("data", data)
-                .add("type", "access_token")
                 .build();
 
         return Jwts.builder()

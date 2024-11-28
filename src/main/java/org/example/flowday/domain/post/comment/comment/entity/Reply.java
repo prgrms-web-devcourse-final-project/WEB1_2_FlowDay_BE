@@ -64,7 +64,7 @@ public class Reply {
     public void setPost(Post post) {
         this.post = post;
         if (post != null) {
-            post.getReplys().add(this);
+            post.getReplies().add(this);
         }
     }
 
@@ -95,7 +95,7 @@ public class Reply {
     }
 
     public void removePost(Reply reply) {
-        reply.getPost().getReplys().remove(this);
+        reply.getPost().getReplies().remove(this);
         reply.setPost(null);
     }
 }
