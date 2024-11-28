@@ -18,6 +18,7 @@ import org.example.flowday.global.fileupload.mapper.GenFileMapper;
 import org.example.flowday.domain.post.post.mapper.PostMapper;
 import org.example.flowday.domain.post.post.repository.PostRepository;
 import org.example.flowday.global.fileupload.entity.GenFile;
+import org.example.flowday.global.fileupload.repository.GenFileRepository;
 import org.example.flowday.global.fileupload.service.GenFileService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +40,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final CourseRepository courseRepository;
     private final GenFileService  genFileService;
+    private final GenFileRepository genFileRepository;
 
     @Transactional
     public PostResponseDTO createPost(PostRequestDTO postRequestDTO, Long userId) {
@@ -146,23 +148,65 @@ public class PostService {
 
 
     // 게시글 수정
-//    @Transactional
-//    public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO , Long userId) {
-//        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-//
-//        //게시글 정보 수정
-//        post.setTitle(updatedPostDTO.getTitle());
-//        post.setContents(updatedPostDTO.getContents());
-//        post.setCity(updatedPostDTO.getCity());
-//
-//        // 기존 이미지 처리
-//        List<Long> existingImageIds = updatedPostDTO.getExistingImageIds();
-//        List<GenFile> existingGenFiles = genFileService.getFilesByPost(post);
-//
-//
-//
-//        return postMapper.toResponseDTO(post);
-//    }
+    @Transactional
+    public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO , Long userId) {
+        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        //게시글 정보 수정
+        post.setTitle(updatedPostDTO.getTitle());
+        post.setContents(updatedPostDTO.getContents());
+        post.setRegion(updatedPostDTO.getRegion());
+        post.setSeason(updatedPostDTO.getSeason());
+        post.setTags(updatedPostDTO.getTags());
+        post.setStatus(updatedPostDTO.getStatus());
+
+        Course course = null;
+        List<SpotResDTO> spotResDTOs = null;
+
+        if (updatedPostDTO.getCourseId() != null) {
+            course = courseRepository.findById(updatedPostDTO.getCourseId())
+                    .orElseThrow(CourseException.NOT_FOUND::get);
+            List<Spot> spots = course.getSpots();
+            spotResDTOs = spots.stream()
+                    .map(SpotResDTO::new)
+                    .collect(Collectors.toList());
+        }
+
+        // 기존 이미지 처리
+        List<GenFile> existingGenFiles = genFileService.getFilesByPost(post);
+        List<MultipartFile> newImages = updatedPostDTO.getImages();
+
+        // 기존 이미지 삭제 처리 (새로운 이미지 리스트보다 많은 기존 이미지를 삭제)
+        if (newImages != null) {
+            int newImageCount = newImages.size();
+            int existingImageCount = existingGenFiles.size();
+
+            if (existingImageCount > newImageCount) {
+                // 기존 이미지 중 남는 이미지 삭제
+                for (int i = newImageCount; i < existingImageCount; i++) {
+                    GenFile genFileToDelete = existingGenFiles.get(i);
+                    genFileService.deleteFileFromS3(genFileToDelete.getFileDir(), genFileToDelete.getS3FileName());
+                    genFileRepository.delete(genFileToDelete);
+                }
+            }
+
+            // 새 이미지 저장
+            if (!newImages.isEmpty()) {
+                genFileService.saveFiles(post, newImages);
+            }
+        }
+
+        // 최종 이미지 정보 수집 후 DTO 변환
+        List<GenFile> updatedGenFiles = genFileService.getFilesByPost(post);
+        List<GenFileResponseDTO> imageDTOs = updatedGenFiles.stream()
+                .map(GenFileMapper::toResponseDTO)
+                .collect(Collectors.toList());
+
+        return postMapper.toResponseDTO(post, spotResDTOs, imageDTOs);
+    }
+
+
+
 
     // 게시글 삭제
     @Transactional

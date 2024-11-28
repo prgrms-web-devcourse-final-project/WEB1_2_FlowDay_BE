@@ -47,4 +47,16 @@ public class GenFile {
     }
 
 
+    public void merge(GenFile other) {
+        relTypeCode = other.getRelTypeCode();
+        relId = other.getRelId();
+        typeCode = other.getTypeCode();
+        type2Code = other.getType2Code();
+        fileSize = other.getFileSize();
+        fileNo = other.getFileNo();
+        fileExt = other.getFileExt();
+        fileDir = other.getFileDir();
+        originFileName = other.getOriginFileName();
+        s3FileName = other.getS3FileName();
+    }
 }

@@ -1,11 +1,11 @@
 package org.example.flowday.global.fileupload.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.post.post.entity.Post;
-import org.example.flowday.global.config.AppConfig;
 import org.example.flowday.global.fileupload.entity.GenFile;
 import org.example.flowday.global.fileupload.mapper.GenFileMapper;
 import org.example.flowday.global.fileupload.repository.GenFileRepository;
@@ -14,14 +14,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +84,7 @@ public class GenFileService {
                     .s3FileName(s3FileName) // 실제 S3 파일 이름 저장
                     .build();
 
+            genFile=save(genFile);
             genFileRepository.save(genFile);
             genFiles.add(genFile);
 
@@ -117,6 +114,44 @@ public class GenFileService {
         // DTO로 변환 후 URL 가져오기
         return GenFileMapper.toResponseDTO(firstGenFile).getUrl();
     }
+
+
+    public GenFile save(GenFile genFile) {
+        Optional<GenFile> opOldGenFile = genFileRepository.findByRelTypeCodeAndRelIdAndTypeCodeAndType2CodeAndFileNo(genFile.getRelTypeCode(), genFile.getRelId(), genFile.getTypeCode()
+                , genFile.getType2Code(), genFile.getFileNo());
+
+        if(opOldGenFile.isPresent()) {
+            GenFile oldGenFile = opOldGenFile.get();
+            //s3에 업로드 된 이미지 삭제
+            deleteFileFromS3(oldGenFile.getFileDir() , oldGenFile.getS3FileName());
+
+            oldGenFile.merge(genFile);
+
+            genFileRepository.save(oldGenFile);
+
+            return oldGenFile;
+
+        }
+        genFileRepository.save(genFile);
+
+        return genFile;
+
+    }
+
+    //s3에 업로드된 파일 삭제
+    public void deleteFileFromS3(String fileDir, String s3FileName) {
+        // S3에 저장된 파일의 키 생성 (파일 경로와 파일 이름을 포함한 전체 키)
+        String s3Key = fileDir + "/" + s3FileName;
+
+        try {
+            // S3에서 파일 삭제
+            amazonS3.deleteObject(new DeleteObjectRequest(bucketName, s3Key));
+            System.out.println("파일이 성공적으로 삭제되었습니다: " + s3Key);
+        } catch (Exception e) {
+            throw new RuntimeException("S3에서 파일 삭제에 실패했습니다: " + s3Key, e);
+        }
+    }
+
 
 
 
