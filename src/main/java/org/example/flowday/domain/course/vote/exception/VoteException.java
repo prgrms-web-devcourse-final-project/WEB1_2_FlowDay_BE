@@ -1,18 +1,22 @@
 package org.example.flowday.domain.course.vote.exception;
 
+import org.springframework.http.HttpStatus;
+
 public enum VoteException {
-    NOT_FOUND("VOTE NOT_FOUND", 404),
-    NOT_CREATED("VOTE NOT_CREATED", 400),
-    NOT_UPDATED("VOTE NOT_UPDATED", 400),
-    NOT_DELETED("VOTE NOT_DELETED", 400);
+    NOT_FOUND("투표를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    NOT_CREATED("투표를 생성하는 데 실패했습니다.",  HttpStatus.BAD_REQUEST),
+    NOT_UPDATED("투표를 수정하는 데 실패했습니다.", HttpStatus.BAD_REQUEST),
+    NOT_DELETED("투표를 삭제하는 데 실패했습니다.",  HttpStatus.BAD_REQUEST);
 
-    private VoteTaskException spotTaskException;
+    private final String message;
+    private final HttpStatus status;
 
-    VoteException(String message, int code) {
-        spotTaskException = new VoteTaskException(message, code);
+    VoteException(String message, HttpStatus status) {
+        this.message = message;
+        this.status = status;
     }
 
     public VoteTaskException get() {
-        return spotTaskException;
+        return new VoteTaskException(this.message, this.status);
     }
 }
