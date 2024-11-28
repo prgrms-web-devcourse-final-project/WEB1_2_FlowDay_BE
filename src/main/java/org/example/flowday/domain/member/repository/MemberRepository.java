@@ -28,8 +28,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "m1.name AS name, " +
             "m2.profileImage AS partnerImage, " +
             "m2.name AS partnerName, " +
-            "m1.relationshipDt, " +
-            "m1.birthDt " +
+            "m1.relationshipDt AS relationshipDt, " +
+            "m1.birthDt AS birthDt " +
             "FROM Member m1 " +
             "LEFT JOIN Member m2 ON m1.partnerId = m2.id " +
             "WHERE m1.id = :id")
@@ -44,7 +44,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m.id AS id, m.name AS name, m.email AS email, m.phoneNum AS num, m.profileImage AS image FROM Member m WHERE m.name = :name")
     Optional<Map<String, Object>> findByName(String name);
 
-    Optional<Member> findByEmail(String email);
+    Optional<Member> findByEmailAndName(String email, String name);
 
     @Modifying
     @Transactional

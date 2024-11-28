@@ -104,10 +104,10 @@ public class MemberService {
     }
 
     // 이메일로 아이디 조회
-    public MemberDTO.FindIdResponseDTO getMemberByEmail(String email) {
+    public MemberDTO.FindIdResponseDTO getMemberByEmail(String email, String name) {
 
         return new MemberDTO.FindIdResponseDTO(
-                memberRepository.findByEmail(email)
+                memberRepository.findByEmailAndName(email,name)
                         .orElseThrow(
                                 MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException).getLoginId()
         );

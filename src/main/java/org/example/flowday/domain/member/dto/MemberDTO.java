@@ -131,6 +131,7 @@ public class MemberDTO {
 
     @Data
     public static class FindIdRequestDTO {
+        private String name;
         private String email;
     }
 
