@@ -16,6 +16,7 @@ public class VoteReqDTO {
     @NotBlank(message = "Title cannot be blank")
     private String title;
 
-    private List<SpotReqDTO> spots;
+    @NotNull(message = "Spot IDs cannot be null")
+    private List<Long> spotIds;
 }
 
