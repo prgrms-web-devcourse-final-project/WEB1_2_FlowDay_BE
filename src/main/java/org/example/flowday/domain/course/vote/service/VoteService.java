@@ -85,32 +85,36 @@ public class VoteService {
     // 투표 완료 후 코스 수정
     @Transactional
     public CourseResDTO updateCourseByVote(Long voteId, Long spotId) {
-        Vote vote = voteRepository.findById(voteId).orElseThrow(VoteException.NOT_FOUND::get);
-        Spot spot = spotRepository.findById(spotId).orElseThrow(SpotException.NOT_FOUND::get);
-        Course course = vote.getCourse();
+        try {
+            Vote vote = voteRepository.findById(voteId).orElseThrow(VoteException.NOT_FOUND::get);
+            Spot spot = spotRepository.findById(spotId).orElseThrow(SpotException.NOT_FOUND::get);
+            Course course = vote.getCourse();
 
-        // 선택한 장소 투표 연관 관계 제거
-        if (spot.getVote() != null && spot.getVote().getId().equals(voteId)) {
-            spot.removeVote();
-            spotRepository.save(spot);
+            // 선택한 장소 투표 연관 관계 제거
+            if (spot.getVote() != null && spot.getVote().getId().equals(voteId)) {
+                spot.removeVote();
+                spotRepository.save(spot);
+            }
+
+            // 선택하지 않은 장소들 삭제
+            List<Spot> spotsToDelete = spotRepository.findAllByVoteId(vote.getId());
+            for (Spot spotToDelete : spotsToDelete) {
+                spotToDelete.removeVote();
+                spotRepository.save(spotToDelete);
+                spotRepository.delete(spotToDelete);
+                spotRepository.flush();
+            }
+
+            voteRepository.delete(vote);
+
+            List<SpotResDTO> spotResDTOs = course.getSpots().stream()
+                    .map(SpotResDTO::new)
+                    .collect(Collectors.toList());
+
+            return new CourseResDTO(course, spotResDTOs);
+        } catch (Exception e) {
+            throw CourseException.NOT_UPDATED.get();
         }
-
-        // 선택하지 않은 장소들 삭제
-        List<Spot> spotsToDelete = spotRepository.findAllByVoteId(vote.getId());
-        for (Spot spotToDelete : spotsToDelete) {
-            spotToDelete.removeVote();
-            spotRepository.save(spotToDelete);
-            spotRepository.delete(spotToDelete);
-            spotRepository.flush();
-        }
-
-        voteRepository.delete(vote);
-
-        List<SpotResDTO> spotResDTOs = course.getSpots().stream()
-                .map(SpotResDTO::new)
-                .collect(Collectors.toList());
-
-        return new CourseResDTO(course, spotResDTOs);
     }
 
 }
