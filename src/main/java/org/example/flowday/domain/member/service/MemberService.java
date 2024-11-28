@@ -2,6 +2,7 @@ package org.example.flowday.domain.member.service;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.example.flowday.domain.chat.service.ChatService;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
@@ -26,10 +27,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +39,7 @@ public class MemberService {
     private final JwtUtil jwtUtil;
     private final JavaMailSender mailSender;
     private final WishPlaceService wishPlaceService;
+    private final ChatService chatService;
 
     // 보안 관련 서비스
 
@@ -351,7 +351,21 @@ public class MemberService {
 
     }
 
-    // 파트너 ID 등록
+    // 파트너 ID 등록 (수락한 사람)
+    @Transactional
+    public void acceptAddPartnerId(Long partnerId, Long myId, Long chattingRoomId) {
+
+        Member member = memberRepository.findById(myId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + myId));
+
+        member.setPartnerId(partnerId);
+        member.setChattingRoomId(chattingRoomId);
+
+        memberRepository.save(member);
+
+    }
+
+    // 파트너 ID 등록 (요청을 보낸 사람)
     @Transactional
     public void updatePartnerId(Long id, MemberDTO.UpdatePartnerIdRequestDTO dto) {
 
@@ -361,8 +375,11 @@ public class MemberService {
         if (dto.getPartnerId() != null) {
             member.setPartnerId(dto.getPartnerId());
         }
+        member.setChattingRoomId(chatService.registerChatRoom(LocalDateTime.now()));
 
         memberRepository.save(member);
+
+        acceptAddPartnerId(id, dto.getPartnerId(), member.getChattingRoomId());
 
     }
 
