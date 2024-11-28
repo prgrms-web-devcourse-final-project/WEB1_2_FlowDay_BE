@@ -92,6 +92,7 @@ public class SecurityConfig {
                         )
                         .permitAll()
                         .requestMatchers(
+                                "/connect/websocket",
                                 "/api/v1/members/login",
                                 "/api/v1/members/register",
                                 "/oauth2/**",

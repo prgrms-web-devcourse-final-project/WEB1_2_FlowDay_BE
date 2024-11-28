@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.entity.Status;
+import org.example.flowday.domain.course.wish.service.WishPlaceService;
 import org.example.flowday.domain.member.dto.MemberDTO;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
@@ -38,6 +39,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final JwtUtil jwtUtil;
     private final JavaMailSender mailSender;
+    private final WishPlaceService wishPlaceService;
 
     // 보안 관련 서비스
 
@@ -93,7 +95,8 @@ public class MemberService {
         // 회원 저장
         Member savedMember = memberRepository.save(member);
 
-        // 성공적으로 저장된 회원의 정보를 응답 DTO로 변환하여 반환
+        wishPlaceService.saveWishPlace(savedMember.getId());
+
         return new MemberDTO.CreateResponseDTO(
                 savedMember.getId(),
                 savedMember.getLoginId(),
