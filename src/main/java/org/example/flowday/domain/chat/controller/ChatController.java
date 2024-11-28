@@ -3,6 +3,7 @@ package org.example.flowday.domain.chat.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.chat.dto.ChatMessage;
 import org.example.flowday.domain.chat.dto.ChatResponse;
+import org.example.flowday.domain.chat.service.ChatService;
 import org.example.flowday.global.security.util.JwtUtil;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -18,23 +19,29 @@ import java.util.Objects;
 public class ChatController {
 
     private final JwtUtil jwtUtil;
+    private final ChatService chatService;
 
+    /**
+     * 웹 소켓 연결
+     */
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/rooms/{roomId}")
     public ChatResponse chatting(
             @DestinationVariable Long roomId,
             ChatMessage chatMessage
     ) {
-        // TODO : 인증 처리
-        // @Header("Authorization") String bearerToken,
+        // TODO : 인증
+//        @Header("Authorization") String bearerToken,
 //        String accessToken = resolveToken(bearerToken);
 //        Long senderId = getIdByValidating(accessToken);
 
         LocalDateTime time = LocalDateTime.now();
-        // TODO : time을 포함한 채팅 로그 저장해야함 (동기, 비동기)
-
         String responseMessage = HtmlUtils.htmlEscape(chatMessage.message());
-        return new ChatResponse(3L, responseMessage, time);
+
+        // TODO : 채팅 로그 저장 (동기 -> 비동기), senderId 넣어야함
+        chatService.saveMessage(roomId, 99L, responseMessage, time);
+
+        return new ChatResponse(99L, responseMessage, time);
     }
 
     private Long getIdByValidating(String token) {
