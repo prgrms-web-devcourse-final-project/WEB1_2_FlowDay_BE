@@ -41,24 +41,29 @@ public class WishPlaceService {
 
     // 위시 플레이스 장소 추가
     public WishPlaceResDTO updateSpotInWishPlace(WishPlaceReqDTO wishPlaceReqDTO) {
-        WishPlace wishPlace = wishPlaceRepository.findByMemberId(wishPlaceReqDTO.getMemberId()).orElseThrow(WishPlaceException.NOT_FOUND::get);
+        try {
+            WishPlace wishPlace = wishPlaceRepository.findByMemberId(wishPlaceReqDTO.getMemberId()).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
-        Spot newSpot = Spot.builder()
-                .placeId(wishPlaceReqDTO.getSpot().getPlaceId())
-                .name(wishPlaceReqDTO.getSpot().getName())
-                .city(wishPlaceReqDTO.getSpot().getCity())
-                .comment(wishPlaceReqDTO.getSpot().getComment())
-                .wishPlace(wishPlace)
-                .build();
+            Spot newSpot = Spot.builder()
+                    .placeId(wishPlaceReqDTO.getSpot().getPlaceId())
+                    .name(wishPlaceReqDTO.getSpot().getName())
+                    .city(wishPlaceReqDTO.getSpot().getCity())
+                    .comment(wishPlaceReqDTO.getSpot().getComment())
+                    .wishPlace(wishPlace)
+                    .build();
 
-        spotRepository.save(newSpot);
-        wishPlace.getSpots().add(newSpot);
+            spotRepository.save(newSpot);
+            wishPlace.getSpots().add(newSpot);
 
-        List<SpotResDTO> spotResDTOs = wishPlace.getSpots().stream()
-                .map(spot -> new SpotResDTO(spot))
-                .collect(Collectors.toList());
+            List<SpotResDTO> spotResDTOs = wishPlace.getSpots().stream()
+                    .map(spot -> new SpotResDTO(spot))
+                    .collect(Collectors.toList());
 
-        return new WishPlaceResDTO(wishPlace, spotResDTOs);
+            return new WishPlaceResDTO(wishPlace, spotResDTOs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw WishPlaceException.NOT_UPDATED.get();
+        }
     }
 
     // 위시 플레이스 장소 삭제
@@ -75,6 +80,22 @@ public class WishPlaceService {
     }
 
     // 회원 별 위시 플레이스 목록 조회
+    public List<WishPlaceResDTO> getMemberWishPlaces(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+        List<WishPlace> wishPlaces = wishPlaceRepository.findAllByMemberId(memberId);
+
+        return wishPlaces.stream()
+                .map(wishPlace -> {
+                    List<SpotResDTO> spotResDTOs = spotRepository.findAllByWishPlaceId(wishPlace.getId()).stream()
+                            .map(SpotResDTO::new)
+                            .collect(Collectors.toList());
+
+                    return new WishPlaceResDTO(wishPlace, spotResDTOs);
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 회원 별 위시 플레이스 목록 조회 + 파트너
     public List<WishPlaceResDTO> getMemberAndPartnerWishPlaces(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         Long partnerId = member.getPartnerId();

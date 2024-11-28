@@ -59,11 +59,11 @@ public class WishPlaceController {
         return ResponseEntity.noContent().build();
     }
 
-    // 회원 및 파트너의 위시 플레이스 목록 조회
-    @Operation(summary = "불필요 api - 제거 예정")
+    // 회원 별 위시 플레이스 목록 조회
+    @Operation(summary = "회원 별 위시 플레이스 목록 조회")
     @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<WishPlaceResDTO>> getMemberAndPartnerWishPlaces(@PathVariable Long memberId) {
-        List<WishPlaceResDTO> wishPlaces = wishPlaceService.getMemberAndPartnerWishPlaces(memberId);
+    public ResponseEntity<List<WishPlaceResDTO>> getMemberWishPlaces(@PathVariable Long memberId) {
+        List<WishPlaceResDTO> wishPlaces = wishPlaceService.getMemberWishPlaces(memberId);
         return ResponseEntity.ok(wishPlaces);
     }
 
