@@ -129,7 +129,6 @@ public class NotProd {
                 .date(LocalDate.now())
                 .status(Status.COUPLE)
                 .memberId(member.getId())
-                .spots(spots)
                 .build();
 
         CourseResDTO courseResDTO = courseService.saveCourse(courseRequest);
