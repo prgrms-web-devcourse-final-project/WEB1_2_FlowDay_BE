@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.QMember;
+import org.example.flowday.domain.post.likes.entity.QLikes;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.entity.QPost;
 import org.example.flowday.domain.post.post.entity.Status;
@@ -43,6 +44,34 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
     }
 
     @Override
+    public Page<Post> searchMostLikedPost(Pageable pageable) {
+        QPost post = QPost.post;
+        QLikes likes = QLikes.likes; // Likes 테이블의 Q타입
+
+        // 좋아요 수를 카운트하여 내림차순 정렬
+        List<Post> content = queryFactory
+                .selectFrom(post)
+                .leftJoin(likes).on(likes.postId.eq(post.id)) // Post와 Likes를 조인
+                .where(post.status.eq(Status.PUBLIC))
+                .groupBy(post.id) // Post별로 그룹화
+                .orderBy(likes.count().desc()) // 좋아요 수 기준 내림차순 정렬
+                .offset(pageable.getOffset()) // 페이지 시작점
+                .limit(pageable.getPageSize()) // 페이지 크기 제한
+                .fetch(); // 결과 조회
+
+        // 전체 게시글 수 조회
+        long total = queryFactory
+                .selectFrom(post)
+                .leftJoin(likes).on(likes.postId.eq(post.id))
+                .where(post.status.eq(Status.PUBLIC))
+                .groupBy(post.id)
+                .fetchCount(); // 게시글 수 카운트
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+
+    @Override
     public Page<Post> searchCouplePost(Pageable pageable , Long memberId , Long partnerId) {
         QPost post = QPost.post;
 
@@ -64,6 +93,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                 .fetch(); // 결과 조회
 
         return new PageImpl<>(posts, pageable, posts.size());
+
+
 
 
     }
@@ -89,4 +120,61 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
 
     }
+
+    @Override
+    public Page<Post> searchMyPost(Pageable pageable, Long memberId) {
+        QPost post = QPost.post;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        // 작성자가 현재 회원인 경우
+        builder.and(post.writer.id.eq(memberId));
+
+        // 쿼리로 게시글 목록 조회
+        List<Post> posts = queryFactory
+                .selectFrom(post)
+                .where(builder)
+                .orderBy(post.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 전체 게시글 수 조회
+        long total = queryFactory
+                .selectFrom(post)
+                .fetch()
+                .size();
+
+        return new PageImpl<>(posts, pageable, total);
+    }
+
+
+    @Override
+    public Page<Post> searchMyPost(Pageable pageable, List<Long> postIds) {
+        QPost post = QPost.post;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        // 특정 ID들의 게시글 조회
+        builder.and(post.id.in(postIds));
+
+        // 쿼리로 게시글 목록 조회
+        List<Post> posts = queryFactory
+                .selectFrom(post)
+                .where(builder)
+                .orderBy(post.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 전체 게시글 수 조회
+        long total = queryFactory
+                .selectFrom(post)
+                .fetch()
+                .size();
+
+        return new PageImpl<>(posts, pageable, total);
+    }
+
+
 }
