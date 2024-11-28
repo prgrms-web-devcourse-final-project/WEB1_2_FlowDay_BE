@@ -152,6 +152,10 @@ public class PostService {
     public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO , Long userId) {
         Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
+        if (userId != post.getWriter().getId()) {
+            throw new RuntimeException("작성자만 게시글을 수정 할 수 있습니다");
+        }
+
         //게시글 정보 수정
         post.setTitle(updatedPostDTO.getTitle());
         post.setContents(updatedPostDTO.getContents());
@@ -210,8 +214,19 @@ public class PostService {
 
     // 게시글 삭제
     @Transactional
-    public void deletePost(Long id) {
+    public void deletePost(Long id , Long userId) {
+        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("post is not exist"));
+        if (userId != post.getWriter().getId()) {
+            throw new RuntimeException("작성자만 게시글을 삭제 할 수 있습니다");
+        }
+        List<GenFile> genFiles = genFileService.getFilesByPost(post);
+        for(GenFile genFile : genFiles) {
+            genFileService.deleteFileFromS3(genFile.getFileDir(), genFile.getS3FileName());
+            genFileRepository.delete(genFile);
+        }
+        post.remove();
         postRepository.deleteById(id);
+
     }
 
 

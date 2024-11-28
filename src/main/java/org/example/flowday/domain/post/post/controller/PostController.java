@@ -84,11 +84,11 @@ public class PostController {
     }
 
     // 게시글 삭제
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-//        postService.deletePost(id);
-//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id , @AuthenticationPrincipal SecurityUser user) {
+        postService.deletePost(id,user.getId());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
     //디버깅용
 //    @GetMapping("/{id}/json/forDebug")

@@ -72,6 +72,11 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replies = new ArrayList<>();
 
+    public void remove() {
+        writer.getPosts().remove(this);
+        writer=null;
+    }
+
 //    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<LikeEntity> likes =  new ArrayList<>();
 
