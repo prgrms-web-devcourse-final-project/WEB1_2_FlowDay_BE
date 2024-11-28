@@ -55,7 +55,7 @@ class ReplyServiceTest {
 
         Post post = Post.builder()
                 .title("title")
-                .content("content")
+                .contents("content")
                 .build();
 
         postRepository.save(post);
@@ -89,7 +89,7 @@ class ReplyServiceTest {
 
         Post post = Post.builder()
                 .title("title")
-                .content("content")
+                .contents("content")
                 .build();
 
         postRepository.save(post);
@@ -133,7 +133,7 @@ class ReplyServiceTest {
 
         Post post = Post.builder()
                 .title("title")
-                .content("content")
+                .contents("content")
                 .build();
 
         postRepository.save(post);
@@ -176,7 +176,7 @@ class ReplyServiceTest {
 
         Post post = Post.builder()
                 .title("Test Post Title")
-                .content("Test Post Content")
+                .contents("Test Post Content")
                 .build();
         postRepository.save(post);
 
