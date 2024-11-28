@@ -1,6 +1,7 @@
 package org.example.flowday.domain.course.wish.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Log4j2
 public class WishPlaceService {
 
     private final MemberRepository memberRepository;
@@ -40,7 +42,11 @@ public class WishPlaceService {
     }
 
     // 위시 플레이스 장소 추가
-    public WishPlaceResDTO updateSpotInWishPlace(WishPlaceReqDTO wishPlaceReqDTO) {
+    public WishPlaceResDTO updateSpotInWishPlace(Long userId, WishPlaceReqDTO wishPlaceReqDTO) {
+        if(!userId.equals(wishPlaceReqDTO.getMemberId())) {
+            throw WishPlaceException.FORBIDDEN.get();
+        }
+
         try {
             WishPlace wishPlace = wishPlaceRepository.findByMemberId(wishPlaceReqDTO.getMemberId()).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
@@ -67,7 +73,10 @@ public class WishPlaceService {
     }
 
     // 위시 플레이스 장소 삭제
-    public void removeSpotFromWishPlace(Long memberId, Long spotId) {
+    public void removeSpotFromWishPlace(Long userId, Long memberId, Long spotId) {
+        if(!userId.equals(memberId)) {
+            throw WishPlaceException.FORBIDDEN.get();
+        }
         WishPlace wishPlace = wishPlaceRepository.findByMemberId(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
         Spot spotToRemove = wishPlace.getSpots().stream()

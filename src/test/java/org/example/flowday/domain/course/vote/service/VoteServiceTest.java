@@ -104,7 +104,7 @@ class VoteServiceTest {
         when(spotRepository.saveAll(anyList())).thenReturn(List.of(spot));
         when(voteRepository.save(any(Vote.class))).thenReturn(vote);
 
-        VoteResDTO result = voteService.saveVote(voteReqDTO);
+        VoteResDTO result = voteService.saveVote(member.getId(), voteReqDTO);
 
         assertNotNull(result);
         assertEquals("뭐먹지", result.getTitle());

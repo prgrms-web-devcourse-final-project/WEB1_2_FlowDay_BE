@@ -42,6 +42,9 @@ class VoteControllerTest {
     private MemberRepository memberRepository;
 
     @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
     private VoteService voteService;
 
     @Autowired
@@ -51,8 +54,6 @@ class VoteControllerTest {
     private Course course;
     private VoteReqDTO voteReqDTO;
     private VoteResDTO voteResDTO;
-    @Autowired
-    private CourseRepository courseRepository;
 
     @BeforeAll
     void setUp() {
@@ -103,7 +104,7 @@ class VoteControllerTest {
                 ))
                 .build();
 
-        voteResDTO = voteService.saveVote(voteReqDTO);
+        voteResDTO = voteService.saveVote(member.getId(), voteReqDTO);
 
     }
 
@@ -131,7 +132,7 @@ class VoteControllerTest {
     @Test
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void updateCourseByVote() throws Exception {
-        mockMvc.perform(put("/api/v1/votes/{voteId}/spots/{spotId}", voteResDTO.getId(), voteResDTO.getSpots().get(1).getId()))
+        mockMvc.perform(put("/api/v1/votes/{voteId}/spot/{spotId}", voteResDTO.getId(), voteResDTO.getSpots().get(1).getId()))
                 .andExpect(status().isOk());
     }
 

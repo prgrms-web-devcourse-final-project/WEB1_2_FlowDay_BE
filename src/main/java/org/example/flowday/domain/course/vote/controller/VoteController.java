@@ -4,16 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.course.dto.CourseResDTO;
-import org.example.flowday.domain.course.course.entity.Course;
-import org.example.flowday.domain.course.course.exception.CourseException;
-import org.example.flowday.domain.course.course.repository.CourseRepository;
 import org.example.flowday.domain.course.vote.dto.VoteReqDTO;
 import org.example.flowday.domain.course.vote.dto.VoteResDTO;
 import org.example.flowday.domain.course.vote.service.VoteService;
-import org.example.flowday.domain.member.exception.MemberException;
-import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,24 +19,15 @@ import org.springframework.web.bind.annotation.*;
 public class VoteController {
 
     private final VoteService voteService;
-    private final MemberRepository memberRepository;
-    private final CourseRepository courseRepository;
 
     // 투표 생성
     @Operation(summary = "생성", description = "알림 도메인 완성 시 변경 예정")
     @PostMapping
     public ResponseEntity<VoteResDTO> createVote(
             @RequestBody VoteReqDTO voteReqDTO,
-            Authentication authentication
+            @AuthenticationPrincipal SecurityUser member
     ) {
-        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-        Course course = courseRepository.findById(voteReqDTO.getCourseId()).orElseThrow(CourseException.NOT_FOUND::get);
-
-        if (!id.equals(course.getMember().getId()) && !id.equals(course.getMember().getPartnerId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
-
-        return ResponseEntity.ok(voteService.saveVote(voteReqDTO));
+        return ResponseEntity.ok(voteService.saveVote(member.getId(), voteReqDTO));
     }
 
     // 투표 조회

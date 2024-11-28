@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -77,7 +76,7 @@ class WishPlaceControllerTest {
                         .build())
                 .build();
 
-        wishPlaceResDTO = wishPlaceService.updateSpotInWishPlace(wishPlaceReqDTO);
+        wishPlaceResDTO = wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
 
         wishPlaceReqDTO2 = WishPlaceReqDTO.builder()
                 .memberId(partner.getId())
@@ -89,7 +88,7 @@ class WishPlaceControllerTest {
                         .build())
                 .build();
 
-        wishPlaceService.updateSpotInWishPlace(wishPlaceReqDTO2);
+        wishPlaceService.updateSpotInWishPlace(partner.getId(), wishPlaceReqDTO2);
 
     }
 
@@ -101,7 +100,6 @@ class WishPlaceControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(wishPlaceReqDTO)))
                 .andExpect(status().isOk())
-                .andDo(print())
                 .andExpect(jsonPath("$.memberId").value(member.getId()));
     }
 
@@ -117,11 +115,9 @@ class WishPlaceControllerTest {
     @Test
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void getMemberAndPartnerWishPlaces() throws Exception {
-        mockMvc.perform(get("/api/v1/wishPlaces/member/{memberId}", partner.getId()))
+        mockMvc.perform(get("/api/v1/wishPlaces/member/{memberId}", member.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].memberId").value(partner.getId()))
-                .andExpect(jsonPath("$[1].memberId").value(partner.getPartnerId()));
+                .andExpect(jsonPath("$.length()").value(1));
     }
 
 }

@@ -6,16 +6,12 @@ import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.course.dto.CourseReqDTO;
 import org.example.flowday.domain.course.course.dto.CourseResDTO;
 import org.example.flowday.domain.course.course.dto.PageReqDTO;
-import org.example.flowday.domain.course.course.entity.Course;
-import org.example.flowday.domain.course.course.exception.CourseException;
-import org.example.flowday.domain.course.course.repository.CourseRepository;
 import org.example.flowday.domain.course.course.service.CourseService;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
-import org.example.flowday.domain.member.exception.MemberException;
-import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 public class CourseController {
 
     private final CourseService courseService;
-    private final MemberRepository memberRepository;
-    private final CourseRepository courseRepository;
 
     // 코스 생성
     @Operation(summary = "생성")
@@ -48,16 +42,9 @@ public class CourseController {
     public ResponseEntity<CourseResDTO> updateCourse(
             @PathVariable Long courseId,
             @RequestBody CourseReqDTO courseReqDTO,
-            Authentication authentication
+            @AuthenticationPrincipal SecurityUser user
     ) {
-        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-        Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
-
-        if (!id.equals(course.getMember().getId()) && !id.equals(course.getMember().getPartnerId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
-
-        return ResponseEntity.ok(courseService.updateCourse(courseId, courseReqDTO));
+        return ResponseEntity.ok(courseService.updateCourse(user.getId(), courseId, courseReqDTO));
     }
 
     // 코스에 장소 1개 추가
@@ -66,16 +53,9 @@ public class CourseController {
     public ResponseEntity<CourseResDTO> addSpotToCourse(
             @PathVariable Long courseId,
             @RequestBody SpotReqDTO spotReqDTO,
-            Authentication authentication
+            @AuthenticationPrincipal SecurityUser user
     ) {
-        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-        Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
-
-        if (!id.equals(course.getMember().getId()) && !id.equals(course.getMember().getPartnerId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
-
-        return ResponseEntity.ok(courseService.addSpot(courseId, spotReqDTO));
+        return ResponseEntity.ok(courseService.addSpot(user.getId(), courseId, spotReqDTO));
     }
 
     // 코스 삭제
@@ -83,16 +63,9 @@ public class CourseController {
     @DeleteMapping("/{course_id}")
     public ResponseEntity<Void> deleteCourse(
             @PathVariable("course_id") Long courseId,
-            Authentication authentication
+            @AuthenticationPrincipal SecurityUser user
     ) {
-        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-
-        if(!id.equals(courseRepository.findById(courseId).get().getMember().getId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
-
-        courseService.removeCourse(courseId);
-
+        courseService.removeCourse(user.getId(), courseId);
         return ResponseEntity.noContent().build();
     }
 
@@ -113,16 +86,9 @@ public class CourseController {
     @PatchMapping("/{courseId}/private")
     public ResponseEntity<Void> updateCourseStatusToPrivate(
             @PathVariable Long courseId,
-            Authentication authentication
+            @AuthenticationPrincipal SecurityUser member
     ) {
-        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-
-        if (!id.equals(courseRepository.findById(courseId).get().getMember().getPartnerId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
-
-        courseService.updateCourseStatusToPrivate(courseId);
-
+        courseService.updateCourseStatusToPrivate(member.getId(), courseId);
         return ResponseEntity.ok().build();
     }
 

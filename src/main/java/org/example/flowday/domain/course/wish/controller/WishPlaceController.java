@@ -5,12 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
-import org.example.flowday.domain.course.wish.exception.WishPlaceException;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
-import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,15 +28,9 @@ public class WishPlaceController {
     @PostMapping
     public ResponseEntity<WishPlaceResDTO> addSpotToWishPlace(
             @RequestBody WishPlaceReqDTO wishPlaceReqDTO,
-            Authentication authentication
+            @AuthenticationPrincipal SecurityUser user
     ) {
-        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-
-        if(!id.equals(wishPlaceReqDTO.getMemberId())) {
-            throw WishPlaceException.FORBIDDEN.get();
-        }
-
-        WishPlaceResDTO updatedWishPlace = wishPlaceService.updateSpotInWishPlace(wishPlaceReqDTO);
+        WishPlaceResDTO updatedWishPlace = wishPlaceService.updateSpotInWishPlace(user.getId(), wishPlaceReqDTO);
         return ResponseEntity.ok(updatedWishPlace);
     }
 
@@ -47,15 +40,9 @@ public class WishPlaceController {
     public ResponseEntity<Void> removeSpotFromWishPlace(
             @PathVariable Long memberId,
             @PathVariable Long spotId,
-            Authentication authentication
+            @AuthenticationPrincipal SecurityUser user
     ) {
-        Long id = memberRepository.findIdByLoginId(authentication.getName()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-
-        if(!id.equals(memberId)) {
-            throw WishPlaceException.FORBIDDEN.get();
-        }
-
-        wishPlaceService.removeSpotFromWishPlace(memberId, spotId);
+        wishPlaceService.removeSpotFromWishPlace(user.getId(), memberId, spotId);
         return ResponseEntity.noContent().build();
     }
 

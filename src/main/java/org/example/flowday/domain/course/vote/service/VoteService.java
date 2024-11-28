@@ -32,10 +32,14 @@ public class VoteService {
     private final VoteRepository voteRepository;
 
     // 투표 생성
-    public VoteResDTO saveVote(VoteReqDTO voteReqDTO) {
-        try {
-            Course course = courseRepository.findById(voteReqDTO.getCourseId()).orElseThrow(CourseException.NOT_FOUND::get);
+    public VoteResDTO saveVote(Long userId, VoteReqDTO voteReqDTO) {
+        Course course = courseRepository.findById(voteReqDTO.getCourseId()).orElseThrow(CourseException.NOT_FOUND::get);
 
+        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
+            throw CourseException.FORBIDDEN.get();
+        }
+
+        try {
             Vote vote = Vote.builder()
                     .course(course)
                     .title(voteReqDTO.getTitle())
