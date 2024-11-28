@@ -23,7 +23,7 @@ public class SpotController {
 
     // 지역별 인기 장소 top4
     @Operation(summary = "top4 조회", description = "지역별 인기 장소 top4 조회")
-    @GetMapping("/top4")
+    @GetMapping
     public ResponseEntity<List<SpotResDTO>> getTopSpotsByCity(@RequestParam String city) {
         List<SpotResDTO> topSpots = spotService.getTopSpotsByCity(city);
         return ResponseEntity.ok(topSpots);

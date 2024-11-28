@@ -52,7 +52,7 @@ public class VoteController {
 
     // 투표 완료 후 코스 수정
     @Operation(summary = "투표 후 코스 수정", description = "파트너가 투표한 장소를 코스에 추가")
-    @PutMapping("/{voteId}/spots/{spotId}")
+    @PutMapping("/{voteId}/spot/{spotId}")
     public ResponseEntity<CourseResDTO> updateCourseByVote(@PathVariable Long voteId, @PathVariable Long spotId) {
         return ResponseEntity.ok(voteService.updateCourseByVote(voteId, spotId));
     }
