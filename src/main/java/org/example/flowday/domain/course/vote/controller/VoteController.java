@@ -21,7 +21,7 @@ public class VoteController {
     private final VoteService voteService;
 
     // 투표 생성
-    @Operation(summary = "생성", description = "알림 도메인 완성 시 변경 예정")
+    @Operation(summary = "생성")
     @PostMapping
     public ResponseEntity<VoteResDTO> createVote(
             @RequestBody VoteReqDTO voteReqDTO,
@@ -38,8 +38,8 @@ public class VoteController {
     }
 
     // 투표 완료 후 코스 수정
-    @Operation(summary = "투표 후 코스 수정", description = "파트너가 투표한 장소를 코스에 추가")
-    @PutMapping("/{voteId}/spot/{spotId}")
+    @Operation(summary = "투표 후 코스 수정", description = "파트너가 투표한 장소를 코스에 추가, 나머지 후보 삭제")
+    @PatchMapping("/{voteId}/spot/{spotId}")
     public ResponseEntity<CourseResDTO> updateCourseByVote(@PathVariable Long voteId, @PathVariable Long spotId) {
         return ResponseEntity.ok(voteService.updateCourseByVote(voteId, spotId));
     }
