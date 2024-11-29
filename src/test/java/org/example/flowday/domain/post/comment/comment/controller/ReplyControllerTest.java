@@ -2,6 +2,7 @@ package org.example.flowday.domain.post.comment.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.comment.comment.dto.ReplyDTO;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
@@ -60,6 +61,8 @@ public class ReplyControllerTest {
     private Post testPost;
     private Reply parentReply;
 
+
+
     @BeforeAll
     void setUp() {
         // 테스트에 필요한 회원 생성 (테스트 유저)
@@ -67,6 +70,7 @@ public class ReplyControllerTest {
                 .name("테스트유저")
                 .loginId("testuser@example.com") // UserDetailsService에서 사용
                 .pw("password") // 실제로는 암호화된 비밀번호를 사용해야 합니다
+                .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(testMember);
 
@@ -74,6 +78,7 @@ public class ReplyControllerTest {
         otherMember = Member.builder()
                 .name("다른유저")
                 .loginId("otheruser@example.com")
+                .role(Role.ROLE_USER)
                 .pw("password")
                 .build();
         memberRepository.save(otherMember);

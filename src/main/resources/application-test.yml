@@ -11,6 +11,6 @@ spring:
       path: /h2-console
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     properties:
       hibernate.dialect: org.hibernate.dialect.H2Dialect

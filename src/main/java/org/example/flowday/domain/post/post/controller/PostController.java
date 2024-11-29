@@ -19,7 +19,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
@@ -117,18 +116,18 @@ public class PostController {
 
 
     // 게시글 수정
-//    @PutMapping("/{id}")
-//    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequestDTO updatedPostDto ,@AuthenticationPrincipal SecurityUser user) {
-//        PostResponseDTO post = postService.updatePost(id, updatedPostDto, user.getId());
-//        return new ResponseEntity<>(post, HttpStatus.OK);
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, @Valid @ModelAttribute PostRequestDTO updatedPostDto ,@AuthenticationPrincipal SecurityUser user) {
+        PostResponseDTO post = postService.updatePost(id, updatedPostDto, user.getId());
+        return new ResponseEntity<>(post, HttpStatus.OK);
+    }
 
     // 게시글 삭제
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-//        postService.deletePost(id);
-//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id , @AuthenticationPrincipal SecurityUser user) {
+        postService.deletePost(id,user.getId());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
     //디버깅용
 //    @GetMapping("/{id}/json/forDebug")

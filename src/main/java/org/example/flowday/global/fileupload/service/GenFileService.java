@@ -1,11 +1,11 @@
 package org.example.flowday.global.fileupload.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.post.post.entity.Post;
-import org.example.flowday.global.config.AppConfig;
 import org.example.flowday.global.fileupload.entity.GenFile;
 import org.example.flowday.global.fileupload.mapper.GenFileMapper;
 import org.example.flowday.global.fileupload.repository.GenFileRepository;
@@ -14,14 +14,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,9 +35,7 @@ public class GenFileService {
     }
 
 
-    public List<GenFile> saveFiles(Post post, List<MultipartFile> images) {
-        String relTypeCode = "post";
-        long relId = post.getId();
+    public void saveFiles( List<MultipartFile> images , String relTypeCode , Long relId , String typeCode , String type2Code) {
         int fileNo = 1;
 
         List<GenFile> genFiles = new ArrayList<>();
@@ -50,8 +44,6 @@ public class GenFileService {
                 continue;
             }
 
-            String typeCode = "common";
-            String type2Code = "inBody";
             String originFileName = image.getOriginalFilename();
             String s3FileName = UUID.randomUUID() + "_" + originFileName;
             String fileExt = Util.file.getExt(originFileName);
@@ -59,7 +51,7 @@ public class GenFileService {
 
             // S3 파일 저장 경로 설정
             String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd"));
-            String fileDir = "post/" + currentDate;
+            String fileDir = relTypeCode+"/" + currentDate;
             String s3Key = fileDir + "/" + s3FileName;
 
             // S3에 파일 업로드
@@ -74,7 +66,7 @@ public class GenFileService {
                 throw new RuntimeException("파일 업로드에 실패했습니다.", e);
             }
 
-            // 파일 정보 저장 (URL 제외)
+            // 파일 정보 저장
             GenFile genFile = GenFile.builder()
                     .relTypeCode(relTypeCode)
                     .relId(relId)
@@ -88,35 +80,69 @@ public class GenFileService {
                     .s3FileName(s3FileName) // 실제 S3 파일 이름 저장
                     .build();
 
+            genFile=save(genFile);
             genFileRepository.save(genFile);
             genFiles.add(genFile);
 
         }
 
-        return genFiles;
+
     }
 
     //원하는 객체의 List<GenFile> 조회
-    public List<GenFile> getFilesByPost(Post post) {
-        return genFileRepository.findByRelTypeCodeAndRelId("post", post.getId());
+    public List<GenFile> getFilesByPost(String relTypeCode , Long relId) {
+        return genFileRepository.findByRelTypeCodeAndRelId(relTypeCode, relId);
     }
 
-    //원하는 객체의 첫번째 이미지 조회
-    public String getFirstImageUrlByPost(Post post) {
-        // 게시글에 연관된 모든 파일을 조회
-        List<GenFile> genFiles = getFilesByPost(post);
 
-        // 이미지가 없다면 null 반환
+    //원하는 객체의 첫번째 이미지 조회
+    public String getFirstImageUrlByObject(String relTypeCode , Long relId) {
+        List<GenFile> genFiles = getFilesByPost(relTypeCode, relId);
+
         if (genFiles == null || genFiles.isEmpty()) {
             return null;
         }
 
-        // 첫 번째 이미지를 대표 이미지로 설정
         GenFile firstGenFile = genFiles.get(0);
 
-        // DTO로 변환 후 URL 가져오기
         return GenFileMapper.toResponseDTO(firstGenFile).getUrl();
     }
+
+
+    public GenFile save(GenFile genFile) {
+        Optional<GenFile> opOldGenFile = genFileRepository.findByRelTypeCodeAndRelIdAndTypeCodeAndType2CodeAndFileNo(genFile.getRelTypeCode(), genFile.getRelId(), genFile.getTypeCode()
+                , genFile.getType2Code(), genFile.getFileNo());
+
+        if(opOldGenFile.isPresent()) {
+            GenFile oldGenFile = opOldGenFile.get();
+            //s3에 업로드 된 이미지 삭제
+            deleteFileFromS3(oldGenFile.getFileDir() , oldGenFile.getS3FileName());
+
+            oldGenFile.merge(genFile);
+
+            genFileRepository.save(oldGenFile);
+
+            return oldGenFile;
+
+        }
+        genFileRepository.save(genFile);
+
+        return genFile;
+
+    }
+
+    //s3에 업로드된 파일 삭제
+    public void deleteFileFromS3(String fileDir, String s3FileName) {
+
+        String s3Key = fileDir + "/" + s3FileName;
+        try {
+            amazonS3.deleteObject(new DeleteObjectRequest(bucketName, s3Key));
+            System.out.println("파일이 성공적으로 삭제되었습니다: " + s3Key);
+        } catch (Exception e) {
+            throw new RuntimeException("S3에서 파일 삭제에 실패했습니다: " + s3Key, e);
+        }
+    }
+
 
 
 

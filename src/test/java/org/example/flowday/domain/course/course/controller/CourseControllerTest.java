@@ -57,6 +57,7 @@ class CourseControllerTest {
         member = Member.builder()
                 .name("tester")
                 .loginId("testId")
+                .role(Role.ROLE_USER)
                 .pw("password")
                 .role(Role.ROLE_USER)
                 .build();

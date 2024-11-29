@@ -70,10 +70,13 @@ public class Post {
     private Course course;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Reply> replies = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<LikeEntity> likes =  new ArrayList<>();
+    public void remove() {
+        writer.getPosts().remove(this);
+        writer=null;
+    }
 
 //    @ManyToMany
 //    @JoinTable(
