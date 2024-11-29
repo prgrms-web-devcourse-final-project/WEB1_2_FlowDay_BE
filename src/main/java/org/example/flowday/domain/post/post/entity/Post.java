@@ -70,6 +70,7 @@ public class Post {
     private Course course;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Reply> replies = new ArrayList<>();
 
     public void remove() {

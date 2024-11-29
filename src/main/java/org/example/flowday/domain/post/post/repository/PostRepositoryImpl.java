@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.QMember;
+
 import org.example.flowday.domain.post.likes.entity.QLikes;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.entity.QPost;
@@ -46,7 +47,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
     @Override
     public Page<Post> searchMostLikedPost(Pageable pageable) {
         QPost post = QPost.post;
-        QLikes likes = QLikes.likes; // Likes 테이블의 Q타입
+        QLikes likes = QLikes.likes;
+
 
         // 좋아요 수를 카운트하여 내림차순 정렬
         List<Post> content = queryFactory
@@ -70,10 +72,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
         return new PageImpl<>(content, pageable, total);
     }
 
-    }
 
     @Override
-    public Page<Post> searchCouplePost(Pageable pageable , Long memberId , Long partnerId) {
+    public Page<Post> searchCouplePost(Pageable pageable, Long memberId, Long partnerId) {
         QPost post = QPost.post;
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -146,7 +147,6 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
         return new PageImpl<>(posts, pageable, total);
     }
-
 
     @Override
     public Page<Post> searchMyPost(Pageable pageable, List<Long> postIds) {

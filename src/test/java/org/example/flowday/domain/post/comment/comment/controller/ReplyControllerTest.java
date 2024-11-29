@@ -2,6 +2,7 @@ package org.example.flowday.domain.post.comment.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.comment.comment.dto.ReplyDTO;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
@@ -67,6 +68,7 @@ public class ReplyControllerTest {
                 .name("테스트유저")
                 .loginId("testuser@example.com") // UserDetailsService에서 사용
                 .pw("password") // 실제로는 암호화된 비밀번호를 사용해야 합니다
+                .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(testMember);
 
@@ -74,6 +76,7 @@ public class ReplyControllerTest {
         otherMember = Member.builder()
                 .name("다른유저")
                 .loginId("otheruser@example.com")
+                .role(Role.ROLE_USER)
                 .pw("password")
                 .build();
         memberRepository.save(otherMember);
@@ -81,7 +84,7 @@ public class ReplyControllerTest {
         // 테스트에 필요한 게시글 생성
         testPost = Post.builder()
                 .title("테스트 게시글")
-                .content("게시글 내용")
+                .contents("게시글 내용")
                 .writer(testMember)
                 .build();
         postRepository.save(testPost);
@@ -137,7 +140,7 @@ public class ReplyControllerTest {
         // 새로운 게시글 생성 (댓글 없음)
         Post newPost = Post.builder()
                 .title("새 게시글")
-                .content("새 게시글 내용")
+                .contents("새 게시글 내용")
                 .writer(testMember)
                 .build();
         postRepository.save(newPost);

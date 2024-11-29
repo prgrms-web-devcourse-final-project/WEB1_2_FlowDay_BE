@@ -2,6 +2,7 @@ package org.example.flowday.domain.post.comment.likecomment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.comment.comment.repository.ReplyRepository;
@@ -69,9 +70,10 @@ public class LikeReplyControllerTest {
         // 테스트에 필요한 회원 생성
         testMember = Member.builder()
                 .name("테스트유저")
-                .loginId("testuser@example.com")
+                .loginId("testuser1@example.com")
                 .email("testuser@example.com")
                 .pw("password")
+                .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(testMember);
 
@@ -79,7 +81,7 @@ public class LikeReplyControllerTest {
         // 테스트에 필요한 게시글 생성
         testPost = Post.builder()
                 .title("테스트 게시글")
-                .content("게시글 내용")
+                .contents("게시글 내용")
                 .writer(testMember)
                 .build();
         postRepository.save(testPost);
@@ -95,7 +97,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/likes/{replyId} - 좋아요 생성 성공")
-    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_Success() throws Exception {
         // WHEN
         ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/{replyId}", testReply.getId())
@@ -120,7 +122,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/likes/{replyId} - 댓글 존재하지 않음")
-    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_ReplyNotFound() throws Exception {
         // WHEN
         ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/{replyId}", 9999L) // 존재하지 않는 댓글 ID
@@ -144,7 +146,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/likes/{replyId} - 이미 좋아요를 누른 경우")
-    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_AlreadyLiked() throws Exception {
         // 좋아요 생성
         likeReplyService.saveLikeReply(testMember.getId() , testReply.getId());
@@ -167,7 +169,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/likes/{replyId} - 좋아요 삭제 성공")
-    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_Success() throws Exception {
         // 사전에 좋아요 생성
         LikeReply existingLike = LikeReply.builder()
@@ -204,7 +206,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/likes/{replyId} - 댓글 존재하지 않음")
-    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_ReplyNotFound() throws Exception {
         // WHEN
         ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/{replyId}", 9999L) // 존재하지 않는 댓글 ID
@@ -224,7 +226,7 @@ public class LikeReplyControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/likes/{replyId} - 좋아요 존재하지 않음")
-    @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_LikeNotFound() throws Exception {
         // WHEN
         ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/{replyId}", testReply.getId())

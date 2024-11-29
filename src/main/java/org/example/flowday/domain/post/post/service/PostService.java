@@ -152,7 +152,7 @@ public class PostService {
         Page<Post> posts = postRepository.searchMyPost(pageable, userId);
 
         return posts.map(post -> {
-            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
 
@@ -165,7 +165,7 @@ public class PostService {
         Page<Post> posts = postRepository.searchMyPost(pageable, postIds);
 
         return posts.map(post -> {
-            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
     }
@@ -177,7 +177,7 @@ public class PostService {
         Page<Post> posts = postRepository.searchMyPost(pageable, postIds);
 
         return posts.map(post -> {
-            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
     }
