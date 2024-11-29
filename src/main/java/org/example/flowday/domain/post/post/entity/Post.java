@@ -50,7 +50,9 @@ public class Post {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    private int likeCount;
 
+    private int commentCount;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -76,6 +78,14 @@ public class Post {
     public void remove() {
         writer.getPosts().remove(this);
         writer=null;
+    }
+
+    public void increaseLike() {
+        likeCount++;
+    }
+
+    public void decreaseLike() {
+        likeCount--;
     }
 
 //    @ManyToMany

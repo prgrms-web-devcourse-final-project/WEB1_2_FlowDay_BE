@@ -35,6 +35,7 @@ public class PostMapper {
                 .region(post.getRegion())
                 .season(post.getSeason())
                 .tags(post.getTags())
+                .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .nickName(post.getWriter().getName())

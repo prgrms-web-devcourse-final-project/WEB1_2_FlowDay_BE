@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api/v1/likes")
+@RequestMapping("/api/v1/posts/likes")
 @RequiredArgsConstructor
 public class LikeController {
 
@@ -26,13 +26,8 @@ public class LikeController {
     // 좋아요 삭제
     @DeleteMapping
     public ResponseEntity<String> removeLike(@RequestBody LikesDTO.LikeRequestDTO likeRequestDTO , @AuthenticationPrincipal SecurityUser user) {
-
-        try{
-            likeService.removeLike(likeRequestDTO, user.getId());
-            return ResponseEntity.ok("Deleted");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+        likeService.removeLike(likeRequestDTO, user.getId());
+        return ResponseEntity.ok().body("좋아요가 삭제되었습니다");
 
     }
 }

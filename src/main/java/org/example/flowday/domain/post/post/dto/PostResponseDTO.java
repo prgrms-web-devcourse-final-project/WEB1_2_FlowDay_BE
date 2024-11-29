@@ -20,6 +20,7 @@ public class PostResponseDTO {
     private String contents;
     private String tags;
     private Long courseId;
+    private int likeCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<SpotResDTO> spots;
