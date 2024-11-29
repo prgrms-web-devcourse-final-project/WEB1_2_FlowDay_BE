@@ -129,11 +129,5 @@ public class PostController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    //디버깅용
-//    @GetMapping("/{id}/json/forDebug")
-//    @ResponseBody
-//    public Map<String, Object> showDetailJson(Model model, @PathVariable Long id) {
-//        return postService.getForPrintPostById(id);
-//    }
 
 }

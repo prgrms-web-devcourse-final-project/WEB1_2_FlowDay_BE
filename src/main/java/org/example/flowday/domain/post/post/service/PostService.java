@@ -251,31 +251,6 @@ public class PostService {
     }
 
 
-
-
-    // 게시글 수정
-//    @Transactional
-//    public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO , Long userId) {
-//        Post post = postRepository.findById(id).orElseThrow(PostException.POST_NOT_FOUND::get);
-//
-//        try {
-//            //게시글 정보 수정
-//            post.setTitle(updatedPostDTO.getTitle());
-//            post.setContents(updatedPostDTO.getContents());
-//            post.setCity(updatedPostDTO.getCity());
-//
-//            // 기존 이미지 처리
-//            List<Long> existingImageIds = updatedPostDTO.getExistingImageIds();
-//            List<GenFile> existingGenFiles = genFileService.getFilesByPost(post);
-//
-//
-//            return postMapper.toResponseDTO(post);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw PostException.POST_NOT_UPDATED.get();
-//        }
-//    }
-
     // 게시글 삭제
     @Transactional
     public void deletePost(Long id, Long userId) {
@@ -293,23 +268,5 @@ public class PostService {
     }
 
 
-//    public void addGenFileByUrl(Post post, String typeCode, String type2Code, int fileNo, String url) {
-//        genFileService.addGenFileByUrl("post", post.getId(), typeCode, type2Code, fileNo, url);
-//    }
-//
-//    public Post getPosteById(Long id) {
-//        return postRepository.findById(id).orElse(null);
-//    }
-
-    //디버깅용
-//    public Map<String,Object> getForPrintPostById(Long id) {
-//        Post post = getPosteById(id);
-//        Map<String, GenFile> genFileMap = genFileService.getRelGenFileMap(post);
-//
-//
-//        post.getExtra().put("genFileMap", genFileMap);
-//
-//        return post.getExtra();
-//    }
 
 }

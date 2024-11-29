@@ -52,8 +52,6 @@ public class Post {
 
     private int likeCount;
 
-    private int commentCount;
-
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -88,13 +86,6 @@ public class Post {
         likeCount--;
     }
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "post_tags",
-//            joinColumns = @JoinColumn(name = "post_id"),
-//            inverseJoinColumns = @JoinColumn(name = "tag_id")
-//    )
-//    private List<Tag> tags = new ArrayList<>();
 
 
 }

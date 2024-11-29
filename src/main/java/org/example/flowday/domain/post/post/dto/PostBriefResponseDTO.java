@@ -8,15 +8,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PostBriefResponseDTO {
     private Long id;
     private String title;
     private String content;
     private int commentCount;
+    private int likeCount;
     private LocalDateTime createdAt;
     private String imageURL;
 
@@ -28,6 +28,7 @@ public class PostBriefResponseDTO {
                 ? post.getContents().substring(0, 20)
                 : post.getContents();
         commentCount = post.getReplies().size();
+        likeCount = post.getLikeCount();
         createdAt = post.getCreatedAt();
         imageURL = url;
 
