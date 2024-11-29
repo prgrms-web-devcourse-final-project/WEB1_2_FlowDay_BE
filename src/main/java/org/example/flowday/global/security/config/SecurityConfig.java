@@ -98,6 +98,8 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/api/v1/members/refresh",
                                 "/error?continue",
+                                "/api/v1/members/findId",
+                                "/api/v1/members/findPW",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()

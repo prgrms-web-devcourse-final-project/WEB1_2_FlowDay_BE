@@ -47,6 +47,7 @@ public class Member {
     private String phoneNum;
     private Long partnerId;
     private String profileImage;
+    private Long chattingRoomId;
 
     @Column(columnDefinition = "TEXT")
     private String refreshToken;

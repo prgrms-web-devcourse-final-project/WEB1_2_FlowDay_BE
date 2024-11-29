@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.course.course.repository.CourseRepository;
-import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.vote.dto.VoteReqDTO;
 import org.example.flowday.domain.course.vote.dto.VoteResDTO;
 import org.example.flowday.domain.course.vote.service.VoteService;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +52,8 @@ class VoteControllerTest {
 
     private Member member;
     private Course course;
+    private Spot spot1;
+    private Spot spot2;
     private VoteReqDTO voteReqDTO;
     private VoteResDTO voteResDTO;
 
@@ -61,6 +63,7 @@ class VoteControllerTest {
                 .name("tester")
                 .loginId("testId")
                 .pw("password")
+                .role(Role.ROLE_USER)
                 .build();
 
         memberRepository.save(member);
@@ -83,25 +86,24 @@ class VoteControllerTest {
 
         courseRepository.save(course);
 
+        spot1 = Spot.builder()
+                .id(1L)
+                .placeId("ChIJgUbEo1")
+                .name("장소 이름1")
+                .city("서울")
+                .build();
+
+        spot2 = Spot.builder()
+                .id(2L)
+                .placeId("ChIJgUbEo1")
+                .name("장소 이름2")
+                .city("대전")
+                .build();
+
         voteReqDTO = VoteReqDTO.builder()
                 .courseId(course.getId())
                 .title("뭐먹지")
-                .spots(List.of(
-                        SpotReqDTO.builder()
-                                .id(1L)
-                                .placeId("ChIJgUbEo1")
-                                .name("장소 이름1")
-                                .city("서울")
-                                .sequence(1)
-                                .build(),
-                        SpotReqDTO.builder()
-                                .id(2L)
-                                .placeId("ChIJgUbEo1")
-                                .name("장소 이름2")
-                                .city("대전")
-                                .sequence(2)
-                                .build()
-                ))
+                .spotIds(List.of(spot1.getId(), spot2.getId()))
                 .build();
 
         voteResDTO = voteService.saveVote(member.getId(), voteReqDTO);
@@ -132,7 +134,7 @@ class VoteControllerTest {
     @Test
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void updateCourseByVote() throws Exception {
-        mockMvc.perform(put("/api/v1/votes/{voteId}/spot/{spotId}", voteResDTO.getId(), voteResDTO.getSpots().get(1).getId()))
+        mockMvc.perform(patch("/api/v1/votes/{voteId}/spot/{spotId}", voteResDTO.getId(), spot1.getId()))
                 .andExpect(status().isOk());
     }
 

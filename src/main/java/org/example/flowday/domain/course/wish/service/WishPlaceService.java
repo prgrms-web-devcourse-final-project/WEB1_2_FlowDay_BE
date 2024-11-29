@@ -42,7 +42,7 @@ public class WishPlaceService {
     }
 
     // 위시 플레이스 장소 추가
-    public WishPlaceResDTO updateSpotInWishPlace(Long userId, WishPlaceReqDTO wishPlaceReqDTO) {
+    public void updateSpotInWishPlace(Long userId, WishPlaceReqDTO wishPlaceReqDTO) {
         if(!userId.equals(wishPlaceReqDTO.getMemberId())) {
             throw WishPlaceException.FORBIDDEN.get();
         }
@@ -59,13 +59,6 @@ public class WishPlaceService {
                     .build();
 
             spotRepository.save(newSpot);
-            wishPlace.getSpots().add(newSpot);
-
-            List<SpotResDTO> spotResDTOs = wishPlace.getSpots().stream()
-                    .map(spot -> new SpotResDTO(spot))
-                    .collect(Collectors.toList());
-
-            return new WishPlaceResDTO(wishPlace, spotResDTOs);
         } catch (Exception e) {
             e.printStackTrace();
             throw WishPlaceException.NOT_UPDATED.get();
@@ -77,15 +70,21 @@ public class WishPlaceService {
         if(!userId.equals(memberId)) {
             throw WishPlaceException.FORBIDDEN.get();
         }
-        WishPlace wishPlace = wishPlaceRepository.findByMemberId(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
-        Spot spotToRemove = wishPlace.getSpots().stream()
-                .filter(spot -> spot.getId().equals(spotId))
-                .findFirst()
-                .orElse(null);
+        try {
+            WishPlace wishPlace = wishPlaceRepository.findByMemberId(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
-        wishPlace.getSpots().remove(spotToRemove);
-        spotRepository.delete(spotToRemove);
+            Spot spotToRemove = wishPlace.getSpots().stream()
+                    .filter(spot -> spot.getId().equals(spotId))
+                    .findFirst()
+                    .orElse(null);
+
+            wishPlace.getSpots().remove(spotToRemove);
+            spotRepository.delete(spotToRemove);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw WishPlaceException.NOT_DELETED.get();
+        }
     }
 
     // 회원 별 위시 플레이스 목록 조회
@@ -95,7 +94,7 @@ public class WishPlaceService {
 
         return wishPlaces.stream()
                 .map(wishPlace -> {
-                    List<SpotResDTO> spotResDTOs = spotRepository.findAllByWishPlaceId(wishPlace.getId()).stream()
+                    List<SpotResDTO> spotResDTOs = spotRepository.findAllByWishPlaceIdOrderByIdDesc(wishPlace.getId()).stream()
                             .map(SpotResDTO::new)
                             .collect(Collectors.toList());
 
@@ -117,7 +116,7 @@ public class WishPlaceService {
 
         return wishPlaces.stream()
                 .map(wishPlace -> {
-                    List<SpotResDTO> spotResDTOs = spotRepository.findAllByWishPlaceId(wishPlace.getId()).stream()
+                    List<SpotResDTO> spotResDTOs = spotRepository.findAllByWishPlaceIdOrderByIdDesc(wishPlace.getId()).stream()
                             .map(SpotResDTO::new)
                             .collect(Collectors.toList());
 

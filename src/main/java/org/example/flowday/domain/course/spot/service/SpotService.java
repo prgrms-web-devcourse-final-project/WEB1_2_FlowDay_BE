@@ -1,8 +1,10 @@
 package org.example.flowday.domain.course.spot.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
+import org.example.flowday.domain.course.spot.exception.SpotException;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,19 @@ public class SpotService {
         return topSpotsList.stream()
                 .map(spot -> new SpotResDTO(spot))
                 .collect(Collectors.toList());
+    }
+
+    // comment 수정
+    public SpotResDTO updateComment(Long spotId, SpotReqDTO spotReqDTO) {
+        Spot spot = spotRepository.findById(spotId).orElseThrow(SpotException.NOT_FOUND::get);
+        try {
+            spot.changeComment(spotReqDTO.getComment());
+
+            return new SpotResDTO(spot);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw SpotException.NOT_UPDATED.get();
+        }
     }
 
 }

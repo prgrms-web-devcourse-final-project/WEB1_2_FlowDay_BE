@@ -95,9 +95,7 @@ class VoteServiceTest {
         VoteReqDTO voteReqDTO = VoteReqDTO.builder()
                 .courseId(1L)
                 .title("뭐먹지")
-                .spots(List.of(
-                        SpotReqDTO.builder().id(1L).placeId("ChIJgUbEo1").name("장소 이름1").city("서울").sequence(1).build()
-                ))
+                .spotIds(List.of(spot.getId()))
                 .build();
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
@@ -110,21 +108,20 @@ class VoteServiceTest {
         assertEquals("뭐먹지", result.getTitle());
         verify(courseRepository).findById(1L);
         verify(voteRepository).save(any(Vote.class));
-        verify(spotRepository, times(1)).save(any(Spot.class));
     }
 
     @DisplayName("투표 조회 테스트")
     @Test
     void findVote() {
         when(voteRepository.findById(1L)).thenReturn(Optional.of(vote));
-        when(spotRepository.findAllByVoteId(1L)).thenReturn(List.of(spot));
+        when(spotRepository.findAllByVoteIdOrderBySequenceAsc(1L)).thenReturn(List.of(spot));
 
         VoteResDTO result = voteService.findVote(1L);
 
         assertNotNull(result);
         assertEquals("뭐먹지", result.getTitle());
         verify(voteRepository).findById(1L);
-        verify(spotRepository).findAllByVoteId(1L);
+        verify(spotRepository).findAllByVoteIdOrderBySequenceAsc(1L);
     }
     @DisplayName("투표 완료 후 코스 수정 테스트")
     @Test
@@ -134,7 +131,7 @@ class VoteServiceTest {
 
         when(voteRepository.findById(1L)).thenReturn(Optional.of(vote));
         when(spotRepository.findById(1L)).thenReturn(Optional.of(spot));
-        when(spotRepository.findAllByVoteId(1L)).thenReturn(spots);
+        when(spotRepository.findAllByVoteIdOrderBySequenceAsc(1L)).thenReturn(spots);
         when(spotRepository.save(any(Spot.class))).thenReturn(spot);
 
         assertDoesNotThrow(() -> {

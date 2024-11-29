@@ -117,16 +117,13 @@ class WishPlaceServiceTest {
                         .placeId("ChIJgUbEo2")
                         .name("장소 이름2")
                         .city("서울")
-                        .sequence(2)
                         .build())
                 .build();
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        WishPlaceResDTO result = wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
+        wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
 
-        // then
-        assertNotNull(result);
         verify(spotRepository, times(1)).save(any(Spot.class));
     }
 

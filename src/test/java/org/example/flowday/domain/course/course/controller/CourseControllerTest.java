@@ -21,8 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -48,8 +46,11 @@ class CourseControllerTest {
     private ObjectMapper objectMapper;
 
     private Member member;
+    private Member partner;
     private CourseReqDTO courseReqDTO;
     private CourseResDTO courseResDTO;
+    private CourseReqDTO courseReqDTO2;
+    private CourseResDTO courseResDTO2;
 
     @BeforeAll
     void setUp() {
@@ -58,9 +59,20 @@ class CourseControllerTest {
                 .loginId("testId")
                 .role(Role.ROLE_USER)
                 .pw("password")
+                .role(Role.ROLE_USER)
                 .build();
 
         memberRepository.save(member);
+
+        partner = Member.builder()
+                .name("partner")
+                .loginId("testId2")
+                .pw("password")
+                .role(Role.ROLE_USER)
+                .partnerId(member.getId())
+                .build();
+
+        memberRepository.save(partner);
 
         courseReqDTO = CourseReqDTO.builder()
                 .memberId(member.getId())
@@ -68,18 +80,39 @@ class CourseControllerTest {
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("blue")
-                .spots(Collections.singletonList(
-                        SpotReqDTO.builder()
-                                .id(1L)
-                                .placeId("ChIJgUbEo1")
-                                .name("장소 이름1")
-                                .city("서울")
-                                .sequence(1)
-                                .build()
-                ))
                 .build();
 
         courseResDTO = courseService.saveCourse(courseReqDTO);
+
+        SpotReqDTO spotReqDTO1 = SpotReqDTO.builder()
+                .id(1L)
+                .placeId("ChIJgUbEo3")
+                .name("성심당")
+                .city("대전")
+                .build();
+
+        courseService.addSpot(member.getId(), courseResDTO.getId(), spotReqDTO1);
+        courseResDTO = courseService.findCourse(courseResDTO.getId());
+
+        SpotReqDTO spotReqDTO2 = SpotReqDTO.builder()
+                .id(2L)
+                .placeId("ChIJgUbEo5")
+                .name("바다")
+                .city("울산")
+                .build();
+
+        courseService.addSpot(member.getId(), courseResDTO.getId(), spotReqDTO2);
+        courseResDTO = courseService.findCourse(courseResDTO.getId());
+
+        courseReqDTO2 = CourseReqDTO.builder()
+                .memberId(partner.getId())
+                .title("코스 이름")
+                .status(Status.COUPLE)
+                .date(LocalDate.now())
+                .color("blue")
+                .build();
+
+        courseResDTO2 = courseService.saveCourse(courseReqDTO2);
     }
 
     @DisplayName("코스 생성 테스트")
@@ -92,15 +125,6 @@ class CourseControllerTest {
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("blue")
-                .spots(Collections.singletonList(
-                        SpotReqDTO.builder()
-                                .id(1L)
-                                .placeId("ChIJgUbEo1")
-                                .name("장소 이름1")
-                                .city("서울")
-                                .sequence(1)
-                                .build()
-                ))
                 .build();
 
         mockMvc.perform(post("/api/v1/courses")
@@ -133,21 +157,6 @@ class CourseControllerTest {
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())
                 .color("pink")
-                .spots(List.of(
-                        SpotReqDTO.builder()
-                                .id(1L)
-                                .placeId("ChIJgUbEo1")
-                                .name("장소 이름 수정")
-                                .city("서울")
-                                .sequence(1)
-                                .build(),
-                        SpotReqDTO.builder()
-                                .placeId("dkjdkfsj2")
-                                .name("장소 이름2")
-                                .city("대전")
-                                .sequence(2)
-                                .build()
-                ))
                 .build();
 
         mockMvc.perform(put("/api/v1/courses/{courseId}", courseResDTO.getId())
@@ -157,9 +166,22 @@ class CourseControllerTest {
                 .andDo(print())
                 .andExpect(jsonPath("$.title").value("코스 이름 수정"))
                 .andExpect(jsonPath("$.status").value("PRIVATE"))
-                .andExpect(jsonPath("$.color").value("pink"))
-                .andExpect(jsonPath("$.spots[0].name").value("장소 이름 수정"))
-                .andExpect(jsonPath("$.spots[1].name").value("장소 이름2"));
+                .andExpect(jsonPath("$.color").value("pink"));
+    }
+
+    @DisplayName("장소 순서 변경 테스트")
+    @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    void updateSpotSequence() throws Exception {
+        System.out.println("xxx");
+        System.out.println(courseResDTO.getSpots().size());
+        Long spotId = courseResDTO.getSpots().get(0).getId();
+        int newSequence = 2;
+
+        mockMvc.perform(patch("/api/v1/courses/{courseId}/spot/{spotId}/sequence/{sequence}",
+                        courseResDTO.getId(), spotId, newSequence)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
     }
 
     @DisplayName("코스에 장소 1개 추가 테스트")
@@ -175,11 +197,15 @@ class CourseControllerTest {
         mockMvc.perform(post("/api/v1/courses/{courseId}", courseResDTO.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(spotReqDTO)))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andExpect(jsonPath("$.title").value("코스 이름"))
-                .andExpect(jsonPath("$.spots[1].name").value("성심당"))
-                .andExpect(jsonPath("$.spots[1].sequence").value(2));
+                .andExpect(status().isNoContent());
+    }
+
+    @DisplayName("코스의 장소 1개 삭제 테스트")
+    @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    void deleteSpotFromCourse() throws Exception {
+        mockMvc.perform(delete("/api/v1/courses/{courseId}/spot/{spotId}", courseResDTO.getId(), courseResDTO.getSpots().get(0).getId()))
+                .andExpect(status().isNoContent());
     }
 
     @DisplayName("코스 삭제 테스트")
@@ -190,7 +216,7 @@ class CourseControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    @DisplayName("회원 별 위시 플레이스 및 코스 목록 조회 테스트 테스트")
+    @DisplayName("회원 별 위시 플레이스 및 코스 목록 조회 테스트")
     @Test
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void getCourseListByMember() throws Exception {
@@ -199,6 +225,20 @@ class CourseControllerTest {
         mockMvc.perform(get("/api/v1/courses/member/{memberId}", member.getId())
                         .param("page", "1")
                         .param("size", "10"))
+                .andExpect(status().isOk());
+    }
+
+    @DisplayName("비공개로 상태 변경 테스트")
+    @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    void updateCourseStatusToPrivate() throws Exception {
+        System.out.println("zzz");
+        System.out.println(member.getId());
+        System.out.println(member.getPartnerId());
+        System.out.println(partner.getId());
+        System.out.println(courseResDTO2.getMemberId());
+        mockMvc.perform(patch("/api/v1/courses/{courseId}/private", courseResDTO2.getId())
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 

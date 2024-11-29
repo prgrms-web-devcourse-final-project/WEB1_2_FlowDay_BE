@@ -27,6 +27,4 @@ public class CourseReqDTO {
 
     @NotBlank(message = "Color cannot be blank")
     private String color;
-
-    private List<SpotReqDTO> spots;
 }

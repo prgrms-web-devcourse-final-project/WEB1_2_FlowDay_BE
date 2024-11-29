@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Boolean existsByLoginId(String username);
 
+    boolean existsById(Long id);
+
     Optional<Member> findById(Long id);
 
     @Query("SELECT m.role AS role, m.id AS id, m.pw AS pw FROM Member m WHERE m.loginId = :loginId")
@@ -44,7 +46,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m.id AS id, m.name AS name, m.email AS email, m.phoneNum AS num, m.profileImage AS image FROM Member m WHERE m.name = :name")
     Optional<Map<String, Object>> findByName(String name);
 
-    Optional<Member> findByEmailAndName(String email, String name);
+    @Query("SELECT m.loginId FROM Member m WHERE m.email=:email AND m.name=:name")
+    Optional<String> findByEmailAndName(String email, String name);
 
     @Modifying
     @Transactional

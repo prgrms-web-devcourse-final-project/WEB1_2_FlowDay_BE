@@ -19,5 +19,4 @@ public class SpotReqDTO {
     private String city;
 
     private String comment;
-    private int sequence;
 }
