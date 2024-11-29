@@ -24,21 +24,12 @@ public class MemberDTO {
         private String email;
         @NotBlank(message = "비밀번호는 필수 입력 값 입니다")
         private String pw;
-        @NotBlank(message = "닉네임은 필수 입력 값 입니다")
-        private String name;
-        @NotBlank(message = "전화번호는 필수 입력 값 입니다") // 삭제 가능성
-        private String phoneNum;
-        @NotBlank(message = "생년월일은 필수 입력 값 입니다")
-        private LocalDate dateOfBirth;
 
         public Member toEntity() {
             return Member.builder()
                     .loginId(loginId)
                     .email(email)
                     .pw(pw)
-                    .name(name)
-                    .phoneNum(phoneNum)
-                    .birthDt(dateOfBirth)
                     .build();
         }
     }
@@ -50,7 +41,6 @@ public class MemberDTO {
         private String loginId;
         private String email;
         private String name;
-        private String phoneNum;
     }
 
     @Data
@@ -67,7 +57,6 @@ public class MemberDTO {
         private String email;
         private String pw;
         private String name;
-        private String phoneNum;
 
         public Member toEntity() {
             return Member.builder()
@@ -75,7 +64,6 @@ public class MemberDTO {
                     .email(email)
                     .pw(pw)
                     .name(name)
-                    .phoneNum(phoneNum)
                     .build();
         }
     }
@@ -97,7 +85,14 @@ public class MemberDTO {
         private String loginId;
         private String email;
         private String name;
-        private String phoneNum;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class MyInfoSettingRequestDTO {
+        private String name;
+        private MultipartFile file;
+        private LocalDate birthDt;
     }
 
     @Data
@@ -168,19 +163,12 @@ public class MemberDTO {
 
 
     @Data
+    @AllArgsConstructor
     public static class FindPartnerResponseDTO {
         private Long id;
         private String profileImage;
         private String name;
         private String email;
-        private String phoneNum;
 
-        public FindPartnerResponseDTO(Member member) {
-            this.id = member.getId();
-            this.name = member.getName();
-            this.email = member.getEmail();
-            this.phoneNum = member.getPhoneNum();
-            this.profileImage = member.getProfileImage();
-        }
     }
 }
