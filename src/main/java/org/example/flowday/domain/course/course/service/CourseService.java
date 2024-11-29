@@ -156,7 +156,7 @@ public class CourseService {
     }
 
     // 코스에 장소 1개 추가
-    public CourseResDTO addSpot(Long userId, Long courseId, SpotReqDTO spotReqDTO) {
+    public void addSpot(Long userId, Long courseId, SpotReqDTO spotReqDTO) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
         if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
@@ -181,14 +181,6 @@ public class CourseService {
                     .build();
 
             spotRepository.save(spot);
-
-            List<Spot> updatedSpots = spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId);
-            List<SpotResDTO> spotResDTOs = updatedSpots.stream()
-                    .map(SpotResDTO::new)
-                    .toList();
-
-            return new CourseResDTO(course, spotResDTOs);
-
         } catch (Exception e) {
             e.printStackTrace();
             throw SpotException.NOT_CREATED.get();
@@ -228,7 +220,7 @@ public class CourseService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw SpotException.NOT_CREATED.get();
+            throw SpotException.NOT_DELETED.get();
         }
     }
 

@@ -50,7 +50,7 @@ public class CourseController {
     // 코스 수정 - 장소 순서 변경
     @Operation(summary = "장소 순서 변경")
     @PatchMapping("/{courseId}/spot/{spotId}/sequence/{sequence}")
-    public ResponseEntity<Void> updateCourse(
+    public ResponseEntity<Void> updateSpotSequence(
             @PathVariable Long courseId,
             @PathVariable Long spotId,
             @PathVariable int sequence,
@@ -63,12 +63,13 @@ public class CourseController {
     // 코스에 장소 1개 추가
     @Operation(summary = "장소 1개 추가")
     @PostMapping("/{courseId}")
-    public ResponseEntity<CourseResDTO> addSpotToCourse(
+    public ResponseEntity<Void> addSpotToCourse(
             @PathVariable Long courseId,
             @RequestBody SpotReqDTO spotReqDTO,
             @AuthenticationPrincipal SecurityUser user
     ) {
-        return ResponseEntity.ok(courseService.addSpot(user.getId(), courseId, spotReqDTO));
+        courseService.addSpot(user.getId(), courseId, spotReqDTO);
+        return ResponseEntity.noContent().build();
     }
 
     // 코스의 장소 1개 삭제
