@@ -9,6 +9,8 @@ import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.domain.post.comment.comment.repository.ReplyRepository;
+import org.example.flowday.domain.post.likes.repository.LikeRepository;
 import org.example.flowday.domain.post.post.dto.GenFileResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostBriefResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
@@ -41,6 +43,8 @@ public class PostService {
     private final CourseRepository courseRepository;
     private final GenFileService genFileService;
     private final GenFileRepository genFileRepository;
+    private final LikeRepository likeRepository;
+    private final ReplyRepository replyRepository;
 
     @Transactional
     public PostResponseDTO createPost(PostRequestDTO postRequestDTO, Long userId) {
@@ -139,8 +143,43 @@ public class PostService {
             String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
+    }
 
 
+        public Page<PostBriefResponseDTO> findAllMyPosts(Pageable pageable , Long userId) {
+        Member member = memberRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 멤버가 없습니다 "));
+
+        Page<Post> posts = postRepository.searchMyPost(pageable, userId);
+
+        return posts.map(post -> {
+            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            return new PostBriefResponseDTO(post, imageUrl);
+        });
+
+
+    }
+
+    public Page<PostBriefResponseDTO> findAllMyLikePosts(Pageable pageable , Long userId) {
+        List<Long> postIds = likeRepository.findAllPostIdByMemberId(userId);
+
+        Page<Post> posts = postRepository.searchMyPost(pageable, postIds);
+
+        return posts.map(post -> {
+            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            return new PostBriefResponseDTO(post, imageUrl);
+        });
+    }
+
+    public Page<PostBriefResponseDTO> findAllMyReplyPosts(Pageable pageable , Long userId) {
+
+        List<Long> postIds = replyRepository.findAllPostIdByMemberId(userId);
+
+        Page<Post> posts = postRepository.searchMyPost(pageable, postIds);
+
+        return posts.map(post -> {
+            String imageUrl = genFileService.getFirstImageUrlByPost(post);
+            return new PostBriefResponseDTO(post, imageUrl);
+        });
     }
 
 
@@ -228,7 +267,6 @@ public class PostService {
         }
         post.remove();
         postRepository.deleteById(id);
-
     }
 
 

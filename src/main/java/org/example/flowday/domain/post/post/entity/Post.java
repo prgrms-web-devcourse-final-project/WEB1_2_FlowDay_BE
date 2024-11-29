@@ -77,9 +77,6 @@ public class Post {
         writer=null;
     }
 
-//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<LikeEntity> likes =  new ArrayList<>();
-
 //    @ManyToMany
 //    @JoinTable(
 //            name = "post_tags",
