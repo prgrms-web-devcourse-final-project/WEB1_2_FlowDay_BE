@@ -1,6 +1,7 @@
 package org.example.flowday.domain.course.wish.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Log4j2
 public class WishPlaceService {
 
     private final MemberRepository memberRepository;
@@ -40,29 +42,41 @@ public class WishPlaceService {
     }
 
     // 위시 플레이스 장소 추가
-    public WishPlaceResDTO updateSpotInWishPlace(WishPlaceReqDTO wishPlaceReqDTO) {
-        WishPlace wishPlace = wishPlaceRepository.findByMemberId(wishPlaceReqDTO.getMemberId()).orElseThrow(WishPlaceException.NOT_FOUND::get);
+    public WishPlaceResDTO updateSpotInWishPlace(Long userId, WishPlaceReqDTO wishPlaceReqDTO) {
+        if(!userId.equals(wishPlaceReqDTO.getMemberId())) {
+            throw WishPlaceException.FORBIDDEN.get();
+        }
 
-        Spot newSpot = Spot.builder()
-                .placeId(wishPlaceReqDTO.getSpot().getPlaceId())
-                .name(wishPlaceReqDTO.getSpot().getName())
-                .city(wishPlaceReqDTO.getSpot().getCity())
-                .comment(wishPlaceReqDTO.getSpot().getComment())
-                .wishPlace(wishPlace)
-                .build();
+        try {
+            WishPlace wishPlace = wishPlaceRepository.findByMemberId(wishPlaceReqDTO.getMemberId()).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
-        spotRepository.save(newSpot);
-        wishPlace.getSpots().add(newSpot);
+            Spot newSpot = Spot.builder()
+                    .placeId(wishPlaceReqDTO.getSpot().getPlaceId())
+                    .name(wishPlaceReqDTO.getSpot().getName())
+                    .city(wishPlaceReqDTO.getSpot().getCity())
+                    .comment(wishPlaceReqDTO.getSpot().getComment())
+                    .wishPlace(wishPlace)
+                    .build();
 
-        List<SpotResDTO> spotResDTOs = wishPlace.getSpots().stream()
-                .map(spot -> new SpotResDTO(spot))
-                .collect(Collectors.toList());
+            spotRepository.save(newSpot);
+            wishPlace.getSpots().add(newSpot);
 
-        return new WishPlaceResDTO(wishPlace, spotResDTOs);
+            List<SpotResDTO> spotResDTOs = wishPlace.getSpots().stream()
+                    .map(spot -> new SpotResDTO(spot))
+                    .collect(Collectors.toList());
+
+            return new WishPlaceResDTO(wishPlace, spotResDTOs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw WishPlaceException.NOT_UPDATED.get();
+        }
     }
 
     // 위시 플레이스 장소 삭제
-    public void removeSpotFromWishPlace(Long memberId, Long spotId) {
+    public void removeSpotFromWishPlace(Long userId, Long memberId, Long spotId) {
+        if(!userId.equals(memberId)) {
+            throw WishPlaceException.FORBIDDEN.get();
+        }
         WishPlace wishPlace = wishPlaceRepository.findByMemberId(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
 
         Spot spotToRemove = wishPlace.getSpots().stream()
@@ -75,6 +89,22 @@ public class WishPlaceService {
     }
 
     // 회원 별 위시 플레이스 목록 조회
+    public List<WishPlaceResDTO> getMemberWishPlaces(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+        List<WishPlace> wishPlaces = wishPlaceRepository.findAllByMemberId(memberId);
+
+        return wishPlaces.stream()
+                .map(wishPlace -> {
+                    List<SpotResDTO> spotResDTOs = spotRepository.findAllByWishPlaceId(wishPlace.getId()).stream()
+                            .map(SpotResDTO::new)
+                            .collect(Collectors.toList());
+
+                    return new WishPlaceResDTO(wishPlace, spotResDTOs);
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 회원 별 위시 플레이스 목록 조회 + 파트너
     public List<WishPlaceResDTO> getMemberAndPartnerWishPlaces(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         Long partnerId = member.getPartnerId();

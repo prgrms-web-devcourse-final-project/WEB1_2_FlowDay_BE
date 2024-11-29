@@ -123,7 +123,7 @@ class WishPlaceServiceTest {
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        WishPlaceResDTO result = wishPlaceService.updateSpotInWishPlace(wishPlaceReqDTO);
+        WishPlaceResDTO result = wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
 
         // then
         assertNotNull(result);
@@ -137,7 +137,7 @@ class WishPlaceServiceTest {
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        wishPlaceService.removeSpotFromWishPlace(1L, 1L);
+        wishPlaceService.removeSpotFromWishPlace(member.getId(), 1L, 1L);
 
         assertTrue(wishPlace.getSpots().isEmpty());
         verify(spotRepository, times(1)).delete(spot);

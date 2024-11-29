@@ -99,7 +99,7 @@ public class SecurityConfig {
                                 "/api/v1/members/refresh",
                                 "/error?continue",
                                 "/swagger-ui/**",
-                                "/v3/api-docs"
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().hasRole("USER"));
 
