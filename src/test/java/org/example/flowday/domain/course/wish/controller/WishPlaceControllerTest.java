@@ -3,8 +3,8 @@ package org.example.flowday.domain.course.wish.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
-import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
@@ -43,14 +43,13 @@ class WishPlaceControllerTest {
     private Member partner;
     private WishPlaceReqDTO wishPlaceReqDTO;
     private WishPlaceReqDTO wishPlaceReqDTO2;
-    private WishPlaceResDTO wishPlaceResDTO;
-
     @BeforeAll
     void setUp() {
         member = Member.builder()
                 .name("tester")
                 .loginId("testId")
                 .pw("password")
+                .role(Role.ROLE_USER)
                 .build();
 
         memberRepository.save(member);
@@ -72,11 +71,10 @@ class WishPlaceControllerTest {
                         .placeId("ChIJgUbEo1")
                         .name("장소 이름1")
                         .city("서울")
-                        .sequence(1)
                         .build())
                 .build();
 
-        wishPlaceResDTO = wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
+        wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
 
         wishPlaceReqDTO2 = WishPlaceReqDTO.builder()
                 .memberId(partner.getId())
@@ -84,7 +82,6 @@ class WishPlaceControllerTest {
                         .placeId("ChIJgUbEo2")
                         .name("장소 이름2")
                         .city("대전")
-                        .sequence(1)
                         .build())
                 .build();
 
@@ -99,15 +96,14 @@ class WishPlaceControllerTest {
         mockMvc.perform(post("/api/v1/wishPlaces")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(wishPlaceReqDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.memberId").value(member.getId()));
+                .andExpect(status().isNoContent());
     }
 
     @DisplayName("위시 플레이스 장소 삭제 테스트")
     @Test
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void removeSpotFromWishPlace() throws Exception {
-        mockMvc.perform(delete("/api/v1/wishPlaces/member/{memberId}/spot/{spotId}", member.getId(), wishPlaceResDTO.getSpots().get(0).getId()))
+        mockMvc.perform(delete("/api/v1/wishPlaces/member/{memberId}/spot/{spotId}", member.getId(), 1L))
                 .andExpect(status().isNoContent());
     }
 

@@ -29,10 +29,12 @@ import org.springframework.data.domain.Sort;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CourseServiceTest {
@@ -58,6 +60,7 @@ class CourseServiceTest {
     private WishPlace wishPlace2;
     private Spot spot;
     private Spot addSpot;
+    private Spot addSpot2;
     private Course course;
     private Course course2;
     private Course course3;
@@ -112,9 +115,19 @@ class CourseServiceTest {
                 .build();
 
         addSpot = Spot.builder()
+                .id(2L)
                 .placeId("ChIJgUbEo1")
                 .name("성심당")
                 .city("서울")
+                .sequence(2)
+                .build();
+
+        addSpot2 = Spot.builder()
+                .id(3L)
+                .placeId("ChIJgUbEo1")
+                .name("성심당")
+                .city("서울")
+                .sequence(3)
                 .build();
 
         course = Course.builder()
@@ -157,8 +170,8 @@ class CourseServiceTest {
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("#FFFFFF")
-                .spots(List.of(spot))
                 .createdAt(LocalDateTime.now())
+                .spots(List.of(spot))
                 .build();
     }
 
@@ -171,9 +184,6 @@ class CourseServiceTest {
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())
                 .color("#FFFFFF")
-                .spots(List.of(
-                        SpotReqDTO.builder().placeId("ChIJgUbEo1").name("장소 이름1").city("서울").sequence(1).build()
-                ))
                 .build();
 
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
@@ -183,7 +193,6 @@ class CourseServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("코스 이름");
         verify(courseRepository, times(1)).save(any(Course.class));
-        verify(spotRepository, times(1)).save(any(Spot.class));
     }
 
     @DisplayName("코스 조회 테스트")
@@ -192,7 +201,7 @@ class CourseServiceTest {
         Long courseId = 1L;
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(spotRepository.findAllByCourseIdAndVoteIsNull(courseId)).thenReturn(List.of(spot));
+        when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(List.of(spot));
 
         CourseResDTO result = courseService.findCourse(courseId);
 
@@ -202,7 +211,7 @@ class CourseServiceTest {
         assertThat(result.getSpots().get(0).getName()).isEqualTo("장소 이름1");
     }
 
-    @DisplayName("코스 수정 테스트")
+    @DisplayName("코스 수정 - 정보 테스트")
     @Test
     void updateCourse() {
         Long memberId = 1L;
@@ -216,23 +225,53 @@ class CourseServiceTest {
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())
                 .color("#FFFFFF")
-                .spots(List.of(
-                        SpotReqDTO.builder().id(1L).placeId("ChIJgUbEo2").name("수정 장소 이름").sequence(1).build(),
-                        SpotReqDTO.builder().placeId("ChIJgUbEo2").name("추가 장소").sequence(3).build()
-                ))
                 .build();
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(spotRepository.findAllByCourseIdAndVoteIsNull(courseId)).thenReturn(List.of(spot));
+        when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(List.of(spot));
 
-        CourseResDTO result = courseService.updateCourse(member.getId(), courseId, courseReqDTO);
+        CourseResDTO result = courseService.updateCourseInfo(member.getId(), courseId, courseReqDTO);
 
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("수정 코스 이름");
-        assertThat(result.getSpots()).hasSize(2);
     }
 
-    @DisplayName("코스에 장소 추가 테스트")
+    @DisplayName("코스 장소 순서 변경 테스트")
+    @Test
+    void updateCourseSpotSequence() {
+        Long memberId = 1L;
+        Long courseId = 1L;
+        Long spotId = 1L;
+        int newSequence = 2;
+
+        List<Spot> spots = Arrays.asList(spot, addSpot);
+
+        SpotReqDTO spotReqDTO1 = SpotReqDTO.builder()
+                .placeId("ChIJgUbEo1")
+                .name("장소 이름1")
+                .city("서울")
+                .build();
+
+        SpotReqDTO spotReqDTO2 = SpotReqDTO.builder()
+                .placeId("ChIJgUbEo1")
+                .name("성심당")
+                .city("서울")
+                .build();
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(spots);
+
+        courseService.addSpot(memberId, courseId, spotReqDTO1);
+        courseService.addSpot(memberId, courseId, spotReqDTO2);
+
+        courseService.updateCourseSpotSequence(memberId, courseId, spotId, newSequence);
+
+        assertEquals(2, spot.getSequence());
+
+        verify(spotRepository).saveAll(spots);
+    }
+
+    @DisplayName("코스에 장소 1개 추가 테스트")
     @Test
     void addSpotToCourse() {
         Long courseId = 1L;
@@ -248,12 +287,11 @@ class CourseServiceTest {
         courseService.addSpot(member.getId(), courseId, spotReqDTO);
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(spotRepository.findAllByCourseIdAndVoteIsNull(courseId)).thenReturn(List.of(addSpot));
+        when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(List.of(addSpot));
 
         verify(spotRepository, times(1)).save(any(Spot.class));
         assertThat(course.getSpots().get(0).getSequence()).isEqualTo(1);
     }
-
 
     @DisplayName("코스 삭제 테스트")
     @Test
@@ -261,6 +299,8 @@ class CourseServiceTest {
         Long courseId = 1L;
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(List.of(spot));
+
 
         CourseResDTO result = courseService.removeCourse(member.getId(), courseId);
 
