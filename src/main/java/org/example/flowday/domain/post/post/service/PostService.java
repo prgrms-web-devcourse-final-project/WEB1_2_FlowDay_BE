@@ -16,6 +16,7 @@ import org.example.flowday.domain.post.post.dto.PostBriefResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.entity.Post;
+import org.example.flowday.domain.post.post.exception.PostException;
 import org.example.flowday.global.fileupload.mapper.GenFileMapper;
 import org.example.flowday.domain.post.post.mapper.PostMapper;
 import org.example.flowday.domain.post.post.repository.PostRepository;
@@ -50,22 +51,22 @@ public class PostService {
     public PostResponseDTO createPost(PostRequestDTO postRequestDTO, Long userId) {
         Member writer = memberRepository.findById(userId)
                 .orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+        try {
+            Course course = null;
+            List<SpotResDTO> spotResDTOs = null;
 
-        Course course = null;
-        List<SpotResDTO> spotResDTOs = null;
+            if (postRequestDTO.getCourseId() != null) {
+                course = courseRepository.findById(postRequestDTO.getCourseId())
+                        .orElseThrow(CourseException.NOT_FOUND::get);
+                List<Spot> spots = course.getSpots();
+                spotResDTOs = spots.stream()
+                        .map(SpotResDTO::new)
+                        .collect(Collectors.toList());
+            }
 
-        if (postRequestDTO.getCourseId() != null) {
-            course = courseRepository.findById(postRequestDTO.getCourseId())
-                    .orElseThrow(CourseException.NOT_FOUND::get);
-            List<Spot> spots = course.getSpots();
-            spotResDTOs = spots.stream()
-                    .map(SpotResDTO::new)
-                    .collect(Collectors.toList());
-        }
-
-        // 게시글 생성 및 저장
-        Post post = postMapper.toEntity(postRequestDTO, writer, course);
-        Post savedPost = postRepository.save(post);
+            // 게시글 생성 및 저장
+            Post post = postMapper.toEntity(postRequestDTO, writer, course);
+            Post savedPost = postRepository.save(post);
 
         // 이미지 저장 로직 추가
         List<MultipartFile> images = postRequestDTO.getImages();
@@ -79,14 +80,17 @@ public class PostService {
                 .map(GenFileMapper::toResponseDTO)
                 .collect(Collectors.toList());
 
-        return postMapper.toResponseDTO(savedPost, spotResDTOs, imageDTOs);
+            return postMapper.toResponseDTO(savedPost, spotResDTOs, imageDTOs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw PostException.POST_NOT_CREATED.get();
+        }
     }
 
 
     // 게시글 디테일 - ID
     public PostResponseDTO getPostById(Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다"));
+        Post post = postRepository.findById(id).orElseThrow(PostException.POST_NOT_FOUND::get);
 
         Course course = post.getCourse();
         List<SpotResDTO> spotResDTOs = null;
@@ -130,12 +134,11 @@ public class PostService {
             return new PostBriefResponseDTO(post, imageUrl);
         });
 
-
     }
 
     //내가 작성한 Private 게시글만 보기
     public Page<PostBriefResponseDTO> findAllPrivate(PageRequest pageable, Long userId) {
-        Member member = memberRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 멤버가 없습니다 "));
+        Member member = memberRepository.findById(userId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
         Page<Post> posts = postRepository.searchPrivatePost(pageable, userId);
 
@@ -155,8 +158,6 @@ public class PostService {
             String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
             return new PostBriefResponseDTO(post, imageUrl);
         });
-
-
     }
 
     public Page<PostBriefResponseDTO> findAllMyLikePosts(Pageable pageable , Long userId) {
@@ -252,6 +253,28 @@ public class PostService {
 
 
 
+    // 게시글 수정
+//    @Transactional
+//    public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO , Long userId) {
+//        Post post = postRepository.findById(id).orElseThrow(PostException.POST_NOT_FOUND::get);
+//
+//        try {
+//            //게시글 정보 수정
+//            post.setTitle(updatedPostDTO.getTitle());
+//            post.setContents(updatedPostDTO.getContents());
+//            post.setCity(updatedPostDTO.getCity());
+//
+//            // 기존 이미지 처리
+//            List<Long> existingImageIds = updatedPostDTO.getExistingImageIds();
+//            List<GenFile> existingGenFiles = genFileService.getFilesByPost(post);
+//
+//
+//            return postMapper.toResponseDTO(post);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw PostException.POST_NOT_UPDATED.get();
+//        }
+//    }
 
     // 게시글 삭제
     @Transactional
