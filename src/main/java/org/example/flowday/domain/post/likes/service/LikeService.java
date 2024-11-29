@@ -25,10 +25,10 @@ public class LikeService {
 
     // 좋아요 생성
     @Transactional
-    public LikesDTO.LikeResponseDTO addLike(LikesDTO.LikeRequestDTO likeRequestDTO , Long userId) {
-        Post post = postRepository.findById(likeRequestDTO.getPostId()).orElseThrow(PostException.POST_NOT_FOUND::get);
+    public LikesDTO.LikeResponseDTO addLike(Long postId , Long userId) {
+        Post post = postRepository.findById(postId).orElseThrow(PostException.POST_NOT_FOUND::get);
 
-        Optional<Likes> opLike = likeRepository.findByPostIdAndMemberId(likeRequestDTO.getPostId(), userId);
+        Optional<Likes> opLike = likeRepository.findByPostIdAndMemberId(postId, userId);
         if (opLike.isPresent()) {
             throw PostException.POST_IS_LIKE.get();
         }
@@ -36,7 +36,7 @@ public class LikeService {
         post.increaseLike();
         Likes like = Likes.builder()
                 .memberId(userId)
-                .postId(likeRequestDTO.getPostId())
+                .postId(postId)
                 .build();
 
         Likes savedLike = likeRepository.save(like);
@@ -50,9 +50,9 @@ public class LikeService {
     }
     // 좋아요 삭제
     @Transactional
-    public void removeLike(LikesDTO.LikeRequestDTO likeRequestDTO, Long userId) {
-        Post post = postRepository.findById(likeRequestDTO.getPostId()).orElseThrow(PostException.POST_NOT_FOUND::get);
-        Optional<Likes> opLike = likeRepository.findByPostIdAndMemberId(likeRequestDTO.getPostId(), userId);
+    public void removeLike(Long postId, Long userId) {
+        Post post = postRepository.findById(postId).orElseThrow(PostException.POST_NOT_FOUND::get);
+        Optional<Likes> opLike = likeRepository.findByPostIdAndMemberId(postId, userId);
         if (opLike.isPresent()) {
             post.decreaseLike();
             likeRepository.delete(opLike.get());
