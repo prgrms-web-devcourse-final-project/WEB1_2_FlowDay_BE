@@ -2,7 +2,7 @@ server:
   port: 5000
 spring:
   thymeleaf:
-    cache: false
+    cache: true
   output:
     ansi:
-      enabled: always
+      enabled: never
