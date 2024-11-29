@@ -225,7 +225,7 @@ class CourseServiceTest {
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         when(spotRepository.findAllByCourseIdAndVoteIsNull(courseId)).thenReturn(List.of(spot));
 
-        CourseResDTO result = courseService.updateCourse(courseId, courseReqDTO);
+        CourseResDTO result = courseService.updateCourse(member.getId(), courseId, courseReqDTO);
 
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("수정 코스 이름");
@@ -245,7 +245,7 @@ class CourseServiceTest {
                 .city("서울")
                 .build();
 
-        courseService.addSpot(courseId, spotReqDTO);
+        courseService.addSpot(member.getId(), courseId, spotReqDTO);
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         when(spotRepository.findAllByCourseIdAndVoteIsNull(courseId)).thenReturn(List.of(addSpot));
@@ -262,7 +262,7 @@ class CourseServiceTest {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        CourseResDTO result = courseService.removeCourse(courseId);
+        CourseResDTO result = courseService.removeCourse(member.getId(), courseId);
 
         assertThat(result).isNotNull();
         verify(courseRepository, times(1)).delete(course);
@@ -336,7 +336,7 @@ class CourseServiceTest {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course3));
 
-        courseService.updateCourseStatusToPrivate(courseId);
+        courseService.updateCourseStatusToPrivate(member.getId(), courseId);
 
         assertThat(course3.getStatus()).isEqualTo(Status.PRIVATE);
 

@@ -1,6 +1,9 @@
 package org.example.flowday.domain.member.controller;
 
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.dto.MemberDTO;
 import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.member.service.MemberService;
@@ -17,6 +20,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/members")
+@Tag(name = "Member", description = "회원 관련 api")
 public class MemberController {
 
     private final MemberService memberService;
@@ -29,6 +33,7 @@ public class MemberController {
 
 
     // 토큰 재발급
+    @Operation(summary = "토큰 재발급")
     @PostMapping("/refresh")
     public ResponseEntity<String> refreshAccessToken(@RequestBody MemberDTO.TokenRefreshRequestDTO dto) {
         try {
@@ -53,6 +58,7 @@ public class MemberController {
     }
 
     // 회원 가입
+    @Operation(summary = "회원 가입")
     @PostMapping("/register")
     public ResponseEntity<Object> createMember(@RequestBody MemberDTO.CreateRequestDTO dto) {
         try {
@@ -62,6 +68,7 @@ public class MemberController {
         }
     }
 
+    @Operation(summary = "이메일로 아이디 찾기")
     // 이메일로 아이디 찾기
     @PostMapping("/findId")
     public ResponseEntity<Object> findId(@RequestBody MemberDTO.FindIdRequestDTO dto){
@@ -73,6 +80,7 @@ public class MemberController {
     }
 
     // 비밀번호 찾기
+    @Operation(summary = "비밀번호 찾기")
     @PostMapping("/findPW")
     public ResponseEntity<String> findPw(@RequestBody MemberDTO.FindPWRequestDTO request) {
         try {
@@ -86,14 +94,16 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("임시 비밀번호 전송을 실패하였습니다");
         }
     }
-
+  
     // 로그인 ( Swagger 전용 )
+    @Operation(summary = "로그")
     @PostMapping("/login")
     public ResponseEntity<String> login(@AuthenticationPrincipal SecurityUser user){
         return ResponseEntity.ok("{\"message\":\"Login successful\"}");
     }
 
     // 로그아웃 ( Swagger 전용 )
+    @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@AuthenticationPrincipal SecurityUser user){
         return ResponseEntity.ok("{\"message\":\"Logout successful\"}");
@@ -109,12 +119,14 @@ public class MemberController {
 
 
     // 회원 조회 (마이 페이지)
+    @Operation(summary = "회원 조회", description = "마이페이지")
     @GetMapping("/")
     public ResponseEntity<MemberDTO.MyPageResponseDTO> getMyPage(@AuthenticationPrincipal SecurityUser user) {
         return ResponseEntity.ok(memberService.getMyPage(user.getId()));
     }
 
     // 회원 수정
+    @Operation(summary = "회원 수정")
     @PutMapping("/")
     public ResponseEntity<MemberDTO.UpdateResponseDTO> updateMember(
             @AuthenticationPrincipal SecurityUser user,
@@ -128,12 +140,14 @@ public class MemberController {
     }
 
     // 회원 삭제
+    @Operation(summary = "회원 삭제")
     @DeleteMapping("/")
     public ResponseEntity<String> deleteMember(@AuthenticationPrincipal SecurityUser user) {
         return ResponseEntity.ok(memberService.deleteMember(user.getId()));
     }
 
     // 프로필 이미지 수정
+    @Operation(summary = "프로필 이미지 수정")
     @PutMapping("/updateImage")
     public ResponseEntity<MemberDTO.ChangeImageResponseDTO> modifyImage(
             @AuthenticationPrincipal SecurityUser user,
@@ -142,6 +156,7 @@ public class MemberController {
     }
 
     // 생일 수정(등록)
+    @Operation(summary = "생일 수정(등록)")
     @PutMapping("/birthday")
     public ResponseEntity<String> updateBirthday(
             @AuthenticationPrincipal SecurityUser user,
@@ -164,13 +179,15 @@ public class MemberController {
     // 연인 관련 엔드 포인트
 
 
-    //연인 찾기
+    //연인 등록
+    @Operation(summary = "연인 등록", description = "알림 도메인 완성 시 변경 예정")
     @GetMapping("/partner/{name}")
     public ResponseEntity<MemberDTO.FindPartnerResponseDTO> getMemberByName(@PathVariable String name) {
         return ResponseEntity.ok(memberService.getPartner(name));
     }
 
     // 만나기 시작한 날 수정
+    @Operation(summary = "만나기 시작한 날 수정")
     @PutMapping("/relationship")
     public ResponseEntity<String> updateRelationshipStartDate(
             @AuthenticationPrincipal SecurityUser user,
@@ -186,6 +203,7 @@ public class MemberController {
 
     // 파트너 ID 수정
     // 테스트 전용 ( 알림 도메인 완성시 변경 예정 )
+    @Operation(summary = "파트너 ID 수정")
     @PutMapping("/partnerUpdate")
     public ResponseEntity<String> updatePartnerId(
             @AuthenticationPrincipal SecurityUser user,
@@ -200,6 +218,7 @@ public class MemberController {
     }
 
     // 연결 끊기
+    @Operation(summary = "파트너 연결 끊기")
     @PutMapping("/disconnect")
     public ResponseEntity<String> disconnect(@AuthenticationPrincipal SecurityUser user, @RequestParam Boolean stat){
         memberService.disconnectPartner(user.getId(), stat);
@@ -216,6 +235,7 @@ public class MemberController {
 
 
     // 회원 조회 (ID로 조회)
+    @Operation(summary = "회원 ID로 조회")
     @GetMapping("/{id}")
     public ResponseEntity<MemberDTO.ReadResponseDTO> getMember(@PathVariable Long id) {
         return ResponseEntity.ok(memberService.getMember(id));

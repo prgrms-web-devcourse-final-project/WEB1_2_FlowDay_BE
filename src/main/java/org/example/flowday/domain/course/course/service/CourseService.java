@@ -93,8 +93,12 @@ public class CourseService {
     }
 
     // 코스 수정
-    public CourseResDTO updateCourse(Long courseId, CourseReqDTO courseReqDTO) {
+    public CourseResDTO updateCourse(Long userId, Long courseId, CourseReqDTO courseReqDTO) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
+
+        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
+            throw CourseException.FORBIDDEN.get();
+        }
 
         try {
             course.changeTitle(courseReqDTO.getTitle());
@@ -158,8 +162,12 @@ public class CourseService {
     }
 
     // 코스에 장소 1개 추가
-    public CourseResDTO addSpot(Long courseId, SpotReqDTO spotReqDTO) {
+    public CourseResDTO addSpot(Long userId, Long courseId, SpotReqDTO spotReqDTO) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
+
+        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
+            throw CourseException.FORBIDDEN.get();
+        }
 
         try {
             List<Integer> existingSequences = spotRepository.findAllByCourseIdAndVoteIsNull(courseId).stream()
@@ -193,8 +201,12 @@ public class CourseService {
     }
 
     // 코스 삭제
-    public CourseResDTO removeCourse(Long courseId) {
+    public CourseResDTO removeCourse(Long userId, Long courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
+
+        if(!userId.equals(courseRepository.findById(courseId).get().getMember().getId())) {
+            throw CourseException.FORBIDDEN.get();
+        }
 
         courseRepository.delete(course);
 
@@ -249,8 +261,12 @@ public class CourseService {
     }
 
     // 그만 보기 시 상대방의 코스 비공개로 상태 변경
-    public void updateCourseStatusToPrivate(Long courseId) {
+    public void updateCourseStatusToPrivate(Long memberId, Long courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
+
+        if (!memberId.equals(courseRepository.findById(courseId).get().getMember().getPartnerId())) {
+            throw CourseException.FORBIDDEN.get();
+        }
 
         try {
             course.changeStatus(Status.PRIVATE);
