@@ -36,26 +36,52 @@ public class CourseController {
         return ResponseEntity.ok(courseService.findCourse(courseId));
     }
 
-    // 코스 수정
-    @Operation(summary = "수정", description = "파트너가 수정 시에도 요청 DTO에는 memberId는 작성자의 id")
+    // 코스 수정 - 정보
+    @Operation(summary = "코스 정보 수정", description = "수정된 값만 넘겨주면 됨")
     @PutMapping("/{courseId}")
     public ResponseEntity<CourseResDTO> updateCourse(
             @PathVariable Long courseId,
             @RequestBody CourseReqDTO courseReqDTO,
             @AuthenticationPrincipal SecurityUser user
     ) {
-        return ResponseEntity.ok(courseService.updateCourse(user.getId(), courseId, courseReqDTO));
+        return ResponseEntity.ok(courseService.updateCourseInfo(user.getId(), courseId, courseReqDTO));
+    }
+
+    // 코스 수정 - 장소 순서 변경
+    @Operation(summary = "장소 순서 변경")
+    @PatchMapping("/{courseId}/spot/{spotId}/sequence/{sequence}")
+    public ResponseEntity<Void> updateSpotSequence(
+            @PathVariable Long courseId,
+            @PathVariable Long spotId,
+            @PathVariable int sequence,
+            @AuthenticationPrincipal SecurityUser user
+    ) {
+        courseService.updateCourseSpotSequence(user.getId(), courseId, spotId, sequence);
+        return ResponseEntity.noContent().build();
     }
 
     // 코스에 장소 1개 추가
-    @Operation(summary = "장소 1개 추가", description = "코스에 장소를 1개 추가 / sequence(순서)는 마지막으로 배정")
+    @Operation(summary = "장소 1개 추가")
     @PostMapping("/{courseId}")
-    public ResponseEntity<CourseResDTO> addSpotToCourse(
+    public ResponseEntity<Void> addSpotToCourse(
             @PathVariable Long courseId,
             @RequestBody SpotReqDTO spotReqDTO,
             @AuthenticationPrincipal SecurityUser user
     ) {
-        return ResponseEntity.ok(courseService.addSpot(user.getId(), courseId, spotReqDTO));
+        courseService.addSpot(user.getId(), courseId, spotReqDTO);
+        return ResponseEntity.noContent().build();
+    }
+
+    // 코스의 장소 1개 삭제
+    @Operation(summary = "장소 1개 삭제")
+    @DeleteMapping("/{course_id}/spot/{spot_id}")
+    public ResponseEntity<Void> deleteSpotFromCourse(
+            @PathVariable("course_id") Long courseId,
+            @PathVariable("spot_id") Long spotId,
+            @AuthenticationPrincipal SecurityUser user
+    ) {
+        courseService.removeSpot(user.getId(), courseId, spotId);
+        return ResponseEntity.noContent().build();
     }
 
     // 코스 삭제
@@ -69,8 +95,8 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "위시 플레이스 + 코스 목록 조회", description = "나와 (파트너의) 위시플레이스와 나와 (파트너의 COUPLE 상태) 코스 목록")
     // 회원 별 위시 플레이스, 코스 목록 조회
+    @Operation(summary = "위시 플레이스 + 코스 목록 조회", description = "나와 (파트너의) 위시플레이스와 나와 (파트너의 COUPLE 상태) 코스 목록")
     @GetMapping("/member/{memberId}")
     public ResponseEntity<Page<Object>> CourseListByMember(
             @PathVariable("memberId") Long memberId,

@@ -2,6 +2,7 @@ package org.example.flowday.domain.member.service;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.example.flowday.domain.chat.service.ChatService;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
@@ -26,10 +27,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +39,7 @@ public class MemberService {
     private final JwtUtil jwtUtil;
     private final JavaMailSender mailSender;
     private final WishPlaceService wishPlaceService;
+    private final ChatService chatService;
 
     // 보안 관련 서비스
 
@@ -112,7 +112,7 @@ public class MemberService {
         return new MemberDTO.FindIdResponseDTO(
                 memberRepository.findByEmailAndName(email,name)
                         .orElseThrow(
-                                MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException).getLoginId()
+                                MemberException.MEMBER_EMAIL_NOT_FOUND::getMemberTaskException)
         );
 
     }
@@ -210,8 +210,7 @@ public class MemberService {
     @Transactional
     public MemberDTO.UpdateResponseDTO updateMember(Long id, Member updatedMember) {
 
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
+        Member member = isExist(id);
 
         if (updatedMember.getLoginId() != null && !updatedMember.getLoginId().isEmpty()) {
             member.setLoginId(updatedMember.getLoginId());
@@ -251,10 +250,9 @@ public class MemberService {
     @Transactional
     public MemberDTO.ChangeImageResponseDTO changeProfileImage(Long id, MultipartFile imageFile){
 
-        Optional<Member> memberOp = memberRepository.findById(id);
+        Member member = isExist(id);
 
-        if (memberOp.isPresent()) {
-            Member member = memberOp.get();
+        try{
             // 전달 받은 파일 저장 및 이름 추출
             String fileName = saveImage(imageFile);
             // 파일 명 변경
@@ -263,7 +261,7 @@ public class MemberService {
             memberRepository.save(member);
 
             return new MemberDTO.ChangeImageResponseDTO(member.getId(), imageFile.getOriginalFilename());
-        } else {
+        } catch (Exception e) {
             throw MemberException.MEMBER_IMAGE_NOT_MODIFIED.getMemberTaskException();
         }
 
@@ -300,9 +298,7 @@ public class MemberService {
     @Transactional
     public void updateBirthday(Long id, LocalDate birthday) {
 
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
-        System.out.println("=============================="+birthday);
+        Member member = isExist(id);
 
         if (birthday != null) {
             member.setBirthDt(birthday);
@@ -340,8 +336,7 @@ public class MemberService {
     @Transactional
     public void updateRelationshipStartDate(Long id, MemberDTO.UpdateRelationshipStartDateRequestDTO dto) {
 
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
+        Member member = isExist(id);
 
         if (dto.getRelationshipDt() != null) {
             member.setRelationshipDt(dto.getRelationshipDt());
@@ -351,18 +346,32 @@ public class MemberService {
 
     }
 
-    // 파트너 ID 등록
+    // 파트너 ID 등록 (수락한 사람)
+    @Transactional
+    public void acceptAddPartnerId(Long partnerId, Long myId, Long chattingRoomId) {
+
+        Member member = isExist(myId);
+
+        member.setPartnerId(partnerId);
+        member.setChattingRoomId(chattingRoomId);
+
+        memberRepository.save(member);
+
+    }
+
+    // 파트너 ID 등록 (요청을 보낸 사람)
     @Transactional
     public void updatePartnerId(Long id, MemberDTO.UpdatePartnerIdRequestDTO dto) {
 
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
+        Member member = isExist(id);
 
-        if (dto.getPartnerId() != null) {
-            member.setPartnerId(dto.getPartnerId());
-        }
+        member.setPartnerId(dto.getPartnerId());
+
+        member.setChattingRoomId(chatService.registerChatRoom(LocalDateTime.now()));
 
         memberRepository.save(member);
+
+        acceptAddPartnerId(id, dto.getPartnerId(), member.getChattingRoomId());
 
     }
 
@@ -370,7 +379,7 @@ public class MemberService {
     @Transactional
     public void disconnectPartner (Long id, Boolean stat){
 
-        Member member = memberRepository.findById(id).get();
+        Member member = isExist(id);
         //파트너 Id를 null로 변경
         member.setPartnerId(null);
 
@@ -401,7 +410,7 @@ public class MemberService {
     public MemberDTO.ReadResponseDTO getMember(Long id) {
 
         try {
-            Member member = memberRepository.findById(id).get();
+            Member member = isExist(id);
             return new MemberDTO.ReadResponseDTO(
                     member.getName(),
                     member.getProfileImage(),
@@ -412,6 +421,10 @@ public class MemberService {
         } catch (Exception e) {
             throw new RuntimeException("Error getting member", e);
         }
+    }
+
+    private Member isExist (Long id){
+        return (memberRepository.findById(id).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException));
     }
 
 }

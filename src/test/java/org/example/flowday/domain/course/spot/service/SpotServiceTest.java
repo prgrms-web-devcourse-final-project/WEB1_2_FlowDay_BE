@@ -1,5 +1,6 @@
 package org.example.flowday.domain.course.spot.service;
 
+import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
@@ -11,8 +12,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class SpotServiceTest {
@@ -38,6 +41,7 @@ class SpotServiceTest {
                 .placeId("ChIJgUbEo1")
                 .name("장소1")
                 .city("서울")
+                .comment("여기 빵 맛집이래")
                 .sequence(1)
                 .build();
 
@@ -101,6 +105,24 @@ class SpotServiceTest {
         assertThat(result).isEmpty();
 
         verify(spotRepository, times(1)).findAllByCity("부산");
+    }
+
+    @DisplayName("comment 수정 테스트")
+    @Test
+    void updateComment() {
+        when(spotRepository.findById(1L)).thenReturn(Optional.of(spot1));
+
+        SpotReqDTO spotReqDTO = SpotReqDTO.builder()
+                .comment("수정")
+                .build();
+
+        SpotResDTO spotResDTO = spotService.updateComment(spot1.getId(), spotReqDTO);
+
+        List<SpotResDTO> result = spotService.getTopSpotsByCity("서울");
+
+        assertEquals("수정", spotReqDTO.getComment());
+
+        verify(spotRepository, times(1)).findById(1L);
     }
 
 }

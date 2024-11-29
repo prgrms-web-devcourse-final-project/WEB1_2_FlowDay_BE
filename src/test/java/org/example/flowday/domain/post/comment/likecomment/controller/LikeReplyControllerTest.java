@@ -79,7 +79,7 @@ public class LikeReplyControllerTest {
         // 테스트에 필요한 게시글 생성
         testPost = Post.builder()
                 .title("테스트 게시글")
-                .content("게시글 내용")
+                .contents("게시글 내용")
                 .writer(testMember)
                 .build();
         postRepository.save(testPost);

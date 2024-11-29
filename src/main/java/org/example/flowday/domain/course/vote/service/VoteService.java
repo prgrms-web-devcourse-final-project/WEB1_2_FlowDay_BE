@@ -5,7 +5,6 @@ import org.example.flowday.domain.course.course.dto.CourseResDTO;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.exception.CourseException;
 import org.example.flowday.domain.course.course.repository.CourseRepository;
-import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.exception.SpotException;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,27 +47,17 @@ public class VoteService {
 
             voteRepository.save(vote);
 
-            List<SpotResDTO> spotResDTOs = new ArrayList<>();
+            List<Spot> spots = spotRepository.findAllById(voteReqDTO.getSpotIds());
 
-            for (SpotReqDTO spotReqDTO : voteReqDTO.getSpots()) {
-                Spot spot = Spot.builder()
-                        .placeId(spotReqDTO.getPlaceId())
-                        .name(spotReqDTO.getName())
-                        .city(spotReqDTO.getCity())
-                        .comment(spotReqDTO.getComment())
-                        .sequence(spotReqDTO.getSequence())
-                        .course(course)
-                        .vote(vote)
-                        .build();
-
-                spotRepository.save(spot);
-
-                spotResDTOs.add(new SpotResDTO(spot));
+            for (Spot spot : spots) {
+                spot.changeVote(vote);
             }
 
-            VoteResDTO voteResDTO = new VoteResDTO(vote, spotResDTOs);
+            List<SpotResDTO> spotResDTOs = spots.stream()
+                    .map(SpotResDTO::new)
+                    .toList();
 
-            return voteResDTO;
+            return new VoteResDTO(vote, spotResDTOs);
         } catch (Exception e) {
             throw VoteException.NOT_CREATED.get();
         }
@@ -76,7 +66,7 @@ public class VoteService {
     // 투표 조회
     public VoteResDTO findVote(Long voteId) {
         Vote vote = voteRepository.findById(voteId).orElseThrow(VoteException.NOT_FOUND::get);
-        List<Spot> spots = spotRepository.findAllByVoteId(vote.getId());
+        List<Spot> spots = spotRepository.findAllByVoteIdOrderBySequenceAsc(vote.getId());
 
         List<SpotResDTO> spotResDTOs = new ArrayList<>();
         for (Spot spot : spots) {
@@ -88,20 +78,20 @@ public class VoteService {
 
     // 투표 완료 후 코스 수정
     @Transactional
-    public CourseResDTO updateCourseByVote(Long voteId, Long spotId) {
+    public CourseResDTO updateCourseByVote(Long voteId, Long selectedSpotId) {
         try {
             Vote vote = voteRepository.findById(voteId).orElseThrow(VoteException.NOT_FOUND::get);
-            Spot spot = spotRepository.findById(spotId).orElseThrow(SpotException.NOT_FOUND::get);
+            Spot selectedSpot = spotRepository.findById(selectedSpotId).orElseThrow(SpotException.NOT_FOUND::get);
             Course course = vote.getCourse();
 
             // 선택한 장소 투표 연관 관계 제거
-            if (spot.getVote() != null && spot.getVote().getId().equals(voteId)) {
-                spot.removeVote();
-                spotRepository.save(spot);
+            if (selectedSpot.getVote() != null && selectedSpot.getVote().getId().equals(voteId)) {
+                selectedSpot.removeVote();
+                spotRepository.save(selectedSpot);
             }
 
             // 선택하지 않은 장소들 삭제
-            List<Spot> spotsToDelete = spotRepository.findAllByVoteId(vote.getId());
+            List<Spot> spotsToDelete = spotRepository.findAllByVoteIdOrderBySequenceAsc(vote.getId());
             for (Spot spotToDelete : spotsToDelete) {
                 spotToDelete.removeVote();
                 spotRepository.save(spotToDelete);
@@ -111,7 +101,16 @@ public class VoteService {
 
             voteRepository.delete(vote);
 
-            List<SpotResDTO> spotResDTOs = course.getSpots().stream()
+            // 장소 순서 재배치
+            List<Spot> updatedSpots = spotRepository.findAllByCourseIdOrderBySequenceAsc(course.getId());
+            updatedSpots.sort(Comparator.comparingInt(Spot::getSequence));
+
+            for (int i = 0; i < updatedSpots.size(); i++) {
+                updatedSpots.get(i).changeSequence(i + 1);
+                spotRepository.save(updatedSpots.get(i));
+            }
+
+            List<SpotResDTO> spotResDTOs = updatedSpots.stream()
                     .map(SpotResDTO::new)
                     .collect(Collectors.toList());
 
