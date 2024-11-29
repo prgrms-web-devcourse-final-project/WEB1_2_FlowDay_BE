@@ -8,6 +8,7 @@ import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.course.course.service.CourseService;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ class CourseControllerTest {
         member = Member.builder()
                 .name("tester")
                 .loginId("testId")
+                .role(Role.ROLE_USER)
                 .pw("password")
                 .build();
 

@@ -64,6 +64,7 @@ public class LikeReplyControllerTest {
     private Member testMember;
     private Post testPost;
     private Reply testReply;
+    
 
     @BeforeAll
     void setUp() {

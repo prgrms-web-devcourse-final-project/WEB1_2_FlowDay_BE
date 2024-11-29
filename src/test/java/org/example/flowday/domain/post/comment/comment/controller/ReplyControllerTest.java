@@ -61,6 +61,8 @@ public class ReplyControllerTest {
     private Post testPost;
     private Reply parentReply;
 
+
+
     @BeforeAll
     void setUp() {
         // 테스트에 필요한 회원 생성 (테스트 유저)
