@@ -13,6 +13,7 @@ import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.comment.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.comment.comment.service.ReplyService;
 import org.example.flowday.domain.post.post.entity.Post;
@@ -156,18 +157,24 @@ public class NotProd {
 
         postRepository.save(post2);
 
+        Reply reply1 = Reply.builder()
+                .content("부모댓글1")
+                .post(post1)
+                .parent(null)
+                .member(member)
+                .build();
 
-//        Post post = Post.builder()
-//                .writer(member)
-//                .contents("게시글 내용")
-//                .title("게시글 제목 ")
-//                .status(org.example.flowday.domain.post.post.entity.Status.PUBLIC)
-//                .course(course)
-//                .build();
-//        Post savePost = postRepository.save(post);
-//
-//        postService.addGenFileByUrl(savePost, "common", "inbody", 1, "https://picsum.photos/200/300");
-//        postService.addGenFileByUrl(savePost, "common", "inbody", 2, "https://picsum.photos/200/300");
+        replyRepository.save(reply1);
+
+        Reply reply2 = Reply.builder()
+                .content("자식 댓글1")
+                .post(post1)
+                .parent(reply1)
+                .member(member)
+                .build();
+
+        replyRepository.save(reply2);
+
 
 
     }
