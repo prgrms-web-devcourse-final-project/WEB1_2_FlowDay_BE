@@ -13,6 +13,7 @@ import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.post.entity.Post;
+import org.example.flowday.global.fileupload.service.GenFileService;
 import org.example.flowday.global.security.util.JwtUtil;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -22,13 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +40,7 @@ public class MemberService {
     private final JavaMailSender mailSender;
     private final WishPlaceService wishPlaceService;
     private final ChatService chatService;
-
+    private final GenFileService genFileService;
     // 보안 관련 서비스
 
 
@@ -101,8 +101,7 @@ public class MemberService {
                 savedMember.getId(),
                 savedMember.getLoginId(),
                 savedMember.getEmail(),
-                savedMember.getName(),
-                savedMember.getPhoneNum()
+                savedMember.getName()
         );
     }
 
@@ -186,18 +185,18 @@ public class MemberService {
         Optional<Map<String,Object>> member = memberRepository.findMyPageById(id);
 
         if(member.isPresent()) {
-            return mapToDTO(member.get());
+            return mapToDTO(id, member.get());
         } else {
             throw MemberException.MEMBER_NOT_FOUND.getMemberTaskException();
         }
 
     }
     // Self Join 쿼리로 가져온 데이터를 DTO로 변환 ( called by getMyPage )
-    public MemberDTO.MyPageResponseDTO mapToDTO(Map<String, Object> resultMap) {
+    public MemberDTO.MyPageResponseDTO mapToDTO(Long id, Map<String, Object> resultMap) {
 
-        String profileImage = (String) resultMap.get("profileImage");
+        String profileImage = genFileService.getFirstImageUrlByObject("member", id);
         String name = (String) resultMap.get("name");
-        String partnerImage = (String) resultMap.get("partnerImage");
+        String partnerImage = genFileService.getFirstImageUrlByObject("member", (Long) resultMap.get("partnerId"));
         String partnerName = (String) resultMap.get("partnerName");
         LocalDate relationshipDt = (LocalDate) resultMap.get("relationshipDt");
         LocalDate birthDt = (LocalDate) resultMap.get("birthDt");
@@ -221,19 +220,15 @@ public class MemberService {
         if (updatedMember.getEmail() != null && !updatedMember.getEmail().isEmpty()) {
             member.setEmail(updatedMember.getEmail());
         }
-        if (updatedMember.getPhoneNum() != null && !updatedMember.getPhoneNum().isEmpty()) {
-            member.setPhoneNum(updatedMember.getPhoneNum());
-        }
         if (updatedMember.getName() != null && !updatedMember.getName().isEmpty()) {
             member.setName(updatedMember.getName());
         }
-        Member updateMember = memberRepository.save(member);
+        memberRepository.save(member);
 
         return new MemberDTO.UpdateResponseDTO(
                 member.getLoginId(),
                 member.getEmail(),
-                member.getName(),
-                member.getPhoneNum()
+                member.getName()
         );
 
     }
@@ -246,51 +241,24 @@ public class MemberService {
         return "Deleted Successfully";
     }
 
-    //이미지 변경
+    // 내 정보 기본 설정
     @Transactional
-    public MemberDTO.ChangeImageResponseDTO changeProfileImage(Long id, MultipartFile imageFile){
-
+    public void setMyinfo(Long id, MemberDTO.MyInfoSettingRequestDTO myInfo) throws Exception {
         Member member = isExist(id);
 
-        try{
-            // 전달 받은 파일 저장 및 이름 추출
-            String fileName = saveImage(imageFile);
-            // 파일 명 변경
-            member.setProfileImage(fileName);
-
-            memberRepository.save(member);
-
-            return new MemberDTO.ChangeImageResponseDTO(member.getId(), imageFile.getOriginalFilename());
-        } catch (Exception e) {
-            throw MemberException.MEMBER_IMAGE_NOT_MODIFIED.getMemberTaskException();
-        }
+        changeProfileImage(id, myInfo.getFile());
+        member.setName(myInfo.getName());
+        member.setBirthDt(myInfo.getBirthDt());
+        memberRepository.save(member);
 
     }
 
-    // 사용자가 보낸 이미지 파일 저장 ( called by changeProfileImage )
-    private String saveImage(MultipartFile imageFile) {
-        // 기본 파일 저장 경로
-        String uploadDir = "upload/";
-        try {
+    //이미지 변경
+    @Transactional
+    public void changeProfileImage(Long id, MultipartFile imageFile) throws Exception {
 
-            Path uploadPath = Paths.get(uploadDir);
-
-            // 디렉토리가 존재하지 않으면 생성
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            // 파일 이름 생성 및 저장
-            String ident = String.valueOf(System.currentTimeMillis()).substring(3, 10);
-            String fileName = ident + "_" + imageFile.getOriginalFilename();
-            Path filePath = uploadPath.resolve(fileName);
-
-            Files.copy(imageFile.getInputStream(), filePath); // 실제 파일 저장
-
-            return fileName; // 저장된 파일 이름 반환
-        } catch (IOException e) {
-            throw MemberException.MEMBER_IMAGE_NOT_SAVED.getMemberTaskException();
-        }
+        List<MultipartFile> images = List.of(imageFile);
+        genFileService.saveFiles(images, "member", id, "common", "inBody");
 
     }
 
@@ -321,14 +289,12 @@ public class MemberService {
 
         Map<String, Object> result = memberRepository.findByName(name).orElseThrow(MemberException.MEMBER_NAME_NOT_FOUND::getMemberTaskException);
 
-        Member member = new Member();
-        member.setId((Long) result.get("id"));
-        member.setName((String) result.get("name"));
-        member.setEmail((String) result.get("email"));
-        member.setPhoneNum((String) result.get("num"));
-        member.setProfileImage((String) result.get("image"));
-
-        return new MemberDTO.FindPartnerResponseDTO(member);
+        return new MemberDTO.FindPartnerResponseDTO(
+                (Long) result.get("id"),
+                (String) result.get("name"),
+                (String) result.get("email"),
+                genFileService.getFirstImageUrlByObject("member", (Long) result.get("id"))
+        );
 
     }
 
@@ -413,7 +379,7 @@ public class MemberService {
             Member member = isExist(id);
             return new MemberDTO.ReadResponseDTO(
                     member.getName(),
-                    member.getProfileImage(),
+                    genFileService.getFirstImageUrlByObject("member", id),
                     member.getPartnerId(),
                     member.getRelationshipDt(),
                     member.getBirthDt()
