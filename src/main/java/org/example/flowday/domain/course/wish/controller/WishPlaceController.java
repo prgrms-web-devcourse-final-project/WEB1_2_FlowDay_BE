@@ -26,12 +26,12 @@ public class WishPlaceController {
     // 위시 플레이스에 장소 추가
     @Operation(summary = "장소 추가")
     @PostMapping
-    public ResponseEntity<WishPlaceResDTO> addSpotToWishPlace(
+    public ResponseEntity<Void> addSpotToWishPlace(
             @RequestBody WishPlaceReqDTO wishPlaceReqDTO,
             @AuthenticationPrincipal SecurityUser user
     ) {
-        WishPlaceResDTO updatedWishPlace = wishPlaceService.updateSpotInWishPlace(user.getId(), wishPlaceReqDTO);
-        return ResponseEntity.ok(updatedWishPlace);
+        wishPlaceService.updateSpotInWishPlace(user.getId(), wishPlaceReqDTO);
+        return ResponseEntity.noContent().build();
     }
 
     // 위시 플레이스에서 장소 삭제
