@@ -71,7 +71,7 @@ public class PostService {
         // 이미지 저장 로직 추가
         List<MultipartFile> images = postRequestDTO.getImages();
         if (images != null && !images.isEmpty()) {
-            genFileService.saveFiles(images, "post", savedPost.getId(), "common", "inbody");
+            genFileService.saveFiles(images, "post", savedPost.getId(), "common", "inBody");
         }
 
         // 이미지 정보를 포함하여 응답 DTO 생성

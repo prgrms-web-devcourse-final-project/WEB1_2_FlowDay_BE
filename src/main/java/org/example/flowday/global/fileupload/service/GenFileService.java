@@ -35,7 +35,7 @@ public class GenFileService {
     }
 
 
-    public List<GenFile> saveFiles( List<MultipartFile> images , String relTypeCode , Long relId , String typeCode , String type2Code) {
+    public void saveFiles( List<MultipartFile> images , String relTypeCode , Long relId , String typeCode , String type2Code) {
         int fileNo = 1;
 
         List<GenFile> genFiles = new ArrayList<>();
@@ -86,7 +86,7 @@ public class GenFileService {
 
         }
 
-        return genFiles;
+
     }
 
     //원하는 객체의 List<GenFile> 조회
