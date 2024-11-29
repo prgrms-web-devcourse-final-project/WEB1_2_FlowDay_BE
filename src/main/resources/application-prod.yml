@@ -1,1 +1,8 @@
-
+server:
+  port: 5000
+spring:
+  thymeleaf:
+    cache: true
+  output:
+    ansi:
+      enabled: never

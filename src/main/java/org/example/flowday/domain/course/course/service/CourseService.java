@@ -26,7 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -50,28 +52,12 @@ public class CourseService {
                     .status(courseReqDTO.getStatus())
                     .date(courseReqDTO.getDate())
                     .color(courseReqDTO.getColor())
+                    .spots(null)
                     .build();
 
             courseRepository.save(course);
 
-            List<SpotResDTO> spotResDTOs = new ArrayList<>();
-
-            for (SpotReqDTO spotReqDTO : courseReqDTO.getSpots()) {
-                Spot spot = Spot.builder()
-                        .placeId(spotReqDTO.getPlaceId())
-                        .name(spotReqDTO.getName())
-                        .city(spotReqDTO.getCity())
-                        .comment(spotReqDTO.getComment())
-                        .sequence(spotReqDTO.getSequence())
-                        .course(course)
-                        .build();
-
-                spotRepository.save(spot);
-
-                spotResDTOs.add(new SpotResDTO(spot));
-            }
-
-            CourseResDTO courseResDTO = new CourseResDTO(course, spotResDTOs);
+            CourseResDTO courseResDTO = new CourseResDTO(course, null);
 
             return courseResDTO;
         } catch (Exception e) {
@@ -82,9 +68,9 @@ public class CourseService {
     // 코스 조회
     public CourseResDTO findCourse(Long courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
-        List<Spot> spots = spotRepository.findAllByCourseIdAndVoteIsNull(courseId);
-        List<SpotResDTO> spotResDTOs = new ArrayList<>();
+        List<Spot> spots = spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId);
 
+        List<SpotResDTO> spotResDTOs = new ArrayList<>();
         for (Spot spot : spots) {
             spotResDTOs.add(new SpotResDTO(spot));
         }
@@ -92,8 +78,8 @@ public class CourseService {
         return new CourseResDTO(course, spotResDTOs);
     }
 
-    // 코스 수정
-    public CourseResDTO updateCourse(Long userId, Long courseId, CourseReqDTO courseReqDTO) {
+    // 코스 수정 - 정보
+    public CourseResDTO updateCourseInfo(Long userId, Long courseId, CourseReqDTO courseReqDTO) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
         if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
@@ -101,58 +87,23 @@ public class CourseService {
         }
 
         try {
-            course.changeTitle(courseReqDTO.getTitle());
-            course.changeDate(courseReqDTO.getDate());
-            course.changeColor(courseReqDTO.getColor());
-            course.changeStatus(courseReqDTO.getStatus());
-
-            List<Spot> existingSpots = spotRepository.findAllByCourseIdAndVoteIsNull(courseId);
-            List<SpotReqDTO> updatedSpots = courseReqDTO.getSpots();
-            List<SpotResDTO> spotResDTOs = new ArrayList<>();
-
-            for (SpotReqDTO spotReqDTO : updatedSpots) {
-                if (spotReqDTO.getId() != null) {
-                    Spot spot = existingSpots.stream()
-                            .filter(s -> s.getId().equals(spotReqDTO.getId()))
-                            .findFirst()
-                            .orElseThrow(SpotException.NOT_FOUND::get);
-
-                    spot.changePlaceId(spotReqDTO.getPlaceId());
-                    spot.changeName(spotReqDTO.getName());
-                    spot.changeCity(spotReqDTO.getCity());
-                    spot.changeComment(spotReqDTO.getComment());
-                    spot.changeSequence(spotReqDTO.getSequence());
-
-                    spotResDTOs.add(new SpotResDTO(spot));
-
-                } else {
-                    Spot spot = Spot.builder()
-                            .placeId(spotReqDTO.getPlaceId())
-                            .name(spotReqDTO.getName())
-                            .city(spotReqDTO.getCity())
-                            .comment(spotReqDTO.getComment())
-                            .sequence(spotReqDTO.getSequence())
-                            .course(course)
-                            .build();
-                    spotRepository.save(spot);
-                    spotResDTOs.add(new SpotResDTO(spot));
-                }
+            if (courseReqDTO.getTitle() != null) {
+                course.changeTitle(courseReqDTO.getTitle());
+            }
+            if (courseReqDTO.getDate() != null) {
+                course.changeDate(courseReqDTO.getDate());
+            }
+            if (courseReqDTO.getColor() != null) {
+                course.changeColor(courseReqDTO.getColor());
+            }
+            if (courseReqDTO.getStatus() != null) {
+                course.changeStatus(courseReqDTO.getStatus());
             }
 
-            // 코스에서 삭제된 spot 처리
-            List<Long> updatedSpotIds = updatedSpots.stream()
-                    .map(SpotReqDTO::getId)
-                    .toList();
-
-            for (Spot existingSpot : existingSpots) {
-                if (!updatedSpotIds.contains(existingSpot.getId())) {
-                    try {
-                        spotRepository.delete(existingSpot);
-                    } catch (Exception e) {
-                        throw SpotException.NOT_DELETED.get();
-                    }
-                }
-            }
+            List<SpotResDTO> spotResDTOs = spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)
+                    .stream()
+                    .map(SpotResDTO::new)
+                    .collect(Collectors.toList());
 
             return new CourseResDTO(course, spotResDTOs);
         } catch (Exception e) {
@@ -161,8 +112,8 @@ public class CourseService {
         }
     }
 
-    // 코스에 장소 1개 추가
-    public CourseResDTO addSpot(Long userId, Long courseId, SpotReqDTO spotReqDTO) {
+    // 코스 수정 - 장소 순서 변경
+    public void updateCourseSpotSequence(Long userId, Long courseId, Long spotId, int sequence) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
         if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
@@ -170,10 +121,54 @@ public class CourseService {
         }
 
         try {
-            List<Integer> existingSequences = spotRepository.findAllByCourseIdAndVoteIsNull(courseId).stream()
+            List<Spot> spots = spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId);
+
+            // spotId에 해당하는 Spot 찾기
+            Spot inpustSpot = spots.stream()
+                    .filter(spot -> spot.getId().equals(spotId))
+                    .findFirst()
+                    .orElseThrow(SpotException.NOT_FOUND::get);
+            int beforeSequence = inpustSpot.getSequence();
+
+            inpustSpot.changeSequence(sequence);
+
+            // 순서 재배치
+            for (Spot spot : spots) {
+                if (!spot.getId().equals(spotId)) {
+                    if (beforeSequence < sequence) {
+                        if (spot.getSequence() > beforeSequence && spot.getSequence() <= sequence) {
+                            spot.changeSequence(spot.getSequence() - 1);
+                        }
+                    } else {
+                        if (spot.getSequence() < beforeSequence && spot.getSequence() >= sequence) {
+                            spot.changeSequence(spot.getSequence() + 1);
+                        }
+                    }
+                }
+            }
+
+            spotRepository.saveAll(spots);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw CourseException.NOT_UPDATED.get();
+        }
+    }
+
+    // 코스에 장소 1개 추가
+    public void addSpot(Long userId, Long courseId, SpotReqDTO spotReqDTO) {
+        Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
+
+        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
+            throw CourseException.FORBIDDEN.get();
+        }
+
+        try {
+            List<Integer> existingSequences = spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId).stream()
                     .map(Spot::getSequence)
                     .toList();
 
+            // 가장 마지막 순서 배정
             int sequence = existingSequences.isEmpty() ? 1 : existingSequences.stream().max(Integer::compareTo).orElse(0) + 1;
 
             Spot spot = Spot.builder()
@@ -186,17 +181,46 @@ public class CourseService {
                     .build();
 
             spotRepository.save(spot);
-
-            List<Spot> updatedSpots = spotRepository.findAllByCourseIdAndVoteIsNull(courseId);
-            List<SpotResDTO> spotResDTOs = updatedSpots.stream()
-                    .map(SpotResDTO::new)
-                    .toList();
-
-            return new CourseResDTO(course, spotResDTOs);
-
         } catch (Exception e) {
             e.printStackTrace();
             throw SpotException.NOT_CREATED.get();
+        }
+    }
+
+    // 코스의 장소 1개 삭제
+    public void removeSpot(Long userId, Long courseId, Long spotId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
+
+        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
+            throw CourseException.FORBIDDEN.get();
+        }
+
+        try {
+            Spot spotToRemove = course.getSpots().stream()
+                    .filter(spot -> spot.getId().equals(spotId))
+                    .findFirst()
+                    .orElseThrow(SpotException.NOT_FOUND::get);
+
+            course.getSpots().remove(spotToRemove);
+
+            spotRepository.delete(spotToRemove);
+
+            // 남은 장소 순서 재배치
+            List<Spot> updatedSpots = course.getSpots().stream()
+                    .sorted(Comparator.comparingInt(Spot::getSequence))
+                    .toList();
+
+            for (int i = 0; i < updatedSpots.size(); i++) {
+                Spot spot = updatedSpots.get(i);
+
+                spot.changeSequence(i + 1);
+
+                spotRepository.save(spot);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw SpotException.NOT_DELETED.get();
         }
     }
 
@@ -230,7 +254,7 @@ public class CourseService {
         List<CourseResDTO> courseResDTOs = combinedCourses.stream()
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .map(course -> {
-                    List<Spot> spots = spotRepository.findAllByCourseIdAndVoteIsNull(course.getId());
+                    List<Spot> spots = spotRepository.findAllByCourseIdOrderBySequenceAsc(course.getId());
                     List<SpotResDTO> spotResDTOs = spots.stream()
                             .map(SpotResDTO::new)
                             .toList();

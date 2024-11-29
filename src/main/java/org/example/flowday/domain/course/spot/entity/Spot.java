@@ -34,18 +34,6 @@ public class Spot {
     @JoinColumn(name = "wish_place_id", nullable = true)
     private WishPlace wishPlace;
 
-    public void changePlaceId(String placeId) {
-        this.placeId = placeId;
-    }
-
-    public void changeName(String name) {
-        this.name = name;
-    }
-
-    public void changeCity(String city) {
-        this.city = city;
-    }
-
     public void changeComment(String comment) {
         this.comment = comment;
     }
@@ -54,8 +42,13 @@ public class Spot {
         this.sequence = sequence;
     }
 
+    public void changeVote(Vote vote) {
+        this.vote = vote;
+    }
+
     public void removeVote() {
         this.vote = null;
     }
+
 }
 

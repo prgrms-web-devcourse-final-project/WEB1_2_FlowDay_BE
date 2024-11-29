@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface SpotRepository extends JpaRepository<Spot, Long> {
 
-    List<Spot> findAllByCourseIdAndVoteIsNull(Long courseId);
-    List<Spot> findAllByVoteId(Long voteId);
+    List<Spot> findAllByCourseIdOrderBySequenceAsc(Long courseId);
+    List<Spot> findAllByVoteIdOrderBySequenceAsc(Long voteId);
     List<Spot> findAllByCity(String city);
-    List<Spot> findAllByWishPlaceId(Long wishPlaceId);
+    List<Spot> findAllByWishPlaceIdOrderByIdDesc(Long wishPlaceId);
 }

@@ -1,126 +1,136 @@
 package org.example.flowday.domain.course.spot.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.flowday.domain.course.course.dto.CourseReqDTO;
+import org.example.flowday.domain.course.course.dto.CourseResDTO;
+import org.example.flowday.domain.course.course.entity.Course;
+import org.example.flowday.domain.course.course.entity.Status;
+import org.example.flowday.domain.course.course.service.CourseService;
+import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.service.SpotService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.example.flowday.domain.member.entity.Member;
+import org.example.flowday.domain.member.entity.Role;
+import org.example.flowday.domain.member.repository.MemberRepository;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpotControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
-    private SpotService spotService;
+    @Autowired
+    private MemberRepository memberRepository;
 
-    @InjectMocks
+    @Autowired
+    private CourseService courseService;
+
+    @Autowired
     private SpotController spotController;
 
-    private Spot spot1;
-    private Spot spot2;
-    private Spot spot3;
-    private Spot spot4;
-    private Spot spot5;
-    private SpotResDTO spotResDTO1;
-    private SpotResDTO spotResDTO2;
-    private SpotResDTO spotResDTO3;
-    private SpotResDTO spotResDTO4;
-    private SpotResDTO spotResDTO5;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @BeforeEach
+    private Member member;
+    private CourseReqDTO courseReqDTO;
+    private CourseResDTO courseResDTO;
+    private SpotReqDTO spotReqDTO1;
+    private SpotReqDTO spotReqDTO2;
+    private SpotReqDTO spotReqDTO3;
+    private SpotReqDTO spotReqDTO4;
+
+    @BeforeAll
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        member = Member.builder()
+                .name("tester")
+                .loginId("testId")
+                .pw("password")
+                .role(Role.ROLE_USER)
+                .build();
 
-        spot1 = Spot.builder()
-                .id(1L)
-                .placeId("ChIJgUbEo1")
+        memberRepository.save(member);
+
+        courseReqDTO = CourseReqDTO.builder()
+                .memberId(member.getId())
+                .title("코스 이름")
+                .status(Status.COUPLE)
+                .date(LocalDate.now())
+                .color("blue")
+                .build();
+
+        courseResDTO = courseService.saveCourse(courseReqDTO);
+
+        spotReqDTO1 = SpotReqDTO.builder()
+                .placeId("kasal")
                 .name("장소1")
                 .city("서울")
-                .sequence(1)
                 .build();
 
-        spot2 = Spot.builder()
-                .id(2L)
-                .placeId("ChIJgUbEo2")
-                .name("장소2")
-                .city("서울")
-                .sequence(2)
-                .build();
-
-        spot3 = Spot.builder()
-                .id(3L)
-                .placeId("ChIJgUbEo3")
-                .name("장소3")
-                .city("서울")
-                .sequence(3)
-                .build();
-
-        spot4 = Spot.builder()
-                .id(4L)
-                .placeId("ChIJgUbEo4")
-                .name("장소4")
-                .city("서울")
-                .sequence(4)
-                .build();
-
-        spot5 = Spot.builder()
-                .id(5L)
-                .placeId("ChIJgUbEo5")
-                .name("장소5")
-                .city("서울")
-                .sequence(5)
-                .build();
-
-        spotResDTO1 = new SpotResDTO(spot1);
-        spotResDTO2 = new SpotResDTO(spot2);
-        spotResDTO3 = new SpotResDTO(spot3);
-        spotResDTO4 = new SpotResDTO(spot4);
-        spotResDTO5 = new SpotResDTO(spot5);
-
-        mockMvc = MockMvcBuilders.standaloneSetup(spotController).build();
+        courseService.addSpot(member.getId(), courseResDTO.getId(), spotReqDTO1);
+        courseResDTO = courseService.findCourse(courseResDTO.getId());
     }
 
     @DisplayName("지역별 인기 장소 Top 4 조회 테스트")
     @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void getTopSpotsByCity() throws Exception {
-        when(spotService.getTopSpotsByCity("서울")).thenReturn(List.of(spotResDTO1, spotResDTO2, spotResDTO3, spotResDTO4, spotResDTO5));
-
-        mockMvc.perform(get("/api/v1/spots/top4")
+        mockMvc.perform(get("/api/v1/spots")
                         .param("city", "서울")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].name").value("장소1"))
-                .andExpect(jsonPath("$[1].name").value("장소2"))
-                .andExpect(jsonPath("$[2].name").value("장소3"))
-                .andExpect(jsonPath("$[3].name").value("장소4"));
+                .andExpect(jsonPath("$[0].name").value("장소1"));
     }
 
     @DisplayName("지역별 인기 장소가 없는 경우 테스트")
     @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void getTopSpotsByCity_noSpots() throws Exception {
-        when(spotService.getTopSpotsByCity("부산"))
-                .thenReturn(List.of());
-
-        mockMvc.perform(get("/api/v1/spots/top4")
+        mockMvc.perform(get("/api/v1/spots")
                         .param("city", "부산")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @DisplayName("commenet 수정 테스트")
+    @Test
+    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    void updateComment() throws Exception {
+        SpotReqDTO spotReqDTO = SpotReqDTO.builder()
+                .comment("수정")
+                .build();
+
+        mockMvc.perform(patch("/api/v1/spots/{spotId}", courseResDTO.getSpots().get(0).getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(spotReqDTO)))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.comment").value("수정"));
     }
 
 }
