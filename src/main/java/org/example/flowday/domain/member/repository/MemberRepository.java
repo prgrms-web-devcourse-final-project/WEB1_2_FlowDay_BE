@@ -26,12 +26,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     void updateRefreshToken(@Param("loginId") String loginId, @Param("refreshToken") String refreshToken);
 
     @Query("SELECT " +
-            "m1.profileImage AS profileImage, " +
             "m1.name AS name, " +
-            "m2.profileImage AS partnerImage, " +
             "m2.name AS partnerName, " +
             "m1.relationshipDt AS relationshipDt, " +
-            "m1.birthDt AS birthDt " +
+            "m1.birthDt AS birthDt, " +
+            "m1.partnerId AS partnerId " +
             "FROM Member m1 " +
             "LEFT JOIN Member m2 ON m1.partnerId = m2.id " +
             "WHERE m1.id = :id")
@@ -43,7 +42,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m.id FROM Member m WHERE m.loginId = :loginId")
     Optional<Long> findIdByLoginId(String loginId);
 
-    @Query("SELECT m.id AS id, m.name AS name, m.email AS email, m.phoneNum AS num, m.profileImage AS image FROM Member m WHERE m.name = :name")
+    @Query("SELECT m.id AS id, m.name AS name, m.email AS email FROM Member m WHERE m.name = :name")
     Optional<Map<String, Object>> findByName(String name);
 
     @Query("SELECT m.loginId FROM Member m WHERE m.email=:email AND m.name=:name")
