@@ -2,6 +2,7 @@ package org.example.flowday.domain.post.post.dto;
 
 import lombok.*;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
+import org.example.flowday.domain.post.post.entity.Status;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ public class PostResponseDTO {
     private String title;
     private String contents;
     private String tags;
+    private Status status;
     private Long courseId;
     private int likeCount;
     private LocalDateTime createdAt;

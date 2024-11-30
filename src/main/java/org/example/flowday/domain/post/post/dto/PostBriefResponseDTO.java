@@ -3,6 +3,7 @@ package org.example.flowday.domain.post.post.dto;
 
 import lombok.*;
 import org.example.flowday.domain.post.post.entity.Post;
+import org.example.flowday.domain.post.post.entity.Status;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +20,8 @@ public class PostBriefResponseDTO {
     private int likeCount;
     private LocalDateTime createdAt;
     private String imageURL;
+    private Status status;
+    private String nickName;
 
 
     public PostBriefResponseDTO(Post post , String url) {
@@ -30,6 +33,8 @@ public class PostBriefResponseDTO {
         commentCount = post.getReplies().size();
         likeCount = post.getLikeCount();
         createdAt = post.getCreatedAt();
+        status = post.getStatus();
+        nickName=post.getWriter().getName();
         imageURL = url;
 
 
