@@ -38,6 +38,7 @@ public class PostMapper {
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
+                .status(post.getStatus())
                 .nickName(post.getWriter().getName())
                 .courseId(post.getCourse() != null ? post.getCourse().getId() : null)
                 .spots(spots)

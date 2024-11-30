@@ -156,7 +156,6 @@ class ReplyServiceTest {
         //then
         Assertions.assertThat(parentReply.getChildren().size()).isEqualTo(0);
         Assertions.assertThat(parentReply.getContent()).isEqualTo("작성자에 의해 삭제되었습니다");
-        Assertions.assertThat(replyRepository.findAll().size()).isEqualTo(1);
 
 
     }

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,19 +25,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@TestInstance(TestInstance.Lifecycle.PER_CLASS) // @BeforeAll을 인스턴스 메서드로 사용하기 위해 추가
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class LikeReplyControllerTest {
 
     @Autowired
@@ -60,11 +58,16 @@ public class LikeReplyControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-
     private Member testMember;
     private Post testPost;
     private Reply testReply;
-    
+
+
+    @AfterAll
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
 
     @BeforeAll
     void setUp() {
@@ -77,7 +80,6 @@ public class LikeReplyControllerTest {
                 .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(testMember);
-
 
         // 테스트에 필요한 게시글 생성
         testPost = Post.builder()
@@ -97,11 +99,11 @@ public class LikeReplyControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/likes/{replyId} - 좋아요 생성 성공")
+    @DisplayName("POST /api/v1/likes/replies/{replyId} - 좋아요 생성 성공")
     @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_Success() throws Exception {
         // WHEN
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/{replyId}", testReply.getId())
+        ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/replies/{replyId}", testReply.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
@@ -119,15 +121,12 @@ public class LikeReplyControllerTest {
         assertThat(updatedReply.getLikeCount()).isEqualTo(1);
     }
 
-
-
     @Test
-    @DisplayName("POST /api/v1/likes/{replyId} - 댓글 존재하지 않음")
+    @DisplayName("POST /api/v1/likes/replies/{replyId} - 댓글 존재하지 않음")
     @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_ReplyNotFound() throws Exception {
         // WHEN
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/{replyId}", 9999L) // 존재하지 않는 댓글 ID
-                        .param("memberId", testMember.getId().toString())
+        ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/replies/{replyId}", 9999L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
@@ -146,15 +145,14 @@ public class LikeReplyControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/v1/likes/{replyId} - 이미 좋아요를 누른 경우")
+    @DisplayName("POST /api/v1/likes/replies/{replyId} - 이미 좋아요를 누른 경우")
     @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void createLikeReply_AlreadyLiked() throws Exception {
         // 좋아요 생성
-        likeReplyService.saveLikeReply(testMember.getId() , testReply.getId());
+        likeReplyService.saveLikeReply(testMember.getId(), testReply.getId());
 
         // WHEN
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/{replyId}", testReply.getId())
-                        .param("memberId", testMember.getId().toString())
+        ResultActions resultActions = mockMvc.perform(post("/api/v1/likes/replies/{replyId}", testReply.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
@@ -169,7 +167,7 @@ public class LikeReplyControllerTest {
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/likes/{replyId} - 좋아요 삭제 성공")
+    @DisplayName("DELETE /api/v1/likes/replies/{replyId} - 좋아요 삭제 성공")
     @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_Success() throws Exception {
         // 사전에 좋아요 생성
@@ -184,8 +182,7 @@ public class LikeReplyControllerTest {
         replyRepository.save(testReply);
 
         // WHEN
-        ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/{replyId}", testReply.getId())
-                        .param("memberId", testMember.getId().toString())
+        ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/replies/{replyId}", testReply.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
@@ -203,15 +200,12 @@ public class LikeReplyControllerTest {
         assertThat(updatedReply.getLikeCount()).isEqualTo(0);
     }
 
-
-
     @Test
-    @DisplayName("DELETE /api/v1/likes/{replyId} - 댓글 존재하지 않음")
+    @DisplayName("DELETE /api/v1/likes/replies/{replyId} - 댓글 존재하지 않음")
     @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_ReplyNotFound() throws Exception {
         // WHEN
-        ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/{replyId}", 9999L) // 존재하지 않는 댓글 ID
-                        .param("memberId", testMember.getId().toString())
+        ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/replies/{replyId}", 9999L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
@@ -226,12 +220,11 @@ public class LikeReplyControllerTest {
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/likes/{replyId} - 좋아요 존재하지 않음")
+    @DisplayName("DELETE /api/v1/likes/replies/{replyId} - 좋아요 존재하지 않음")
     @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteLikeReply_LikeNotFound() throws Exception {
         // WHEN
-        ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/{replyId}", testReply.getId())
-                        .param("memberId", testMember.getId().toString())
+        ResultActions resultActions = mockMvc.perform(delete("/api/v1/likes/replies/{replyId}", testReply.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
