@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -207,9 +206,7 @@ public class MemberService {
 
     // 회원 수정
     @Transactional
-    public MemberDTO.UpdateResponseDTO updateMember(Long id, Member updatedMember) {
-
-        Member member = isExist(id);
+    public MemberDTO.UpdateResponseDTO updateMember(Member member, Member updatedMember) {
 
         if (updatedMember.getLoginId() != null && !updatedMember.getLoginId().isEmpty()) {
             member.setLoginId(updatedMember.getLoginId());
@@ -243,10 +240,9 @@ public class MemberService {
 
     // 내 정보 기본 설정
     @Transactional
-    public void setMyinfo(Long id, MemberDTO.MyInfoSettingRequestDTO myInfo) throws Exception {
-        Member member = isExist(id);
+    public void setMyinfo(Member member, MemberDTO.MyInfoSettingRequestDTO myInfo) throws Exception {
 
-        changeProfileImage(id, myInfo.getFile());
+        changeProfileImage(member.getId(), myInfo.getFile());
         member.setName(myInfo.getName());
         member.setBirthDt(myInfo.getBirthDt());
         memberRepository.save(member);
@@ -264,9 +260,7 @@ public class MemberService {
 
     // 생일 변경
     @Transactional
-    public void updateBirthday(Long id, LocalDate birthday) {
-
-        Member member = isExist(id);
+    public void updateBirthday(Member member, LocalDate birthday) {
 
         if (birthday != null) {
             member.setBirthDt(birthday);
@@ -343,9 +337,8 @@ public class MemberService {
 
     // 관계 끊기
     @Transactional
-    public void disconnectPartner (Long id, Boolean stat){
+    public void disconnectPartner (Member member, Boolean stat){
 
-        Member member = isExist(id);
         //파트너 Id를 null로 변경
         member.setPartnerId(null);
 
