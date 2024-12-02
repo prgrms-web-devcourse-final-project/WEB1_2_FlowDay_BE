@@ -29,7 +29,7 @@ public class ChatApiController {
      * 채팅 방 생성
      * - 연인 수락을 하면 채팅방 id가 생성된다
      */
-    @PostMapping
+    @PostMapping("/rooms")
     public ResponseEntity<ApiResponse> registerChatRoom() {
         LocalDateTime time = LocalDateTime.now();
         Long chatRoomId = chatService.registerChatRoom(time);
