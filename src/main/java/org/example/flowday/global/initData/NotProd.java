@@ -9,6 +9,7 @@ import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.course.course.repository.CourseRepository;
 import org.example.flowday.domain.course.course.service.CourseService;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
+import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
@@ -99,41 +100,45 @@ public class NotProd {
         memberRepository.save(member2);
 
 
+        //코스 생성
+        Course course = Course.builder()
+                .title("코스1")
+                .color("blue")
+                .status(Status.COUPLE)
+                .member(member)
+                .build();
+
+        courseRepository.save(course);
+
         // 장소 생성
-        SpotReqDTO spot1 = SpotReqDTO.builder()
+        Spot spot1 = Spot.builder()
                 .city("서울 종로")
                 .placeId("place1")
                 .name("카페")
                 .comment("코멘트")
+                .course(course)
                 .build();
-        SpotReqDTO spot2 = SpotReqDTO.builder()
+
+        Spot spot2 = Spot.builder()
                 .city("서울 종로")
                 .placeId("place2")
                 .name("밥집")
                 .comment("코멘트")
+                .course(course)
                 .build();
-        SpotReqDTO spot3 = SpotReqDTO.builder()
+
+        Spot spot3 = Spot.builder()
                 .city("서울 종로")
                 .placeId("place3")
                 .name("영화관")
                 .comment("코멘트")
+                .course(course)
                 .build();
 
-        List<SpotReqDTO> spots = new ArrayList<>();
-        spots.add(spot1);
-        spots.add(spot2);
-        spots.add(spot3);
+        spotRepository.save(spot1);
+        spotRepository.save(spot2);
+        spotRepository.save(spot3);
 
-        CourseReqDTO courseRequest = CourseReqDTO.builder()
-                .color("color")
-                .title("코스1")
-                .date(LocalDate.now())
-                .status(Status.COUPLE)
-                .memberId(member.getId())
-                .build();
-
-        CourseResDTO courseResDTO = courseService.saveCourse(courseRequest);
-        Course course = courseRepository.findById(courseResDTO.getId()).get();
 
         Post post1 = Post.builder()
                 .writer(member)
