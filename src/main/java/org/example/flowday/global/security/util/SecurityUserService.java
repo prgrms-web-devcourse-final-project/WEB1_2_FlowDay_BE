@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -25,9 +26,15 @@ public class SecurityUserService implements UserDetailsService {
         System.out.println("Looking for user with loginId: " + loginId);
 
         try {
-            Member member = memberRepository.findByLoginId(loginId).get();
+            Map<String,Object> result = memberRepository.findSecurityInfoByLoginId(loginId).get();
 
             System.out.println("find successful");
+
+            Member member = new Member();
+            member.setId(Long.parseLong(result.get("id").toString()));
+            member.setLoginId(loginId);
+            member.setRole((Role) result.get("role"));
+            member.setPw((String) result.get("pw"));
 
             return new SecurityUser(member);
         } catch (RuntimeException e) {
