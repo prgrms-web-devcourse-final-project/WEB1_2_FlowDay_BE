@@ -60,7 +60,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                         "id",id,
                         "loginId",loginId,
                         "role", role),
-                60 * 60 * 1000L); //1시간
+                10 * 60 * 60 * 1000L); //10시간으로 수정, 테스트 마무리 후 1시간으로 재수정 예정
         String refreshToken = jwtUtil.createJwt(Map.of(
                         "category","refreshToken",
                         "id",id,
