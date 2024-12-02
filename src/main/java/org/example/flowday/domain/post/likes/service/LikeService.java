@@ -2,9 +2,13 @@ package org.example.flowday.domain.post.likes.service;
 
 import lombok.RequiredArgsConstructor;
 
+import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.likes.dto.LikesDTO;
 import org.example.flowday.domain.post.likes.entity.Likes;
 import org.example.flowday.domain.post.likes.repository.LikeRepository;
+import org.example.flowday.domain.post.post.entity.Post;
+import org.example.flowday.domain.post.post.exception.PostException;
+import org.example.flowday.domain.post.post.repository.PostRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,30 +21,43 @@ import java.util.Optional;
 public class LikeService {
 
     private final LikeRepository likeRepository;
+    private final PostRepository postRepository;
 
     // 좋아요 생성
     @Transactional
-    public LikesDTO.LikeResponseDTO addLike(LikesDTO.LikeRequestDTO likeRequestDTO , Long userId) {
+    public LikesDTO.LikeResponseDTO addLike(Long postId , Long userId) {
+        Post post = postRepository.findById(postId).orElseThrow(PostException.POST_NOT_FOUND::get);
 
+        Optional<Likes> opLike = likeRepository.findByPostIdAndMemberId(postId, userId);
+        if (opLike.isPresent()) {
+            throw PostException.POST_IS_LIKE.get();
+        }
+
+        post.increaseLike();
         Likes like = Likes.builder()
                 .memberId(userId)
-                .postId(likeRequestDTO.getPostId())
+                .postId(postId)
                 .build();
 
         Likes savedLike = likeRepository.save(like);
         return new LikesDTO.LikeResponseDTO(
                 savedLike.getId(),
                 savedLike.getMemberId(),
-                savedLike.getPostId());
+                savedLike.getPostId(),
+                "좋아요를 눌렀습니다"
+        );
 
     }
     // 좋아요 삭제
     @Transactional
-    public void removeLike(LikesDTO.LikeRequestDTO likeRequestDTO, Long userId) throws IllegalArgumentException {
-        if (!likeRepository.existsByMemberIdAndPostId(userId, likeRequestDTO.getPostId())) {
-            throw new IllegalArgumentException("좋아요가 존재하지 않습니다.");
+    public void removeLike(Long postId, Long userId) {
+        Post post = postRepository.findById(postId).orElseThrow(PostException.POST_NOT_FOUND::get);
+        Optional<Likes> opLike = likeRepository.findByPostIdAndMemberId(postId, userId);
+        if (opLike.isPresent()) {
+            post.decreaseLike();
+            likeRepository.delete(opLike.get());
         }
-        likeRepository.deleteByMemberIdAndPostId(userId, likeRequestDTO.getPostId());
+
     }
 
 }

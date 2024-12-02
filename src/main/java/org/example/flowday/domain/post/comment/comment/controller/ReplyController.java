@@ -26,7 +26,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class ReplyController {
     private final ReplyService replyService;
 
-    @Operation(summary = "조회")
+    @Operation(summary = "댓글 전체 조회")
     @GetMapping("/{postId}")
     public ResponseEntity<List<ReplyDTO.Response>> getRepliesByPostId(@PathVariable Long postId) {
         List<ReplyDTO.Response> replies = replyService.findAllByPost(postId);

@@ -50,7 +50,7 @@ public class Post {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-
+    private int likeCount;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -78,13 +78,14 @@ public class Post {
         writer=null;
     }
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "post_tags",
-//            joinColumns = @JoinColumn(name = "post_id"),
-//            inverseJoinColumns = @JoinColumn(name = "tag_id")
-//    )
-//    private List<Tag> tags = new ArrayList<>();
+    public void increaseLike() {
+        likeCount++;
+    }
+
+    public void decreaseLike() {
+        likeCount--;
+    }
+
 
 
 }

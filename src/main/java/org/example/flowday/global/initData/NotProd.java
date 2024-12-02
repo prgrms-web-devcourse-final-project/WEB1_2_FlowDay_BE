@@ -9,10 +9,12 @@ import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.course.course.repository.CourseRepository;
 import org.example.flowday.domain.course.course.service.CourseService;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
+import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.comment.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.comment.comment.service.ReplyService;
 import org.example.flowday.domain.post.post.entity.Post;
@@ -98,41 +100,45 @@ public class NotProd {
         memberRepository.save(member2);
 
 
+        //코스 생성
+        Course course = Course.builder()
+                .title("코스1")
+                .color("blue")
+                .status(Status.COUPLE)
+                .member(member)
+                .build();
+
+        courseRepository.save(course);
+
         // 장소 생성
-        SpotReqDTO spot1 = SpotReqDTO.builder()
+        Spot spot1 = Spot.builder()
                 .city("서울 종로")
                 .placeId("place1")
                 .name("카페")
                 .comment("코멘트")
+                .course(course)
                 .build();
-        SpotReqDTO spot2 = SpotReqDTO.builder()
+
+        Spot spot2 = Spot.builder()
                 .city("서울 종로")
                 .placeId("place2")
                 .name("밥집")
                 .comment("코멘트")
+                .course(course)
                 .build();
-        SpotReqDTO spot3 = SpotReqDTO.builder()
+
+        Spot spot3 = Spot.builder()
                 .city("서울 종로")
                 .placeId("place3")
                 .name("영화관")
                 .comment("코멘트")
+                .course(course)
                 .build();
 
-        List<SpotReqDTO> spots = new ArrayList<>();
-        spots.add(spot1);
-        spots.add(spot2);
-        spots.add(spot3);
+        spotRepository.save(spot1);
+        spotRepository.save(spot2);
+        spotRepository.save(spot3);
 
-        CourseReqDTO courseRequest = CourseReqDTO.builder()
-                .color("color")
-                .title("코스1")
-                .date(LocalDate.now())
-                .status(Status.COUPLE)
-                .memberId(member.getId())
-                .build();
-
-        CourseResDTO courseResDTO = courseService.saveCourse(courseRequest);
-        Course course = courseRepository.findById(courseResDTO.getId()).get();
 
         Post post1 = Post.builder()
                 .writer(member)
@@ -156,18 +162,24 @@ public class NotProd {
 
         postRepository.save(post2);
 
+        Reply reply1 = Reply.builder()
+                .content("부모댓글1")
+                .post(post1)
+                .parent(null)
+                .member(member)
+                .build();
 
-//        Post post = Post.builder()
-//                .writer(member)
-//                .contents("게시글 내용")
-//                .title("게시글 제목 ")
-//                .status(org.example.flowday.domain.post.post.entity.Status.PUBLIC)
-//                .course(course)
-//                .build();
-//        Post savePost = postRepository.save(post);
-//
-//        postService.addGenFileByUrl(savePost, "common", "inbody", 1, "https://picsum.photos/200/300");
-//        postService.addGenFileByUrl(savePost, "common", "inbody", 2, "https://picsum.photos/200/300");
+        replyRepository.save(reply1);
+
+        Reply reply2 = Reply.builder()
+                .content("자식 댓글1")
+                .post(post1)
+                .parent(reply1)
+                .member(member)
+                .build();
+
+        replyRepository.save(reply2);
+
 
 
     }

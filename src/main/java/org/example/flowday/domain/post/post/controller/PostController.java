@@ -124,16 +124,10 @@ public class PostController {
 
     // 게시글 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id , @AuthenticationPrincipal SecurityUser user) {
+    public ResponseEntity<String> deletePost(@PathVariable Long id , @AuthenticationPrincipal SecurityUser user) {
         postService.deletePost(id,user.getId());
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok().body("게시글이 삭제되었습니다");
     }
 
-    //디버깅용
-//    @GetMapping("/{id}/json/forDebug")
-//    @ResponseBody
-//    public Map<String, Object> showDetailJson(Model model, @PathVariable Long id) {
-//        return postService.getForPrintPostById(id);
-//    }
 
 }

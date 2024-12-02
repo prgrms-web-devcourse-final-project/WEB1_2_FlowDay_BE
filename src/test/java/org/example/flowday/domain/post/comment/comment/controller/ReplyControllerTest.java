@@ -10,13 +10,14 @@ import org.example.flowday.domain.post.comment.comment.repository.ReplyRepositor
 import org.example.flowday.domain.post.comment.comment.service.ReplyService;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.repository.PostRepository;
-import org.example.flowday.global.security.util.SecurityUser;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,10 +25,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@TestInstance(TestInstance.Lifecycle.PER_CLASS) // @BeforeAll을 인스턴스 메서드로 사용하기 위해 추가
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ReplyControllerTest {
 
     @Autowired
@@ -62,14 +60,19 @@ public class ReplyControllerTest {
     private Reply parentReply;
 
 
+    @AfterAll
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
+
 
     @BeforeAll
     void setUp() {
         // 테스트에 필요한 회원 생성 (테스트 유저)
         testMember = Member.builder()
                 .name("테스트유저")
-                .loginId("testuser@example.com") // UserDetailsService에서 사용
-                .pw("password") // 실제로는 암호화된 비밀번호를 사용해야 합니다
+                .loginId("testuser@example.com")
+                .pw("password")
                 .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(testMember);
@@ -99,7 +102,6 @@ public class ReplyControllerTest {
                 .build();
         replyRepository.save(parentReply);
     }
-
 
     @Test
     @DisplayName("GET /api/v1/replies/{postId} - 성공")
@@ -134,7 +136,6 @@ public class ReplyControllerTest {
                 .andExpect(jsonPath("$[0].children[0].likeCount", is(0)));
     }
 
-
     @Test
     @DisplayName("GET /api/v1/replies/{postId} - 게시글에 댓글이 없는 경우")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
@@ -158,13 +159,12 @@ public class ReplyControllerTest {
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 
-
     @Test
     @DisplayName("GET /api/v1/replies/{postId} - 존재하지 않는 게시글")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void getRepliesByPostId_NotFound() throws Exception {
         // WHEN
-        ResultActions resultActions = mockMvc.perform(get("/api/v1/replies/{postId}", 9999L) // 존재하지 않는 게시글 ID
+        ResultActions resultActions = mockMvc.perform(get("/api/v1/replies/{postId}", 9999L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
@@ -174,15 +174,12 @@ public class ReplyControllerTest {
                 .andExpect(content().string(containsString("존재하지 않는 게시글 입니다")));
     }
 
-
     @Test
-    @DisplayName("POST /api/v1/replies/{postId} - 성공")
+    @DisplayName("POST /api/v1/replies/{postId} - 자식 댓글 생성 성공")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void createChildReply_Success() throws Exception {
         // 요청 DTO 생성
-        ReplyDTO.createRequest request = new ReplyDTO.createRequest();
-        request.setContent("새 댓글");
-        request.setParentId(parentReply.getId());
+        ReplyDTO.createRequest request = new ReplyDTO.createRequest("새 댓글", parentReply.getId());
 
         // WHEN
         ResultActions resultActions = mockMvc.perform(post("/api/v1/replies/{postId}", testPost.getId())
@@ -202,14 +199,13 @@ public class ReplyControllerTest {
                 .andExpect(jsonPath("$.replyId", notNullValue()))
                 .andExpect(jsonPath("$.createdAt", notNullValue()));
     }
+
     @Test
-    @DisplayName("POST /api/v1/replies/{postId} - 성공")
+    @DisplayName("POST /api/v1/replies/{postId} - 부모 댓글 생성 성공")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void createParentReply_Success() throws Exception {
         // 요청 DTO 생성
-        ReplyDTO.createRequest request = new ReplyDTO.createRequest();
-        request.setContent("새 댓글");
-        request.setParentId(null);
+        ReplyDTO.createRequest request = new ReplyDTO.createRequest("새 댓글", null);
 
         // WHEN
         ResultActions resultActions = mockMvc.perform(post("/api/v1/replies/{postId}", testPost.getId())
@@ -224,22 +220,18 @@ public class ReplyControllerTest {
                 .andExpect(jsonPath("$.content", is("새 댓글")))
                 .andExpect(jsonPath("$.memberName", is("테스트유저")))
                 .andExpect(jsonPath("$.likeCount", is(0)))
-                .andExpect(jsonPath("$.parentId",nullValue()))
+                .andExpect(jsonPath("$.parentId", nullValue()))
                 .andExpect(jsonPath("$.postId", is(testPost.getId().intValue())))
                 .andExpect(jsonPath("$.replyId", notNullValue()))
                 .andExpect(jsonPath("$.createdAt", notNullValue()));
     }
-
-
 
     @Test
     @DisplayName("POST /api/v1/replies/{postId} - 유효성 검사 실패 (내용 없음)")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void createReply_ValidationFail_NoContent() throws Exception {
         // 요청 DTO 생성 (내용 없음)
-        ReplyDTO.createRequest request = new ReplyDTO.createRequest();
-        request.setContent("");
-        request.setParentId(null);
+        ReplyDTO.createRequest request = new ReplyDTO.createRequest("", null);
 
         // WHEN
         ResultActions resultActions = mockMvc.perform(post("/api/v1/replies/{postId}", testPost.getId())
@@ -253,18 +245,15 @@ public class ReplyControllerTest {
                 .andExpect(content().string(containsString("댓글 내용을 작성해주세요")));
     }
 
-
     @Test
     @DisplayName("POST /api/v1/replies/{postId} - 존재하지 않는 게시글")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void createReply_PostNotFound() throws Exception {
         // 요청 DTO 생성
-        ReplyDTO.createRequest request = new ReplyDTO.createRequest();
-        request.setContent("댓글 내용");
-        request.setParentId(null);
+        ReplyDTO.createRequest request = new ReplyDTO.createRequest("댓글 내용", null);
 
         // WHEN
-        ResultActions resultActions = mockMvc.perform(post("/api/v1/replies/{postId}", 9999L) // 존재하지 않는 게시글 ID
+        ResultActions resultActions = mockMvc.perform(post("/api/v1/replies/{postId}", 9999L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print());
@@ -274,7 +263,6 @@ public class ReplyControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("존재하지 않는 게시글입니다")));
     }
-
 
     @Test
     @DisplayName("PATCH /api/v1/replies/{replyId} - 성공")
@@ -289,8 +277,7 @@ public class ReplyControllerTest {
         replyRepository.save(existingReply);
 
         // 요청 DTO 생성
-        ReplyDTO.updateRequest request = new ReplyDTO.updateRequest();
-        request.setContent("수정된 댓글");
+        ReplyDTO.updateRequest request = new ReplyDTO.updateRequest("수정된 댓글");
 
         // WHEN
         ResultActions resultActions = mockMvc.perform(patch("/api/v1/replies/{replyId}", existingReply.getId())
@@ -305,7 +292,6 @@ public class ReplyControllerTest {
                 .andExpect(jsonPath("$.content", is("수정된 댓글")));
     }
 
-
     @Test
     @DisplayName("PATCH /api/v1/replies/{replyId} - 유효성 검사 실패 (내용 없음)")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
@@ -319,8 +305,7 @@ public class ReplyControllerTest {
         replyRepository.save(existingReply);
 
         // 요청 DTO 생성 (내용 없음)
-        ReplyDTO.updateRequest request = new ReplyDTO.updateRequest();
-        request.setContent("");
+        ReplyDTO.updateRequest request = new ReplyDTO.updateRequest("");
 
         // WHEN
         ResultActions resultActions = mockMvc.perform(patch("/api/v1/replies/{replyId}", existingReply.getId())
@@ -334,17 +319,15 @@ public class ReplyControllerTest {
                 .andExpect(content().string(containsString("수정 할 댓글 내용을 작성해주세요")));
     }
 
-
     @Test
     @DisplayName("PATCH /api/v1/replies/{replyId} - 존재하지 않는 댓글")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void updateReply_ReplyNotFound() throws Exception {
         // 요청 DTO 생성
-        ReplyDTO.updateRequest request = new ReplyDTO.updateRequest();
-        request.setContent("수정된 댓글");
+        ReplyDTO.updateRequest request = new ReplyDTO.updateRequest("수정된 댓글");
 
         // WHEN
-        ResultActions resultActions = mockMvc.perform(patch("/api/v1/replies/{replyId}", 9999L) // 존재하지 않는 댓글 ID
+        ResultActions resultActions = mockMvc.perform(patch("/api/v1/replies/{replyId}", 9999L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print());
@@ -354,7 +337,6 @@ public class ReplyControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("댓글을 찾을 수 없습니다")));
     }
-
 
     @Test
     @DisplayName("PATCH /api/v1/replies/{replyId} - 권한 없음")
@@ -369,8 +351,7 @@ public class ReplyControllerTest {
         replyRepository.save(existingReply);
 
         // 요청 DTO 생성
-        ReplyDTO.updateRequest request = new ReplyDTO.updateRequest();
-        request.setContent("수정된 댓글");
+        ReplyDTO.updateRequest request = new ReplyDTO.updateRequest("수정된 댓글");
 
         // WHEN
         ResultActions resultActions = mockMvc.perform(patch("/api/v1/replies/{replyId}", existingReply.getId())
@@ -384,24 +365,21 @@ public class ReplyControllerTest {
                 .andExpect(content().string(containsString("댓글 작성자만 수정,삭제 할 수 있습니다")));
     }
 
-
     @Test
-    @DisplayName("DELETE /api/v1/replies/{replyId} - 성공")
+    @DisplayName("DELETE /api/v1/replies/{replyId} - 자식 댓글 삭제 성공")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteChildReply_Success() throws Exception {
-        //자식 댓글 생성
+        // 자식 댓글 생성
         Reply childReply = Reply.builder()
                 .content("삭제할 댓글")
                 .member(testMember)
                 .post(testPost)
                 .parent(parentReply)
                 .build();
-
-        Reply reply = replyRepository.save(childReply);
-
+        replyRepository.save(childReply);
 
         // WHEN
-        ResultActions resultActions = mockMvc.perform(delete("/api/v1/replies/{replyId}", reply.getId())
+        ResultActions resultActions = mockMvc.perform(delete("/api/v1/replies/{replyId}", childReply.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
 
@@ -412,15 +390,14 @@ public class ReplyControllerTest {
                 .andExpect(jsonPath("$.content", is("댓글이 삭제되었습니다")));
 
         // 데이터베이스에서 삭제 확인
-        boolean exists = replyRepository.existsById(reply.getId());
+        boolean exists = replyRepository.existsById(childReply.getId());
         assertThat(exists).isFalse();
     }
 
     @Test
-    @DisplayName("DELETE /api/v1/replies/{replyId} - 성공")
+    @DisplayName("DELETE /api/v1/replies/{replyId} - 부모 댓글 삭제 성공")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteParentReply_Success() throws Exception {
-
         // WHEN
         ResultActions resultActions = mockMvc.perform(delete("/api/v1/replies/{replyId}", parentReply.getId())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -437,7 +414,6 @@ public class ReplyControllerTest {
         assertThat(exists).isTrue();
     }
 
-
     @Test
     @DisplayName("DELETE /api/v1/replies/{replyId} - 존재하지 않는 댓글")
     @WithUserDetails(value = "testuser@example.com", userDetailsServiceBeanName = "securityUserService")
@@ -453,12 +429,10 @@ public class ReplyControllerTest {
                 .andExpect(content().string(containsString("댓글을 찾을 수 없습니다")));
     }
 
-
     @Test
     @DisplayName("DELETE /api/v1/replies/{replyId} - 권한 없음")
     @WithUserDetails(value = "otheruser@example.com", userDetailsServiceBeanName = "securityUserService")
     void deleteReply_Unauthorized() throws Exception {
-        // 다른 사용자 생성
         // 기존 댓글 생성
         Reply existingReply = Reply.builder()
                 .content("삭제할 댓글")

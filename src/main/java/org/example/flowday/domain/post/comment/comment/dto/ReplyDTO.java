@@ -17,7 +17,6 @@ import java.util.List;
 public class ReplyDTO {
 
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class createRequest {
@@ -70,7 +69,6 @@ public class ReplyDTO {
 
 
     @Getter
-    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class updateRequest {
