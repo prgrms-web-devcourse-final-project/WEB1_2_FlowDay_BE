@@ -115,7 +115,7 @@ public class SecurityConfig {
         ;
 
         http
-                .addFilterBefore(new JwtFilter(jwtUtil), OAuth2AuthorizationRequestRedirectFilter.class);
+                .addFilterBefore(new JwtFilter(jwtUtil, memberRepository), OAuth2AuthorizationRequestRedirectFilter.class);
 
         http
                 .addFilterAt(new LogoutFilter(jwtUtil, memberRepository), org.springframework.security.web.authentication.logout.LogoutFilter.class);
