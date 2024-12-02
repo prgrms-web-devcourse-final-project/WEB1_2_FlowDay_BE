@@ -6,7 +6,6 @@ import org.example.flowday.domain.course.vote.dto.VoteReqDTO;
 import org.example.flowday.domain.course.vote.dto.VoteResDTO;
 import org.example.flowday.domain.course.vote.entity.Vote;
 import org.example.flowday.domain.course.vote.repository.VoteRepository;
-import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.course.course.repository.CourseRepository;
@@ -57,7 +56,6 @@ class VoteServiceTest {
                 .pw("testPw")
                 .email("test@test.com")
                 .name("tester")
-                .phoneNum("010-1234-5678")
                 .refreshToken("refresh_token_value")
                 .role(Role.ROLE_USER)
                 .build();

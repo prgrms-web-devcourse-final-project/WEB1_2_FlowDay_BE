@@ -3,13 +3,9 @@ package org.example.flowday.domain.course.spot.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.course.course.dto.CourseReqDTO;
 import org.example.flowday.domain.course.course.dto.CourseResDTO;
-import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.entity.Status;
 import org.example.flowday.domain.course.course.service.CourseService;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
-import org.example.flowday.domain.course.spot.dto.SpotResDTO;
-import org.example.flowday.domain.course.spot.entity.Spot;
-import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
@@ -21,13 +17,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -66,8 +59,8 @@ class SpotControllerTest {
     @BeforeAll
     void setUp() {
         member = Member.builder()
-                .name("tester")
-                .loginId("testId")
+                .name("tester20")
+                .loginId("testId20")
                 .pw("password")
                 .role(Role.ROLE_USER)
                 .build();
@@ -96,7 +89,7 @@ class SpotControllerTest {
 
     @DisplayName("지역별 인기 장소 Top 4 조회 테스트")
     @Test
-    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testId20", userDetailsServiceBeanName = "securityUserService")
     void getTopSpotsByCity() throws Exception {
         mockMvc.perform(get("/api/v1/spots")
                         .param("city", "서울")
@@ -108,7 +101,7 @@ class SpotControllerTest {
 
     @DisplayName("지역별 인기 장소가 없는 경우 테스트")
     @Test
-    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testId20", userDetailsServiceBeanName = "securityUserService")
     void getTopSpotsByCity_noSpots() throws Exception {
         mockMvc.perform(get("/api/v1/spots")
                         .param("city", "부산")
@@ -119,7 +112,7 @@ class SpotControllerTest {
 
     @DisplayName("commenet 수정 테스트")
     @Test
-    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testId20", userDetailsServiceBeanName = "securityUserService")
     void updateComment() throws Exception {
         SpotReqDTO spotReqDTO = SpotReqDTO.builder()
                 .comment("수정")
