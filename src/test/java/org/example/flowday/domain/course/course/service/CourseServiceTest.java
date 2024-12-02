@@ -10,6 +10,7 @@ import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
+import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
@@ -54,6 +55,9 @@ class CourseServiceTest {
     @InjectMocks
     private CourseService courseService;
 
+    @InjectMocks
+    private SpotService spotService;
+
     private Member member;
     private WishPlace wishPlace;
     private Member partner;
@@ -76,7 +80,6 @@ class CourseServiceTest {
                 .pw("testPw")
                 .email("test@test.com")
                 .name("tester")
-                .phoneNum("010-1234-5678")
                 .refreshToken("refresh_token_value")
                 .role(Role.ROLE_USER)
                 .partnerId(2L)
@@ -261,8 +264,8 @@ class CourseServiceTest {
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(spots);
 
-        courseService.addSpot(memberId, courseId, spotReqDTO1);
-        courseService.addSpot(memberId, courseId, spotReqDTO2);
+        spotService.addSpot(memberId, courseId, spotReqDTO1, "course");
+        spotService.addSpot(memberId, courseId, spotReqDTO2, "course");
 
         courseService.updateCourseSpotSequence(memberId, courseId, spotId, newSequence);
 
@@ -284,7 +287,7 @@ class CourseServiceTest {
                 .city("서울")
                 .build();
 
-        courseService.addSpot(member.getId(), courseId, spotReqDTO);
+        spotService.addSpot(member.getId(), courseId, spotReqDTO, "course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(List.of(addSpot));

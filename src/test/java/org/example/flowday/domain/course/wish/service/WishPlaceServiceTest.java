@@ -3,6 +3,7 @@ package org.example.flowday.domain.course.wish.service;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
+import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
@@ -39,6 +40,9 @@ class WishPlaceServiceTest {
     @InjectMocks
     private WishPlaceService wishPlaceService;
 
+    @InjectMocks
+    private SpotService spotService;
+
     private Member member;
     private Member partner;
     private Spot spot;
@@ -55,7 +59,6 @@ class WishPlaceServiceTest {
                 .pw("testPw")
                 .email("test@test.com")
                 .name("tester")
-                .phoneNum("010-1234-5678")
                 .refreshToken("refresh_token_value")
                 .role(Role.ROLE_USER)
                 .partnerId(2L)
@@ -67,7 +70,6 @@ class WishPlaceServiceTest {
                 .pw("testPw")
                 .email("test2@test.com")
                 .name("tester2")
-                .phoneNum("010-1234-5678")
                 .refreshToken("refresh_token_value")
                 .role(Role.ROLE_USER)
                 .partnerId(1L)
@@ -122,7 +124,7 @@ class WishPlaceServiceTest {
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
+        spotService.addSpot(member.getId(), null, wishPlaceReqDTO.getSpot(), "wishPlace");
 
         verify(spotRepository, times(1)).save(any(Spot.class));
     }
@@ -134,7 +136,7 @@ class WishPlaceServiceTest {
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        wishPlaceService.removeSpotFromWishPlace(member.getId(), 1L, 1L);
+       spotService.removeSpot(member.getId(), null, 1L, "wishPlace");
 
         assertTrue(wishPlace.getSpots().isEmpty());
         verify(spotRepository, times(1)).delete(spot);

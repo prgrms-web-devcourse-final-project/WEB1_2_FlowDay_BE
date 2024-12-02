@@ -3,8 +3,8 @@ package org.example.flowday.domain.course.wish.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
-import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
+import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
@@ -29,6 +29,7 @@ public class WishPlaceService {
     private final MemberRepository memberRepository;
     private final SpotRepository spotRepository;
     private final WishPlaceRepository wishPlaceRepository;
+    private final SpotService spotService;
 
     // 위시 플레이스 생성
     public void saveWishPlace(Long memberId) {
@@ -48,17 +49,7 @@ public class WishPlaceService {
         }
 
         try {
-            WishPlace wishPlace = wishPlaceRepository.findByMemberId(wishPlaceReqDTO.getMemberId()).orElseThrow(WishPlaceException.NOT_FOUND::get);
-
-            Spot newSpot = Spot.builder()
-                    .placeId(wishPlaceReqDTO.getSpot().getPlaceId())
-                    .name(wishPlaceReqDTO.getSpot().getName())
-                    .city(wishPlaceReqDTO.getSpot().getCity())
-                    .comment(wishPlaceReqDTO.getSpot().getComment())
-                    .wishPlace(wishPlace)
-                    .build();
-
-            spotRepository.save(newSpot);
+            spotService.addSpot(userId, null, wishPlaceReqDTO.getSpot(), "wishPlace");
         } catch (Exception e) {
             e.printStackTrace();
             throw WishPlaceException.NOT_UPDATED.get();
@@ -72,15 +63,7 @@ public class WishPlaceService {
         }
 
         try {
-            WishPlace wishPlace = wishPlaceRepository.findByMemberId(memberId).orElseThrow(WishPlaceException.NOT_FOUND::get);
-
-            Spot spotToRemove = wishPlace.getSpots().stream()
-                    .filter(spot -> spot.getId().equals(spotId))
-                    .findFirst()
-                    .orElse(null);
-
-            wishPlace.getSpots().remove(spotToRemove);
-            spotRepository.delete(spotToRemove);
+            spotService.removeSpot(userId, null, spotId, "wishPlace");
         } catch (Exception e) {
             e.printStackTrace();
             throw WishPlaceException.NOT_DELETED.get();
