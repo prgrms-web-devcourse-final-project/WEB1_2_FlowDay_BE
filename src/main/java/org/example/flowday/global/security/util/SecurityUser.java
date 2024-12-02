@@ -8,13 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-public class SecurityUser implements UserDetails {
-
-    private final Member member;
-
-    public SecurityUser(Member member) {
-        this.member = member;
-    }
+public record SecurityUser(Member member) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -35,9 +29,15 @@ public class SecurityUser implements UserDetails {
         return member.getLoginId();
     }
 
-    public Long getId(){
+    public Long getId() {
         System.out.println("Id Check");
         return member.getId();
+    }
+
+    @Override
+    public Member member() {
+        System.out.println("Member Check");
+        return member;
     }
 
     @Override
