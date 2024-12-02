@@ -307,7 +307,7 @@ public class MemberService {
 
     }
 
-    // 만나기 시작한 날 등록
+    // 커플 신청 보내기
     @Transactional
     public void sendNotification(Member member, MemberDTO.SendCoupleRequestDTO dto) throws JsonProcessingException {
 
@@ -315,8 +315,11 @@ public class MemberService {
         notify.setSenderId(member.getId());
         notify.setReceiverId(dto.getPartnerId());
         notify.setMessage("연인 신청이 도착했습니다.");
-        notify.setUrl("api/v1/members/partnerUpdate");
-        notify.setParams(Map.of("relationshipDt",dto.getRelationshipDt()));
+        notify.setUrl("/api/v1/members/partnerUpdate");
+        notify.setParams(Map.of(
+                "relationshipDt",dto.getRelationshipDt(),
+                "senderId",member.getId()
+        ));
 
 
         notificationService.createNotification(notify);
@@ -338,17 +341,17 @@ public class MemberService {
 
     // 파트너 ID 등록 (요청을 보낸 사람)
     @Transactional
-    public void updatePartnerId(Long id, MemberDTO.UpdatePartnerIdRequestDTO dto) {
+    public void updatePartnerId(Member member, Map<String,Object> request) {
 
-        Member member = isExist(id);
-
-        member.setPartnerId(dto.getPartnerId());
+        member.setPartnerId((Long) request.get("senderId"));
 
         member.setChattingRoomId(chatService.registerChatRoom(LocalDateTime.now()));
 
+        member.setRelationshipDt(LocalDate.parse(request.get("relationshipDt").toString()));
+
         memberRepository.save(member);
 
-        acceptAddPartnerId(id, dto.getPartnerId(), member.getChattingRoomId());
+        acceptAddPartnerId(member.getId(), (Long) request.get("senderId"), member.getChattingRoomId());
 
     }
 
