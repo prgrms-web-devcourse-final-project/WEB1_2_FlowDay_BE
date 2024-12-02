@@ -77,7 +77,6 @@ public class NotProd {
                 .email("test1@test.com")
                 .loginId("test1")
                 .pw(passwordEncoder.encode("1234"))
-                .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
 
@@ -88,7 +87,6 @@ public class NotProd {
                 .email("test2@test.com")
                 .loginId("test2")
                 .pw(passwordEncoder.encode("1234"))
-                .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(member2);
