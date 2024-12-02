@@ -4,13 +4,13 @@ import lombok.Getter;
 
 @Getter
 public class ApiResponse<T> {
-
     private final String statusMessage;
     private final T data;
 
     public ApiResponse(
             final String statusMessage,
-            final T data) {
+            final T data
+    ) {
         this.statusMessage = statusMessage;
         this.data = data;
     }
@@ -28,6 +28,5 @@ public class ApiResponse<T> {
                 data
         );
     }
-
 }
 

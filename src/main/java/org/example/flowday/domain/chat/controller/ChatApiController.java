@@ -29,13 +29,12 @@ public class ChatApiController {
      * 채팅 방 생성
      * - 연인 수락을 하면 채팅방 id가 생성된다
      */
-    @PostMapping
+    @PostMapping("/rooms")
     public ResponseEntity<ApiResponse> registerChatRoom() {
         LocalDateTime time = LocalDateTime.now();
         Long chatRoomId = chatService.registerChatRoom(time);
         return ResponseEntity.ok(ApiResponse.success(chatRoomId));
     }
-
 
     /**
      * 채팅 조회 (최신 10개, page)
@@ -46,8 +45,7 @@ public class ChatApiController {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "sendTime"
-        ));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "sendTime"));
         Page<ChatMessageEntity> messages = chatService.getPagedChatMessages(roomId, pageable);
         Page<ChatResponse> chatResponses = messages.map(ChatResponse::from);
         return ResponseEntity.ok(ApiResponse.success(chatResponses));
@@ -61,5 +59,4 @@ public class ChatApiController {
         Long deletedChatRoomId = chatService.deleteChatRoom(roomId);
         return ResponseEntity.ok(ApiResponse.success(deletedChatRoomId));
     }
-
 }
