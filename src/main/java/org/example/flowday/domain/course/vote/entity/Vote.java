@@ -1,13 +1,10 @@
 package org.example.flowday.domain.course.vote.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.spot.entity.Spot;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,5 +25,12 @@ public class Vote {
 
     @OneToMany(mappedBy = "vote", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Spot> spots;
+
+    public static Vote createVote(Course course, String title) {
+        return Vote.builder()
+                .course(course)
+                .title(title)
+                .build();
+    }
 }
 

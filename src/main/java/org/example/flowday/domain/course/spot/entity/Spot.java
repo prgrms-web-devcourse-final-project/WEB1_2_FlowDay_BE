@@ -3,6 +3,7 @@ package org.example.flowday.domain.course.spot.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.flowday.domain.course.course.entity.Course;
+import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.vote.entity.Vote;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
 
@@ -48,6 +49,18 @@ public class Spot {
 
     public void removeVote() {
         this.vote = null;
+    }
+
+    public static Spot createSpot(SpotReqDTO spotReqDTO, Integer sequence, Course course, WishPlace wishPlace) {
+        return Spot.builder()
+                .placeId(spotReqDTO.getPlaceId())
+                .name(spotReqDTO.getName())
+                .city(spotReqDTO.getCity())
+                .comment(spotReqDTO.getComment())
+                .sequence(sequence)
+                .course(course)
+                .wishPlace(wishPlace)
+                .build();
     }
 
 }

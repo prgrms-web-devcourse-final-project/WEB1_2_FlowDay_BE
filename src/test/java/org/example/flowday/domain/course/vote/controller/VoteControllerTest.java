@@ -60,8 +60,8 @@ class VoteControllerTest {
     @BeforeAll
     void setUp() {
         member = Member.builder()
-                .name("tester")
-                .loginId("testId")
+                .name("tester3")
+                .loginId("testId3")
                 .pw("password")
                 .role(Role.ROLE_USER)
                 .build();
@@ -112,7 +112,7 @@ class VoteControllerTest {
 
     @DisplayName("투표 생성 테스트")
     @Test
-    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testId3", userDetailsServiceBeanName = "securityUserService")
     void createVote() throws Exception {
         mockMvc.perform(post("/api/v1/votes")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -123,7 +123,7 @@ class VoteControllerTest {
 
     @DisplayName("투표 조회 테스트")
     @Test
-    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testId3", userDetailsServiceBeanName = "securityUserService")
     void getVote() throws Exception {
         mockMvc.perform(get("/api/v1/votes/{voteId}", voteResDTO.getId()))
                 .andExpect(status().isOk())
@@ -132,7 +132,7 @@ class VoteControllerTest {
 
     @DisplayName("투표 완료 후 코스 수정 테스트")
     @Test
-    @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testId3", userDetailsServiceBeanName = "securityUserService")
     void updateCourseByVote() throws Exception {
         mockMvc.perform(patch("/api/v1/votes/{voteId}/spot/{spotId}", voteResDTO.getId(), spot1.getId()))
                 .andExpect(status().isOk());

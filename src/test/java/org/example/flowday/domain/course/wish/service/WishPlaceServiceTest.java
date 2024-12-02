@@ -3,6 +3,7 @@ package org.example.flowday.domain.course.wish.service;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
+import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
@@ -38,6 +39,9 @@ class WishPlaceServiceTest {
 
     @InjectMocks
     private WishPlaceService wishPlaceService;
+
+    @InjectMocks
+    private SpotService spotService;
 
     private Member member;
     private Member partner;
@@ -120,7 +124,7 @@ class WishPlaceServiceTest {
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
+        spotService.addSpot(member.getId(), null, wishPlaceReqDTO.getSpot(), "wishPlace");
 
         verify(spotRepository, times(1)).save(any(Spot.class));
     }
@@ -132,7 +136,7 @@ class WishPlaceServiceTest {
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        wishPlaceService.removeSpotFromWishPlace(member.getId(), 1L, 1L);
+       spotService.removeSpot(member.getId(), null, 1L, "wishPlace");
 
         assertTrue(wishPlace.getSpots().isEmpty());
         verify(spotRepository, times(1)).delete(spot);
