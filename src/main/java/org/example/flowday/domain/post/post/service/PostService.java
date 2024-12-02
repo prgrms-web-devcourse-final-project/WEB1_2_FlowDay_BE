@@ -112,7 +112,7 @@ public class PostService {
 
     // 모든 게시글 조회 최신순 - PUBLIC
     public Page<PostBriefResponseDTO> getAllPosts(Pageable pageable) {
-        Page<Post> posts = postRepository.searchLatestPost(pageable);
+        Page<Post> posts = postRepository.searchMostLikedPost(pageable);
 
 
         return posts.map(post -> {
