@@ -40,12 +40,12 @@ public class NotificationController {
     }
 
     // receiverId에 해당하는 알림을 페이징 처리하여 반환하는 API
-    @GetMapping("/notifications")
+    @GetMapping("/all")
     public Page<NotificationDTO.NotificationResponseDTO> getNotifications(
-            @RequestParam Long receiverId,
+            @AuthenticationPrincipal SecurityUser user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return notificationService.getNotificationsByReceiverId(receiverId, page, size);
+        return notificationService.getNotificationsByReceiverId(user.getId(), page, size);
     }
 
     /**

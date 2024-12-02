@@ -2,6 +2,7 @@ package org.example.flowday.domain.notification.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.notification.entity.Notification;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,16 @@ public class NotificationDTO {
                     .url(url)
                     .isRead(false)
                     .build();
+        }
+    }
+
+    @Data
+    public static class CreateResponseDTO {
+        private Long receiverId;
+        private String url = "/api/v1/notifications/all";
+
+        public CreateResponseDTO(Long id) {
+            this.receiverId = id;
         }
     }
 

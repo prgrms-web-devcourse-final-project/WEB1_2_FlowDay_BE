@@ -25,11 +25,13 @@ public class NotificationService {
      */
     public NotificationDTO.NotificationResponseDTO createNotification(NotificationDTO.NotificationRequestDTO dto) throws JsonProcessingException {
 
+        System.out.println(dto.toString());
+
         Notification notify = dto.toEntity();
         notify.setAdditionalParams(dto.getParams());
 
         Notification notification = notificationRepository.save(notify);
-        simpMessagingTemplate.convertAndSend("/topic/notifications/" + dto.getReceiverId(), notification);
+        simpMessagingTemplate.convertAndSend("/topic/notifications/" + dto.getReceiverId(), new NotificationDTO.CreateResponseDTO(notification.getReceiverId()));
 
         return convertToResponseDTO(notify);
     }
@@ -72,6 +74,7 @@ public class NotificationService {
         responseDTO.setIsRead(notification.getIsRead());
         responseDTO.setUrl(notification.getUrl());
         responseDTO.setCreatedAt(notification.getCreatedAt());
+        responseDTO.setAdditionalParamsJson(notification.getAdditionalParamsJson());
         return responseDTO;
     }
 }
