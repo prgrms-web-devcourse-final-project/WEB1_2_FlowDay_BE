@@ -2,8 +2,6 @@ package org.example.flowday.domain.member.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.dto.MemberDTO;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.exception.MemberTaskException;
@@ -13,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -134,7 +131,7 @@ public class MemberController {
             @RequestBody MemberDTO.UpdateRequestDTO dto
     ) {
         try {
-            return ResponseEntity.ok(memberService.updateMember(user.getId(), dto.toEntity()));
+            return ResponseEntity.ok(memberService.updateMember(user.member(), dto.toEntity()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -153,7 +150,7 @@ public class MemberController {
             @AuthenticationPrincipal SecurityUser user,
             MemberDTO.MyInfoSettingRequestDTO myinfo) {
         try {
-            memberService.setMyinfo(user.getId(), myinfo);
+            memberService.setMyinfo(user.member(), myinfo);
             return ResponseEntity.ok("Set MyInfo successful");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -185,7 +182,7 @@ public class MemberController {
             @RequestBody MemberDTO.UpdateBirthdayRequestDTO dto
     ) {
         try {
-            memberService.updateBirthday(user.getId(), dto.getBirthDt());
+            memberService.updateBirthday(user.member(), dto.getBirthDt());
             return ResponseEntity.ok("birthday updated");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -243,7 +240,7 @@ public class MemberController {
     @Operation(summary = "파트너 연결 끊기")
     @PutMapping("/disconnect")
     public ResponseEntity<String> disconnect(@AuthenticationPrincipal SecurityUser user, @RequestParam Boolean stat){
-        memberService.disconnectPartner(user.getId(), stat);
+        memberService.disconnectPartner(user.member(), stat);
         return ResponseEntity.ok("disconnected");
     }
 

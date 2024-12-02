@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
+import org.example.flowday.domain.member.exception.MemberException;
+import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.global.security.util.JwtUtil;
 import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,9 +22,11 @@ import java.util.Date;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final MemberRepository memberRepository;
 
-    public JwtFilter(final JwtUtil jwtUtil) {
+    public JwtFilter(final JwtUtil jwtUtil, final MemberRepository memberRepository) {
         this.jwtUtil = jwtUtil;
+        this.memberRepository = memberRepository;
 
     }
     @Override
@@ -64,8 +68,6 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         Long id = jwtUtil.getId(token);
-        String username = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
         String category = jwtUtil.getCategory(token);
 
         if (!category.equals("accessToken")) {
@@ -81,11 +83,9 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         //userEntity를 생성하여 값 set
-        Member member = new Member();
-        member.setId(id);
-        member.setLoginId(username);
-        member.setPw("temppassword");
-        member.setRole(Role.valueOf(role));
+        Member member = memberRepository.findById(id).orElseThrow(
+                MemberException.MEMBER_NOT_FOUND::getMemberTaskException
+        );
 
         //UserDetails에 회원 정보 객체 담기
         SecurityUser customUserDetails = new SecurityUser(member);
