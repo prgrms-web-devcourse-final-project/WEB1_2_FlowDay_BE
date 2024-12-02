@@ -148,8 +148,9 @@ public class MemberDTO {
     }
 
     @Data
-    public static class UpdateRelationshipStartDateRequestDTO {
-        private LocalDate relationshipDt;
+    public static class SendCoupleRequestDTO {
+        private Long partnerId;
+        private String relationshipDt;
     }
 
     @Data
@@ -159,6 +160,7 @@ public class MemberDTO {
 
         @JsonProperty("partnerId")
         private Long partnerId;
+        private String relationshipDt;
     }
 
 
