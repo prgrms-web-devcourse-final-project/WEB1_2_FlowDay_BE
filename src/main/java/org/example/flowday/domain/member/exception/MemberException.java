@@ -12,7 +12,8 @@ public enum MemberException {
     INVALID_EMAIL_FORMAT("올바르지 않은 이메일 형식입니다.", HttpStatus.BAD_REQUEST),
     INVALID_PHONENUM_FORMAT("올바르지 않은 전화번호 형식입니다.", HttpStatus.BAD_REQUEST),
     INVALID_CHAR_FORMAT("올바르지 않은 문자열 형식입니다.", HttpStatus.BAD_REQUEST),
-    UPDATE_PASSWORD_FAILED("비밀번호 재설정에 실패했습니다", HttpStatus.BAD_REQUEST);
+    UPDATE_PASSWORD_FAILED("비밀번호 재설정에 실패했습니다", HttpStatus.BAD_REQUEST),
+    SET_MYINFO_FAILED("내 정보 설정에 실패했습니다", HttpStatus.BAD_REQUEST);
 
 
     private final String message;

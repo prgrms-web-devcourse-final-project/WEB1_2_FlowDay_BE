@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.dto.MemberDTO;
+import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.member.service.MemberService;
 import org.example.flowday.global.security.util.SecurityUser;
@@ -146,13 +147,34 @@ public class MemberController {
         return ResponseEntity.ok(memberService.deleteMember(user.getId()));
     }
 
+    // 기본 정보 설정
+    @PutMapping("/myInfo")
+    public ResponseEntity<Object> myInfo(
+            @AuthenticationPrincipal SecurityUser user,
+            MemberDTO.MyInfoSettingRequestDTO myinfo) {
+        try {
+            memberService.setMyinfo(user.getId(), myinfo);
+            return ResponseEntity.ok("Set MyInfo successful");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(MemberException.SET_MYINFO_FAILED.getMemberTaskException().getMessage());
+        }
+
+    }
+
     // 프로필 이미지 수정
     @Operation(summary = "프로필 이미지 수정")
     @PutMapping("/updateImage")
-    public ResponseEntity<MemberDTO.ChangeImageResponseDTO> modifyImage(
+    public ResponseEntity<Object> modifyImage(
             @AuthenticationPrincipal SecurityUser user,
             @RequestParam("image") MultipartFile image) {
-        return ResponseEntity.ok(memberService.changeProfileImage(user.getId(), image));
+        try {
+            memberService.changeProfileImage(user.getId(), image);
+            return ResponseEntity.ok("프로필 사진이 변경되었습니다");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(MemberException.MEMBER_IMAGE_NOT_MODIFIED.getMemberTaskException().getMessage());
+        }
     }
 
     // 생일 수정(등록)

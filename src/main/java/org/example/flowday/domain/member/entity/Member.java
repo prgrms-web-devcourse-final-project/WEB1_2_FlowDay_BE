@@ -44,9 +44,7 @@ public class Member {
     private String email;
     @Column(unique = true)
     private String name;
-    private String phoneNum;
     private Long partnerId;
-    private String profileImage;
     private Long chattingRoomId;
 
     @Column(columnDefinition = "TEXT")
@@ -79,9 +77,6 @@ public class Member {
         if (!isValidEmail(member.email)) {
             throw MemberException.INVALID_EMAIL_FORMAT.getMemberTaskException();
         }
-        if (!isValidPhoneNumber(member.phoneNum)) {
-            throw MemberException.INVALID_PHONENUM_FORMAT.getMemberTaskException();
-        }
     }
 
     // 특수문자 필터링 메소드
@@ -96,10 +91,5 @@ public class Member {
     // 이메일 유효성 검사
     private boolean isValidEmail(String email) {
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
-    }
-
-    // 전화번호 유효성 검사 (예시: 숫자만 허용)
-    private boolean isValidPhoneNumber(String phoneNum) {
-        return phoneNum != null && phoneNum.matches("^[0-9]+$");
     }
 }
