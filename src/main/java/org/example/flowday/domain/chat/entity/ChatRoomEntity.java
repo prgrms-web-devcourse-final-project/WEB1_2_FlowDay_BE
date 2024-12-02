@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class ChatRoomEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_room_no", nullable = false)
@@ -47,5 +46,4 @@ public class ChatRoomEntity {
                 .createdAt(createdAt)
                 .build();
     }
-
 }

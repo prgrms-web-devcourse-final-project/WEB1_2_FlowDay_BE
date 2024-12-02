@@ -36,7 +36,6 @@ public class ChatApiController {
         return ResponseEntity.ok(ApiResponse.success(chatRoomId));
     }
 
-
     /**
      * 채팅 조회 (최신 10개, page)
      */
@@ -46,8 +45,7 @@ public class ChatApiController {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "sendTime"
-        ));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "sendTime"));
         Page<ChatMessageEntity> messages = chatService.getPagedChatMessages(roomId, pageable);
         Page<ChatResponse> chatResponses = messages.map(ChatResponse::from);
         return ResponseEntity.ok(ApiResponse.success(chatResponses));
@@ -61,5 +59,4 @@ public class ChatApiController {
         Long deletedChatRoomId = chatService.deleteChatRoom(roomId);
         return ResponseEntity.ok(ApiResponse.success(deletedChatRoomId));
     }
-
 }

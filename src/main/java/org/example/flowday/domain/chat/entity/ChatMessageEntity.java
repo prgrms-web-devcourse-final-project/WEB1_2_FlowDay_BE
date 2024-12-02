@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 public class ChatMessageEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_message_no", nullable = false)
@@ -61,5 +60,4 @@ public class ChatMessageEntity {
                 .sendTime(sendTime)
                 .build();
     }
-
 }

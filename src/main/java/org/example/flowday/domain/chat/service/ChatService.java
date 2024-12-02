@@ -16,14 +16,11 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
 
-
     /**
      * 채팅 방 생성
      */
     public Long registerChatRoom(final LocalDateTime time) {
-        ChatRoomEntity chatRoom = ChatRoomEntity.create(
-                time
-        );
+        ChatRoomEntity chatRoom = ChatRoomEntity.create(time);
         ChatRoomEntity savedChatRoom = chatRoomRepository.save(chatRoom);
         Long chatRoomId = savedChatRoom.getId();
         return chatRoomId;
@@ -67,5 +64,4 @@ public class ChatService {
         chatRoomRepository.delete(chatRoom);
         return roomId;
     }
-
 }

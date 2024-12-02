@@ -17,7 +17,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Controller
 public class ChatController {
-
     private final JwtUtil jwtUtil;
     private final ChatService chatService;
 
@@ -38,7 +37,7 @@ public class ChatController {
         LocalDateTime time = LocalDateTime.now();
         String responseMessage = HtmlUtils.htmlEscape(chatMessage.message());
 
-        // TODO : 채팅 로그 저장 (동기 -> 비동기), senderId 넣어야함
+        // TODO : 채팅 로그 저장 (동기 -> 비동기), senderId 넣어야 함
         chatService.saveMessage(roomId, 99L, responseMessage, time);
 
         return new ChatResponse(99L, responseMessage, time);

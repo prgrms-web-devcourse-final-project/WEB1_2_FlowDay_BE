@@ -1,6 +1,5 @@
 package org.example.flowday.domain.chat.controller;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -13,7 +12,6 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 @Slf4j
 @Component
 public class StompWebSocketEventHandler {
-
     @EventListener
     public void handleWebSocketSessionConnectEvent(SessionConnectEvent event) {
         log.info("세션(클라이언트)가 연결을 시도합니다...");
