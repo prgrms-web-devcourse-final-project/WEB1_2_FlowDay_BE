@@ -47,7 +47,6 @@ class ReplyServiceTest {
                 .name("test")
                 .email("test@test.com")
                 .pw("1234")
-                .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
 
@@ -81,7 +80,6 @@ class ReplyServiceTest {
                 .name("test")
                 .email("test@test.com")
                 .pw("1234")
-                .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
 
@@ -125,7 +123,6 @@ class ReplyServiceTest {
                 .name("test")
                 .email("test@test.com")
                 .pw("1234")
-                .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
 
@@ -168,7 +165,6 @@ class ReplyServiceTest {
                 .name("test")
                 .email("test@test.com")
                 .pw("1234")
-                .phoneNum("010-1234-1234")
                 .role(Role.ROLE_USER)
                 .build();
         memberRepository.save(member);

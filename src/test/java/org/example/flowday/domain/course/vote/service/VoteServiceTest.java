@@ -57,7 +57,6 @@ class VoteServiceTest {
                 .pw("testPw")
                 .email("test@test.com")
                 .name("tester")
-                .phoneNum("010-1234-5678")
                 .refreshToken("refresh_token_value")
                 .role(Role.ROLE_USER)
                 .build();
