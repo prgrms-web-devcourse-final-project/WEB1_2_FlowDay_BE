@@ -26,14 +26,14 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class ReplyController {
     private final ReplyService replyService;
 
-    @Operation(summary = "댓글 전체 조회")
+    @Operation(summary ="댓글 전체 조회"  , description = "게시글의 전체 댓글을 조회합니다")
     @GetMapping("/{postId}")
     public ResponseEntity<List<ReplyDTO.Response>> getRepliesByPostId(@PathVariable Long postId) {
         List<ReplyDTO.Response> replies = replyService.findAllByPost(postId);
         return ResponseEntity.ok(replies);
     }
 
-    @Operation(summary = "작성")
+    @Operation(summary ="댓글 생성"  , description = "부모 댓글 생성시 parentId에 null 값을 넣어주세요 , 자식 댓글 생성시 부모댓글의 id값을 parent에 넣어주세요  ")
     @PostMapping("/{postId}")
     public ResponseEntity<?> createReply(@RequestBody @Valid ReplyDTO.createRequest request , BindingResult bindingResult, @PathVariable Long postId,
                                          @AuthenticationPrincipal SecurityUser user) {
@@ -52,7 +52,7 @@ public class ReplyController {
 
     }
 
-    @Operation(summary = "수정")
+    @Operation(summary ="댓글 수정"  , description = "댓글이 수정 됩니다")
     @PatchMapping("/{replyId}")
     public ResponseEntity<?> updateReply(@RequestBody @Valid ReplyDTO.updateRequest request,BindingResult bindingResult , @PathVariable Long replyId ,
                                          @AuthenticationPrincipal SecurityUser user) {
@@ -70,7 +70,7 @@ public class ReplyController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "삭제")
+    @Operation(summary ="댓글 삭제"  , description = "자식댓글은 삭제되지만 부모 댓글은 삭제되지 않고 '작성자에 의해 삭제되었습니다'로 내용이 변경됩니다")
     @DeleteMapping("/{replyId}")
     public ResponseEntity<ReplyDTO.deleteResponse> deleteReply(@PathVariable Long replyId , @AuthenticationPrincipal SecurityUser user) {
         ReplyDTO.deleteResponse response = replyService.removeReply(replyId, user.getId());
