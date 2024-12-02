@@ -17,7 +17,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findById(Long id);
 
-    Optional<Member> findByLoginId(String loginId); // 로그인 ID로 검색
+    @Query("SELECT m.id AS id, m.loginId AS loginId, m.role AS role, m.pw AS pw FROM Member m WHERE m.loginId = :loginId")
+    Optional<Map<String,Object>> findSecurityInfoByLoginId(@Param("loginId")String loginId);
 
     @Modifying
     @Transactional

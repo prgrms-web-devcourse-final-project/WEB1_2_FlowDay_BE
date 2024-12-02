@@ -1,5 +1,6 @@
 package org.example.flowday.domain.member.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.flowday.domain.member.dto.MemberDTO;
@@ -14,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -94,7 +96,7 @@ public class MemberController {
     }
   
     // 로그인 ( Swagger 전용 )
-    @Operation(summary = "로그")
+    @Operation(summary = "로그인")
     @PostMapping("/login")
     public ResponseEntity<String> login(@AuthenticationPrincipal SecurityUser user){
         return ResponseEntity.ok("{\"message\":\"Login successful\"}");
@@ -175,6 +177,7 @@ public class MemberController {
     }
 
     // 생일 수정(등록)
+    // 사용 하지 않음 (배포시까지 변경 없다면 삭제 예정)
     @Operation(summary = "생일 수정(등록)")
     @PutMapping("/birthday")
     public ResponseEntity<String> updateBirthday(
@@ -198,25 +201,27 @@ public class MemberController {
     // 연인 관련 엔드 포인트
 
 
-    //연인 등록
-    @Operation(summary = "연인 등록", description = "알림 도메인 완성 시 변경 예정")
+    //연인 찾기
+    @Operation(summary = "연인 찾기", description = "알림 도메인 완성 시 변경 예정")
     @GetMapping("/partner/{name}")
     public ResponseEntity<MemberDTO.FindPartnerResponseDTO> getMemberByName(@PathVariable String name) {
         return ResponseEntity.ok(memberService.getPartner(name));
     }
 
-    // 만나기 시작한 날 수정
-    @Operation(summary = "만나기 시작한 날 수정")
+    // 연인 신청
+    @Operation(summary = "연인 신청")
     @PutMapping("/relationship")
-    public ResponseEntity<String> updateRelationshipStartDate(
+    public ResponseEntity<String> sendCoupleRequest(
             @AuthenticationPrincipal SecurityUser user,
-            @RequestBody MemberDTO.UpdateRelationshipStartDateRequestDTO dto
+            @RequestBody MemberDTO.SendCoupleRequestDTO dto
     ) {
         try {
-            memberService.updateRelationshipStartDate(user.getId(), dto);
-            return ResponseEntity.ok("start date updated");
+            memberService.sendNotification(user.member(), dto);
+            return ResponseEntity.ok("연인 신청을 보냈습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -226,10 +231,10 @@ public class MemberController {
     @PutMapping("/partnerUpdate")
     public ResponseEntity<String> updatePartnerId(
             @AuthenticationPrincipal SecurityUser user,
-            @RequestBody MemberDTO.UpdatePartnerIdRequestDTO dto
-    ) {
+            @RequestBody Map<String,Object> requestParams
+            ) {
         try {
-            memberService.updatePartnerId(user.getId(), dto);
+            memberService.updatePartnerId(user.member(), requestParams);
             return ResponseEntity.ok("partner updated");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

@@ -1,5 +1,6 @@
 package org.example.flowday.domain.member.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.chat.service.ChatService;
@@ -12,6 +13,8 @@ import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.domain.notification.dto.NotificationDTO;
+import org.example.flowday.domain.notification.service.NotificationService;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.global.fileupload.service.GenFileService;
 import org.example.flowday.global.security.util.JwtUtil;
@@ -33,6 +36,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberService {
 
+    private final NotificationService notificationService;
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
     private final JwtUtil jwtUtil;
@@ -64,6 +68,17 @@ public class MemberService {
 
         String storedToken = memberRepository.findRefreshTokenByLoginId(loginId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         if (storedToken.equals(token)) {
+
+            // Refresh Rotate 전략
+            // refreshToken 을 1회용으로 만들어, 탈취 되었을 때의 피해를 최소화
+            String updatedRefreshToken = jwtUtil.createJwt(Map.of(
+                            "category","refreshToken",
+                            "id",id,
+                            "loginId",loginId,
+                            "role", role),
+                    60 * 60 * 100000L); //100시간
+
+            memberRepository.updateRefreshToken(loginId, updatedRefreshToken);
 
             // 새 accessToken 생성
             return jwtUtil.createJwt(Map.of(
@@ -292,17 +307,22 @@ public class MemberService {
 
     }
 
-    // 만나기 시작한 날 등록
+    // 커플 신청 보내기
     @Transactional
-    public void updateRelationshipStartDate(Long id, MemberDTO.UpdateRelationshipStartDateRequestDTO dto) {
+    public void sendNotification(Member member, MemberDTO.SendCoupleRequestDTO dto) throws JsonProcessingException {
 
-        Member member = isExist(id);
+        NotificationDTO.NotificationRequestDTO notify = new NotificationDTO.NotificationRequestDTO();
+        notify.setSenderId(member.getId());
+        notify.setReceiverId(dto.getPartnerId());
+        notify.setMessage("연인 신청이 도착했습니다.");
+        notify.setUrl("/api/v1/members/partnerUpdate");
+        notify.setParams(Map.of(
+                "relationshipDt",dto.getRelationshipDt(),
+                "senderId",member.getId()
+        ));
 
-        if (dto.getRelationshipDt() != null) {
-            member.setRelationshipDt(dto.getRelationshipDt());
-        }
 
-        memberRepository.save(member);
+        notificationService.createNotification(notify);
 
     }
 
@@ -321,17 +341,17 @@ public class MemberService {
 
     // 파트너 ID 등록 (요청을 보낸 사람)
     @Transactional
-    public void updatePartnerId(Long id, MemberDTO.UpdatePartnerIdRequestDTO dto) {
+    public void updatePartnerId(Member member, Map<String,Object> request) {
 
-        Member member = isExist(id);
-
-        member.setPartnerId(dto.getPartnerId());
+        member.setPartnerId((Long) request.get("senderId"));
 
         member.setChattingRoomId(chatService.registerChatRoom(LocalDateTime.now()));
 
+        member.setRelationshipDt(LocalDate.parse(request.get("relationshipDt").toString()));
+
         memberRepository.save(member);
 
-        acceptAddPartnerId(id, dto.getPartnerId(), member.getChattingRoomId());
+        acceptAddPartnerId(member.getId(), (Long) request.get("senderId"), member.getChattingRoomId());
 
     }
 
