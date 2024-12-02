@@ -17,6 +17,7 @@ public class NotificationDTO {
         private String url;        // 실행할 URL
         private Map<String,Object> params;
 
+
         public Notification toEntity() {
             return Notification.builder()
                     .senderId(senderId)
@@ -24,7 +25,6 @@ public class NotificationDTO {
                     .message(message)
                     .url(url)
                     .isRead(false)
-                    .additionalParams(params)
                     .build();
         }
     }

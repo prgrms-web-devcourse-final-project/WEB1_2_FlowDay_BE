@@ -1,5 +1,7 @@
 package org.example.flowday.domain.notification.entity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,6 +34,17 @@ public class Notification {
     @CreatedDate
     private LocalDateTime createdAt;
 
-    @ElementCollection
-    private Map<String, Object> additionalParams;
+    @Lob
+    private String additionalParamsJson;
+
+    // JSON 직렬화 및 역직렬화
+    public void setAdditionalParams(Map<String, Object> params) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        this.additionalParamsJson = objectMapper.writeValueAsString(params); // Map을 JSON 문자열로 변환하여 저장
+    }
+
+    public Map<String, Object> getAdditionalParams() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(this.additionalParamsJson, Map.class); // JSON 문자열을 Map으로 역직렬화
+    }
 }

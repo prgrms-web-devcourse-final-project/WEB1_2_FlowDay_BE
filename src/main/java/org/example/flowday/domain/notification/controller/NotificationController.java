@@ -1,5 +1,6 @@
 package org.example.flowday.domain.notification.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 
 import org.example.flowday.domain.notification.dto.NotificationDTO;
@@ -23,7 +24,7 @@ public class NotificationController {
      * 알림 생성
      */
     @PostMapping("/")
-    public ResponseEntity<NotificationDTO.NotificationResponseDTO> createNotification(@RequestBody NotificationDTO.NotificationRequestDTO notificationRequestDTO) {
+    public ResponseEntity<NotificationDTO.NotificationResponseDTO> createNotification(@RequestBody NotificationDTO.NotificationRequestDTO notificationRequestDTO) throws JsonProcessingException {
         NotificationDTO.NotificationResponseDTO responseDTO = notificationService.createNotification(notificationRequestDTO);
         return ResponseEntity.ok(responseDTO);
     }
