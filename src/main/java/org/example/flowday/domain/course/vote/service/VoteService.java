@@ -40,24 +40,13 @@ public class VoteService {
         }
 
         try {
-            Vote vote = Vote.builder()
-                    .course(course)
-                    .title(voteReqDTO.getTitle())
-                    .build();
-
+            Vote vote = Vote.createVote(course, voteReqDTO.getTitle());
             voteRepository.save(vote);
 
             List<Spot> spots = spotRepository.findAllById(voteReqDTO.getSpotIds());
+            spots.forEach(spot -> spot.changeVote(vote));
 
-            for (Spot spot : spots) {
-                spot.changeVote(vote);
-            }
-
-            List<SpotResDTO> spotResDTOs = spots.stream()
-                    .map(SpotResDTO::new)
-                    .toList();
-
-            return new VoteResDTO(vote, spotResDTOs);
+            return new VoteResDTO(vote, convertToSpotResDTOs(spots));
         } catch (Exception e) {
             throw VoteException.NOT_CREATED.get();
         }
@@ -68,12 +57,7 @@ public class VoteService {
         Vote vote = voteRepository.findById(voteId).orElseThrow(VoteException.NOT_FOUND::get);
         List<Spot> spots = spotRepository.findAllByVoteIdOrderBySequenceAsc(vote.getId());
 
-        List<SpotResDTO> spotResDTOs = new ArrayList<>();
-        for (Spot spot : spots) {
-            spotResDTOs.add(new SpotResDTO(spot));
-        }
-
-        return new VoteResDTO(vote, spotResDTOs);
+        return new VoteResDTO(vote, convertToSpotResDTOs(spots));
     }
 
     // 투표 완료 후 코스 수정
@@ -110,14 +94,16 @@ public class VoteService {
                 spotRepository.save(updatedSpots.get(i));
             }
 
-            List<SpotResDTO> spotResDTOs = updatedSpots.stream()
-                    .map(SpotResDTO::new)
-                    .collect(Collectors.toList());
-
-            return new CourseResDTO(course, spotResDTOs);
+            return new CourseResDTO(vote.getCourse(), convertToSpotResDTOs(updatedSpots));
         } catch (Exception e) {
             throw CourseException.NOT_UPDATED.get();
         }
+    }
+
+    private List<SpotResDTO> convertToSpotResDTOs(List<Spot> spots) {
+        return spots.stream()
+                .map(SpotResDTO::new)
+                .collect(Collectors.toList());
     }
 
 }
