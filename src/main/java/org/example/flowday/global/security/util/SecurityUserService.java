@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class SecurityUserService implements UserDetailsService {
@@ -21,22 +21,17 @@ public class SecurityUserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {
+
         System.out.println("Looking for user with loginId: " + loginId);
-        Map<String,Object> result = memberRepository.findSecurityInfoByLoginId(loginId).orElseThrow(() -> {
 
-            System.out.println("User not found with loginId: " + loginId);
+        try {
+            Member member = memberRepository.findByLoginId(loginId).get();
 
-            return new UsernameNotFoundException("User not found with loginId");
+            System.out.println("find successful");
 
-        });
-        System.out.println("find successful");
-
-        Member member = new Member();
-        member.setId((Long) result.get("id"));
-        member.setLoginId(loginId);
-        member.setPw(String.valueOf(result.get("pw")));
-        member.setRole((Role) result.get("role"));
-
-        return new SecurityUser(member);
+            return new SecurityUser(member);
+        } catch (RuntimeException e) {
+            throw new UsernameNotFoundException("Member not found with loginId: " + loginId);
+        }
     }
 }

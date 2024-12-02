@@ -17,11 +17,9 @@ import java.util.Optional;
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final MemberRepository memberRepository;
-    private final JwtUtil jwtUtil;
 
-    public CustomOAuth2UserService(MemberRepository memberRepository, JwtUtil jwtUtil) {
+    public CustomOAuth2UserService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
-        this.jwtUtil = jwtUtil;
     }
     //DefaultOAuth2UserService OAuth2UserService의 구현체
 
