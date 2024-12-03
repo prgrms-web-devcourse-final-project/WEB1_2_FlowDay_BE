@@ -1,6 +1,5 @@
 package org.example.flowday.domain.post.post.controller;
 
-import ch.qos.logback.core.model.Model;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -11,23 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.flowday.domain.post.post.dto.PostBriefResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
-import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.service.PostService;
 import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -61,17 +53,17 @@ public class PostController {
     @GetMapping("/all/latest")
     public ResponseEntity<Page<PostBriefResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
-        Page<PostBriefResponseDTO> result = postService.getAllPosts(pageable);
+        Page<PostBriefResponseDTO> result = postService.getAllPublicPosts(pageable);
 
         return ResponseEntity.ok().body(result);
 
     }
 
-    @Operation(summary ="모든 게시글 인기순 조회"  , description = "status=Public으로 설정된 글만 최신순으로 불러옵니다")
+    @Operation(summary ="모든 게시글 인기순 조회"  , description = "좋아요가 많은 순서로 게시글을 불러옵니다 ")
     @GetMapping("/all/mostLike")
     public ResponseEntity<Page<PostBriefResponseDTO>> getMostPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
-        Page<PostBriefResponseDTO> result = postService.getAllPosts(pageable);
+        Page<PostBriefResponseDTO> result = postService.findAllMostLikePosts(pageable);
 
         return ResponseEntity.ok().body(result);
 
@@ -91,7 +83,7 @@ public class PostController {
     @GetMapping("/all/private")
     public ResponseEntity<Page<PostBriefResponseDTO>> getAllPrivatePosts( @RequestParam(defaultValue = "0") int page , @RequestParam(defaultValue = "10") int pageSize,
                                                                           @AuthenticationPrincipal SecurityUser user) {
-        PageRequest pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page, pageSize);
         Page<PostBriefResponseDTO> results = postService.findAllPrivate(pageable, user.getId());
 
         return ResponseEntity.ok().body(results);
@@ -118,7 +110,7 @@ public class PostController {
         return ResponseEntity.ok().body(result);
     }
 
-    @Operation(summary ="댓글 단 게시글 조회 "  , description = "내가 댓글 단 게시글을 불러옵니다.")
+    @Operation(summary ="내가 댓글 단 게시글 조회 "  , description = "내가 댓글 단 게시글을 불러옵니다.")
     @GetMapping("/all/reply")
     public ResponseEntity<Page<PostBriefResponseDTO>> getAllMyReplyPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
                                                                          @AuthenticationPrincipal SecurityUser user) {

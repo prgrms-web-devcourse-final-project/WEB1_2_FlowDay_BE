@@ -25,7 +25,6 @@ import org.example.flowday.global.fileupload.entity.GenFile;
 import org.example.flowday.global.fileupload.repository.GenFileRepository;
 import org.example.flowday.global.fileupload.service.GenFileService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +68,7 @@ public class PostService {
             // 게시글 생성 및 저장
             Post post = postMapper.toEntity(postRequestDTO, writer, course);
             Post savedPost = postRepository.save(post);
-            tagService.createTags(postRequestDTO.getTags() ,savedPost);
+            tagService.createTags(postRequestDTO.getTags(), savedPost);
 
             // 이미지 저장 로직 추가
             List<MultipartFile> images = postRequestDTO.getImages();
@@ -114,8 +113,8 @@ public class PostService {
     }
 
     // 모든 게시글 조회 최신순 - PUBLIC
-    public Page<PostBriefResponseDTO> getAllPosts(Pageable pageable) {
-        Page<Post> posts = postRepository.searchMostLikedPost(pageable);
+    public Page<PostBriefResponseDTO> getAllPublicPosts(Pageable pageable) {
+        Page<Post> posts = postRepository.searchLatestPost(pageable);
 
 
         return posts.map(post -> {
@@ -140,7 +139,7 @@ public class PostService {
     }
 
     //내가 작성한 Private 게시글만 보기
-    public Page<PostBriefResponseDTO> findAllPrivate(PageRequest pageable, Long userId) {
+    public Page<PostBriefResponseDTO> findAllPrivate(Pageable pageable, Long userId) {
         Member member = memberRepository.findById(userId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
         Page<Post> posts = postRepository.searchPrivatePost(pageable, userId);
@@ -150,6 +149,18 @@ public class PostService {
             return new PostBriefResponseDTO(post, imageUrl);
         });
     }
+
+    //좋아요가 많은 게시글 조회
+    public Page<PostBriefResponseDTO> findAllMostLikePosts(Pageable pageable) {
+
+        Page<Post> posts = postRepository.searchMostLikedPost(pageable);
+
+        return posts.map(post -> {
+            String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
+            return new PostBriefResponseDTO(post, imageUrl);
+        });
+    }
+
 
     //내가 작성한 게시글 보기
     public Page<PostBriefResponseDTO> findAllMyPosts(Pageable pageable, Long userId) {
@@ -162,11 +173,12 @@ public class PostService {
             return new PostBriefResponseDTO(post, imageUrl);
         });
     }
+
     //내가 좋아요 누른 게시글 보기
     public Page<PostBriefResponseDTO> findAllMyLikePosts(Pageable pageable, Long userId) {
         List<Long> postIds = likeRepository.findAllPostIdByMemberId(userId);
 
-        Page<Post> posts = postRepository.searchMyPost(pageable, postIds);
+        Page<Post> posts = postRepository.searchMyLikePost(pageable, postIds);
 
         return posts.map(post -> {
             String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
@@ -177,9 +189,8 @@ public class PostService {
     //내가 댓글 단 게시글 보기
     public Page<PostBriefResponseDTO> findAllMyReplyPosts(Pageable pageable, Long userId) {
 
-        List<Long> postIds = replyRepository.findAllPostIdByMemberId(userId);
 
-        Page<Post> posts = postRepository.searchMyPost(pageable, postIds);
+        Page<Post> posts = postRepository.searchMyReplyPost(pageable, userId);
 
         return posts.map(post -> {
             String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());

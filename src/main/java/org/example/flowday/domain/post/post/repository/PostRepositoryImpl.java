@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.QMember;
 
+import org.example.flowday.domain.post.comment.comment.entity.QReply;
 import org.example.flowday.domain.post.likes.entity.QLikes;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.entity.QPost;
@@ -22,6 +23,7 @@ import java.util.List;
 public class PostRepositoryImpl implements PostRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
+    //게시글 최신순 조회
     @Override
     public Page<Post> searchLatestPost(Pageable pageable) {
         QPost post = QPost.post;
@@ -44,6 +46,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
     }
 
+    //좋아요 순 게시글 조회
     @Override
     public Page<Post> searchMostLikedPost(Pageable pageable) {
         QPost post = QPost.post;
@@ -73,6 +76,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
     }
 
 
+    //커플 게시글 조회
     @Override
     public Page<Post> searchCouplePost(Pageable pageable, Long memberId, Long partnerId) {
         QPost post = QPost.post;
@@ -99,6 +103,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
     }
 
+    //개인 PRIVATE 게시글 조회
     @Override
     public Page<Post> searchPrivatePost(Pageable pageable, Long userId) {
         QPost post = QPost.post;
@@ -121,6 +126,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
     }
 
+    //내가 작성한 게시글들 조회
     @Override
     public Page<Post> searchMyPost(Pageable pageable, Long memberId) {
         QPost post = QPost.post;
@@ -148,8 +154,9 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
         return new PageImpl<>(posts, pageable, total);
     }
 
+    //내가 좋아요 누른 게시글 조회
     @Override
-    public Page<Post> searchMyPost(Pageable pageable, List<Long> postIds) {
+    public Page<Post> searchMyLikePost(Pageable pageable, List<Long> postIds) {
         QPost post = QPost.post;
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -175,5 +182,28 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
         return new PageImpl<>(posts, pageable, total);
     }
 
+    @Override
+    public Page<Post> searchMyReplyPost(Pageable pageable, Long memberId) {
+        QPost post = QPost.post;
+        QReply reply = QReply.reply;
 
+        List<Post> posts = queryFactory
+                .selectDistinct(post)
+                .from(post)
+                .join(post.replies, reply)
+                .where(reply.member.id.eq(memberId))
+                .orderBy(post.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory
+                .selectDistinct(post)
+                .from(post)
+                .join(post.replies, reply)
+                .where(reply.member.id.eq(memberId))
+                .fetchCount();
+
+        return new PageImpl<>(posts, pageable, total);
+    }
 }
