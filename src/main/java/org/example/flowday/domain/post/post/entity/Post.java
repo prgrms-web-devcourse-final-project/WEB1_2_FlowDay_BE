@@ -11,6 +11,7 @@ import org.example.flowday.domain.member.entity.Member;
 //import org.example.flowday.domain.post.likes.entity.LikeEntity;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 //import org.example.flowday.domain.post.tag.entity.Tag;
+import org.example.flowday.domain.post.tag.entity.PostTag;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -39,8 +40,6 @@ public class Post {
 
     private String season;
 
-    private String tags;
-
     @Column(name = "title", nullable = false, columnDefinition = "TEXT")
     private String title;
 
@@ -60,9 +59,6 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Transient
-    private Map<String, Object> extra = new LinkedHashMap<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
     private Member writer;
 
@@ -72,6 +68,10 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Reply> replies = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostTag> tags = new ArrayList<>() ;
+
 
     public void remove() {
         writer.getPosts().remove(this);
@@ -84,6 +84,22 @@ public class Post {
 
     public void decreaseLike() {
         likeCount--;
+    }
+
+
+    public void addTag(String tagContent) {
+        PostTag tag = PostTag.builder()
+                .post(this)
+                .content(tagContent)
+                .build();
+        tags.add(tag);
+    }
+
+
+    public void addTAg(String ... tagContents) {
+        for(String tagContent : tagContents) {
+            addTag(tagContent);
+        }
     }
 
 
