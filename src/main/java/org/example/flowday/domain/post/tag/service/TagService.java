@@ -25,8 +25,8 @@ public class TagService {
             return;
         }
 
-        Set<String> tagSet = Arrays.stream(tags.split("\\s+"))
-                .map(tag -> tag.replace("#", "").trim())
+        Set<String> tagSet = Arrays.stream(tags.split("#"))
+                .map(String::trim)
                 .filter(tag -> !tag.isEmpty())
                 .collect(Collectors.toSet());
 
