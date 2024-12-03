@@ -328,12 +328,13 @@ public class MemberService {
 
     // 파트너 ID 등록 (수락한 사람)
     @Transactional
-    public void acceptAddPartnerId(Long partnerId, Long myId, Long chattingRoomId) {
+    public void acceptAddPartnerId(Long partnerId, MemberDTO.UpdatePartnerIdRequestDTO dto, Long chattingRoomId) {
 
-        Member member = isExist(myId);
+        Member member = isExist(dto.getSenderId());
 
         member.setPartnerId(partnerId);
         member.setChattingRoomId(chattingRoomId);
+        member.setRelationshipDt(LocalDate.parse(dto.getRelationshipDt()));
 
         memberRepository.save(member);
 
@@ -341,17 +342,17 @@ public class MemberService {
 
     // 파트너 ID 등록 (요청을 보낸 사람)
     @Transactional
-    public void updatePartnerId(Member member, Map<String,Object> request) {
+    public void updatePartnerId(Member member, MemberDTO.UpdatePartnerIdRequestDTO request) {
 
-        member.setPartnerId((Long) request.get("senderId"));
+        member.setPartnerId(request.getSenderId());
 
         member.setChattingRoomId(chatService.registerChatRoom(LocalDateTime.now()));
 
-        member.setRelationshipDt(LocalDate.parse(request.get("relationshipDt").toString()));
+        member.setRelationshipDt(LocalDate.parse(request.getRelationshipDt()));
 
         memberRepository.save(member);
 
-        acceptAddPartnerId(member.getId(), (Long) request.get("senderId"), member.getChattingRoomId());
+        acceptAddPartnerId(member.getId(), request, member.getChattingRoomId());
 
     }
 
