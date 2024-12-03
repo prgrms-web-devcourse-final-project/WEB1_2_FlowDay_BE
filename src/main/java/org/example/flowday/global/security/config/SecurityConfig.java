@@ -102,8 +102,7 @@ public class SecurityConfig {
                                 "/api/v1/members/findId",
                                 "/api/v1/members/findPW",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/actuator/**"
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().hasRole("USER"));
 
