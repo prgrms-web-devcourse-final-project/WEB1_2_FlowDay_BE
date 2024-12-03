@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "posts")
@@ -67,9 +68,12 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @ToString.Exclude
     private List<Reply> replies = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @Builder.Default
     private List<PostTag> tags = new ArrayList<>() ;
 
 
@@ -90,16 +94,30 @@ public class Post {
     public void addTag(String tagContent) {
         PostTag tag = PostTag.builder()
                 .post(this)
+                .member(writer)
                 .content(tagContent)
                 .build();
         tags.add(tag);
     }
 
 
-    public void addTAg(String ... tagContents) {
+    public void addTag(String ... tagContents) {
         for(String tagContent : tagContents) {
             addTag(tagContent);
         }
+    }
+
+    public String getTagStr() {
+        String tagsStr = tags
+                .stream()
+                .map(PostTag::getContent)
+                .collect(Collectors.joining(" #"));
+
+        if (tagsStr.isBlank()) {
+            return "";
+        }
+        return "#"+tagsStr;
+
     }
 
 

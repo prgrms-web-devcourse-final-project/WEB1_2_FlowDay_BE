@@ -11,16 +11,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.flowday.domain.post.post.dto.PostBriefResponseDTO;
 import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
+import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.service.PostService;
 import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -135,6 +142,17 @@ public class PostController {
         postService.deletePost(id,user.getId());
         return ResponseEntity.ok().body("게시글이 삭제되었습니다");
     }
+
+    //검색
+//    @GetMapping("/list")
+//    public ResponseEntity<PostBriefResponseDTO> searchKwPosts(@RequestParam(value="kwType", defaultValue="") List<String> kwTypes,@RequestParam(defaultValue = "") String kw ,
+//                                                              @RequestParam(defaultValue = "0") int page,
+//                                                              @RequestParam(defaultValue = "10") int pageSize) {
+//
+//        Pageable pageable = PageRequest.of(page, 10);
+//        Page<PostBriefResponseDTO> result = postService.findAllKwPosts(kwTypes , kw, pageable);
+//
+//    }
 
 
 }

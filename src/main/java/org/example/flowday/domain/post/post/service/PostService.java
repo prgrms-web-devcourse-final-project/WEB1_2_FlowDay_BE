@@ -17,6 +17,7 @@ import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.exception.PostException;
+import org.example.flowday.domain.post.tag.service.TagService;
 import org.example.flowday.global.fileupload.mapper.GenFileMapper;
 import org.example.flowday.domain.post.post.mapper.PostMapper;
 import org.example.flowday.domain.post.post.repository.PostRepository;
@@ -46,6 +47,7 @@ public class PostService {
     private final GenFileRepository genFileRepository;
     private final LikeRepository likeRepository;
     private final ReplyRepository replyRepository;
+    private final TagService tagService;
 
     @Transactional
     public PostResponseDTO createPost(PostRequestDTO postRequestDTO, Long userId) {
@@ -67,18 +69,19 @@ public class PostService {
             // 게시글 생성 및 저장
             Post post = postMapper.toEntity(postRequestDTO, writer, course);
             Post savedPost = postRepository.save(post);
+            tagService.createTags(postRequestDTO.getTags() ,savedPost);
 
-        // 이미지 저장 로직 추가
-        List<MultipartFile> images = postRequestDTO.getImages();
-        if (images != null && !images.isEmpty()) {
-            genFileService.saveFiles(images, "post", savedPost.getId(), "common", "inBody");
-        }
+            // 이미지 저장 로직 추가
+            List<MultipartFile> images = postRequestDTO.getImages();
+            if (images != null && !images.isEmpty()) {
+                genFileService.saveFiles(images, "post", savedPost.getId(), "common", "inBody");
+            }
 
-        // 이미지 정보를 포함하여 응답 DTO 생성
-        List<GenFile> genFiles = genFileService.getFilesByPost("post", savedPost.getId());
-        List<GenFileResponseDTO> imageDTOs = genFiles.stream()
-                .map(GenFileMapper::toResponseDTO)
-                .collect(Collectors.toList());
+            // 이미지 정보를 포함하여 응답 DTO 생성
+            List<GenFile> genFiles = genFileService.getFilesByPost("post", savedPost.getId());
+            List<GenFileResponseDTO> imageDTOs = genFiles.stream()
+                    .map(GenFileMapper::toResponseDTO)
+                    .collect(Collectors.toList());
 
             return postMapper.toResponseDTO(savedPost, spotResDTOs, imageDTOs);
         } catch (Exception e) {
@@ -148,8 +151,8 @@ public class PostService {
         });
     }
 
-
-        public Page<PostBriefResponseDTO> findAllMyPosts(Pageable pageable , Long userId) {
+    //내가 작성한 게시글 보기
+    public Page<PostBriefResponseDTO> findAllMyPosts(Pageable pageable, Long userId) {
         Member member = memberRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 멤버가 없습니다 "));
 
         Page<Post> posts = postRepository.searchMyPost(pageable, userId);
@@ -159,8 +162,8 @@ public class PostService {
             return new PostBriefResponseDTO(post, imageUrl);
         });
     }
-
-    public Page<PostBriefResponseDTO> findAllMyLikePosts(Pageable pageable , Long userId) {
+    //내가 좋아요 누른 게시글 보기
+    public Page<PostBriefResponseDTO> findAllMyLikePosts(Pageable pageable, Long userId) {
         List<Long> postIds = likeRepository.findAllPostIdByMemberId(userId);
 
         Page<Post> posts = postRepository.searchMyPost(pageable, postIds);
@@ -171,7 +174,8 @@ public class PostService {
         });
     }
 
-    public Page<PostBriefResponseDTO> findAllMyReplyPosts(Pageable pageable , Long userId) {
+    //내가 댓글 단 게시글 보기
+    public Page<PostBriefResponseDTO> findAllMyReplyPosts(Pageable pageable, Long userId) {
 
         List<Long> postIds = replyRepository.findAllPostIdByMemberId(userId);
 
@@ -194,7 +198,7 @@ public class PostService {
         post.setContents(updatedPostDTO.getContents());
         post.setRegion(updatedPostDTO.getRegion());
         post.setSeason(updatedPostDTO.getSeason());
-        post.setTags(updatedPostDTO.getTags());
+        //post.setTags(updatedPostDTO.getTags());
         post.setStatus(updatedPostDTO.getStatus());
 
         Course course = null;
@@ -212,7 +216,7 @@ public class PostService {
         post.setCourse(course);
 
         // 기존 이미지 처리
-        List<GenFile> existingGenFiles = genFileService.getFilesByPost("post",post.getId());
+        List<GenFile> existingGenFiles = genFileService.getFilesByPost("post", post.getId());
         List<MultipartFile> newImages = updatedPostDTO.getImages();
 
         // 기존 이미지 삭제 처리
@@ -242,7 +246,7 @@ public class PostService {
 
 
         // 최종 이미지 정보 수집 후 DTO 변환
-        List<GenFile> updatedGenFiles = genFileService.getFilesByPost("post",post.getId());
+        List<GenFile> updatedGenFiles = genFileService.getFilesByPost("post", post.getId());
         List<GenFileResponseDTO> imageDTOs = updatedGenFiles.stream()
                 .map(GenFileMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -268,5 +272,7 @@ public class PostService {
     }
 
 
-
+//    public Page<PostBriefResponseDTO> findAllKwPosts(List<String> kwTypes, String kw, Pageable pageable) {
+//
+//    }
 }
