@@ -8,9 +8,11 @@ import org.example.flowday.domain.chat.repository.ChatRoomRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
@@ -19,6 +21,7 @@ public class ChatService {
     /**
      * 채팅 방 생성
      */
+    @Transactional
     public Long registerChatRoom(final LocalDateTime time) {
         ChatRoomEntity chatRoom = ChatRoomEntity.create(time);
         ChatRoomEntity savedChatRoom = chatRoomRepository.save(chatRoom);
@@ -29,6 +32,7 @@ public class ChatService {
     /**
      * 채팅 메세지 저장
      */
+    @Transactional
     public void saveMessage(
             final Long roomId,
             final Long senderId,
@@ -57,6 +61,7 @@ public class ChatService {
     /**
      * 채팅 방 삭제
      */
+    @Transactional
     public Long deleteChatRoom(final Long roomId) {
         ChatRoomEntity chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채팅방이 존재하지 않습니다."));
