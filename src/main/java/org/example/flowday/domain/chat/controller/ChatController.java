@@ -34,6 +34,7 @@ public class ChatController {
 
         // TODO : 채팅 로그 저장 (동기 -> 비동기), 99L -> senderId
         chatService.saveMessage(roomId, 99L, responseMessage, time);
-        return new ChatResponse(99L, responseMessage, time);
+        // 페이지 정보는 웹소켓 연결에서는 의미 없으므로 0으로 설정
+        return new ChatResponse(99L, responseMessage, time, 0, 0);
     }
 }
