@@ -88,11 +88,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 PathRequest.toStaticResources().atCommonLocations(),
-                                new AntPathRequestMatcher("/h2-console/**")
+                                new AntPathRequestMatcher("/h2-console/**"),
+                                new AntPathRequestMatcher("/actuator/**")
                         )
                         .permitAll()
                         .requestMatchers(
-                                "/connect/websocket",
                                 "/api/v1/members/login",
                                 "/api/v1/members/register",
                                 "/oauth2/**",

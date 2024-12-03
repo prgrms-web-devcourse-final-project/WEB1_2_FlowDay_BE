@@ -6,7 +6,6 @@ import org.example.flowday.domain.course.vote.dto.VoteReqDTO;
 import org.example.flowday.domain.course.vote.dto.VoteResDTO;
 import org.example.flowday.domain.course.vote.entity.Vote;
 import org.example.flowday.domain.course.vote.repository.VoteRepository;
-import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.course.course.repository.CourseRepository;

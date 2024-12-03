@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
@@ -47,7 +48,9 @@ public class ChatApiController {
     ) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "sendTime"));
         Page<ChatMessageEntity> messages = chatService.getPagedChatMessages(roomId, pageable);
-        Page<ChatResponse> chatResponses = messages.map(ChatResponse::from);
+        List<ChatResponse> chatResponses = messages.getContent().stream()
+                .map(message -> ChatResponse.from(message, messages.getNumber(), messages.getTotalPages()))
+                .toList();
         return ResponseEntity.ok(ApiResponse.success(chatResponses));
     }
 

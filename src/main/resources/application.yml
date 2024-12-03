@@ -51,4 +51,3 @@ management:
         include: "*"   # 모든 엔드포인트를 공개
   endpoint:
     prometheus:
-      enabled: true  # Prometheus 엔드포인트 활성화

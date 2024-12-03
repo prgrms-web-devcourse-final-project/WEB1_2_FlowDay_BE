@@ -67,7 +67,6 @@ dependencies {
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
 
-
 }
 
 tasks.named('test') {

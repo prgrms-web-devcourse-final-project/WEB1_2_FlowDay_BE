@@ -231,7 +231,7 @@ public class MemberController {
     @PutMapping("/partnerUpdate")
     public ResponseEntity<String> updatePartnerId(
             @AuthenticationPrincipal SecurityUser user,
-            @RequestBody Map<String,Object> requestParams
+            @RequestBody MemberDTO.UpdatePartnerIdRequestDTO requestParams
             ) {
         try {
             memberService.updatePartnerId(user.member(), requestParams);
