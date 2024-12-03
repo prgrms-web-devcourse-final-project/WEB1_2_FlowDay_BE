@@ -13,7 +13,7 @@ import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.member.repository.MemberRepository;
-import org.example.flowday.domain.notification.dto.NotificationDTO;
+import org.example.flowday.domain.notification.dto.NotificationRequestDTO;
 import org.example.flowday.domain.notification.service.NotificationService;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.global.fileupload.service.GenFileService;
@@ -311,15 +311,16 @@ public class MemberService {
     @Transactional
     public void sendNotification(Member member, MemberDTO.SendCoupleRequestDTO dto) throws JsonProcessingException {
 
-        NotificationDTO.NotificationRequestDTO notify = new NotificationDTO.NotificationRequestDTO();
-        notify.setSenderId(member.getId());
-        notify.setReceiverId(dto.getPartnerId());
-        notify.setMessage("연인 신청이 도착했습니다.");
-        notify.setUrl("/api/v1/members/partnerUpdate");
-        notify.setParams(Map.of(
-                "relationshipDt",dto.getRelationshipDt(),
-                "senderId",member.getId()
-        ));
+        NotificationRequestDTO notify = NotificationRequestDTO.builder()
+                .senderId(member.getId())
+                .receiverId(dto.getPartnerId())
+                .message("연인 신청이 도착했습니다.")
+                .url("/api/v1/members/partnerUpdate")
+                .params(Map.of(
+                        "relationshipDt", dto.getRelationshipDt(),
+                        "senderId", member.getId()
+                ))
+                .build();
 
 
         notificationService.createNotification(notify);

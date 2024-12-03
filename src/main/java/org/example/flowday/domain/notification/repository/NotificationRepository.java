@@ -20,6 +20,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     void updateIsRead(@Param("id") Long id);
 
     @Query("SELECT n FROM Notification n WHERE n.receiverId = :receiverId ORDER BY n.createdAt DESC")
-    Page<Notification> findByReceiverId(Long receiverId, Pageable pageable);
+    Page<Notification> findByReceiverId(Member receiverId, Pageable pageable);
 
 }

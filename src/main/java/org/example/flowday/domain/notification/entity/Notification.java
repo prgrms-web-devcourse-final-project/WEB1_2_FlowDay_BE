@@ -7,11 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.example.flowday.domain.member.entity.Member;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -25,8 +25,14 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long senderId;
-    private Long receiverId;
+    @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false)
+    private Member senderId;
+
+    @ManyToOne
+    @JoinColumn(name = "receiver_id", nullable = false)
+    private Member receiverId;
+
     private String message;
     private Boolean isRead;
     private String url;
@@ -37,14 +43,15 @@ public class Notification {
     @Lob
     private String additionalParamsJson;
 
-    // JSON 직렬화 및 역직렬화
-    public void setAdditionalParams(Map<String, Object> params) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        this.additionalParamsJson = objectMapper.writeValueAsString(params); // Map을 JSON 문자열로 변환하여 저장
-    }
+    // ObjectMapper는 인스턴스화하여 재사용
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Map<String, Object> getAdditionalParams() throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(this.additionalParamsJson, Map.class); // JSON 문자열을 Map으로 역직렬화
+    // JSON 직렬화 및 역직렬화
+    public void setAdditionalParams(Map<String, Object> params) {
+        try {
+            this.additionalParamsJson = objectMapper.writeValueAsString(params); // Map을 JSON 문자열로 변환하여 저장
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("추가 파라미터 직렬화 오류", e); // 예외 처리
+        }
     }
 }
