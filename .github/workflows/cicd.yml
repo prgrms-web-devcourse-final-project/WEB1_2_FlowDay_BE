@@ -45,6 +45,9 @@ jobs:
           format: YYYY-MM-DDTHH-mm-ss
           utcOffset: "+09:00"
 
+      - name: Set version label
+        run: echo "version_label=github-action-${{ steps.current-time.outputs.time }}-${{ github.sha }}" >> $GITHUB_ENV
+
       # 배포용 패키지 경로 설정
       - name: Set artifact path
         run: |
@@ -59,7 +62,7 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: Flowday-web
           environment_name: Flowday-web-env-1
-          version_label: github-action-${{ steps.current-time.outputs.time }}
+          version_label: ${{ env.version_label }}
           region: ap-northeast-2
           deployment_package: ${{ env.artifact }}
 
@@ -83,6 +86,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: Flowday-web
           environment_name: Flowday-web-env
-          version_label: github-action-${{ steps.current-time.outputs.time }}
+          version_label: ${{ env.version_label }}
           region: ap-northeast-2
           deployment_package: ${{ env.artifact }}
