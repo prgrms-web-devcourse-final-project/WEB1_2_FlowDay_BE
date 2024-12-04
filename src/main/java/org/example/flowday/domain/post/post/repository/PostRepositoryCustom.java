@@ -23,4 +23,6 @@ public interface PostRepositoryCustom {
 
     Page<Post> searchMyReplyPost(Pageable pageable, Long memberId);
 
+    Page<Post> searchKwPost(Pageable pageable, String kw);
+
 }

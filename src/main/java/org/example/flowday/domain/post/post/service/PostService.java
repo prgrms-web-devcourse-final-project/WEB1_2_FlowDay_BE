@@ -281,7 +281,14 @@ public class PostService {
     }
 
 
-//    public Page<PostBriefResponseDTO> findAllKwPosts(List<String> kwTypes, String kw, Pageable pageable) {
-//
-//    }
+    //검색
+    public Page<PostBriefResponseDTO> findAllKwPosts(String kw, Pageable pageable) {
+        Page<Post> posts = postRepository.searchKwPost(pageable, kw);
+
+        return posts.map(post -> {
+            String imageUrl = genFileService.getFirstImageUrlByObject("post", post.getId());
+            return new PostBriefResponseDTO(post, imageUrl);
+        });
+
+    }
 }

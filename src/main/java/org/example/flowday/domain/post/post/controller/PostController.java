@@ -21,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -136,15 +138,16 @@ public class PostController {
     }
 
     //검색
-//    @GetMapping("/list")
-//    public ResponseEntity<PostBriefResponseDTO> searchKwPosts(@RequestParam(value="kwType", defaultValue="") List<String> kwTypes,@RequestParam(defaultValue = "") String kw ,
-//                                                              @RequestParam(defaultValue = "0") int page,
-//                                                              @RequestParam(defaultValue = "10") int pageSize) {
-//
-//        Pageable pageable = PageRequest.of(page, 10);
-//        Page<PostBriefResponseDTO> result = postService.findAllKwPosts(kwTypes , kw, pageable);
-//
-//    }
+    @GetMapping("/all/list")
+    public ResponseEntity<Page<PostBriefResponseDTO>> searchKwPosts(@RequestParam(defaultValue = "") String kw ,
+                                                              @RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "10") int pageSize) {
+
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<PostBriefResponseDTO> result = postService.findAllKwPosts(kw, pageable);
+        return ResponseEntity.ok().body(result);
+
+    }
 
 
 }
