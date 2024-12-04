@@ -137,7 +137,7 @@ public class PostController {
         return ResponseEntity.ok().body("게시글이 삭제되었습니다");
     }
 
-    //검색
+    @Operation(summary ="게시글 키워드 검색 "  , description = "제목 ,내용,작성자,  지역 , 계절 ,태그, 코스이름, 장소이름을 대상으로 검색합니다")
     @GetMapping("/all/list")
     public ResponseEntity<Page<PostBriefResponseDTO>> searchKwPosts(@RequestParam(defaultValue = "") String kw ,
                                                               @RequestParam(defaultValue = "0") int page,
