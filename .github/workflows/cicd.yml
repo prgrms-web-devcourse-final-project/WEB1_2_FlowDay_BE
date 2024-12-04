@@ -59,7 +59,7 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: Flowday-web
           environment_name: Flowday-web-env-1
-          version_label: ${{ env.version_label }}
+          version_label: github-action-${{ steps.current-time.outputs.time }}
           region: ap-northeast-2
           deployment_package: ${{ env.artifact }}
 
@@ -83,7 +83,7 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: Flowday-web
           environment_name: Flowday-web-env
-          version_label: ${{ env.version_label }}
+          version_label: github-action-${{ steps.current-time.outputs.time }}
           region: ap-northeast-2
           deployment_package: ${{ env.artifact }}
           use_existing_version_if_available: true
