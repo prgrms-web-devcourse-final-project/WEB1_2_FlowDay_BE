@@ -8,6 +8,7 @@ import org.example.flowday.global.security.filter.LogoutFilter;
 import org.example.flowday.global.security.handler.CustomAuthenticationFailureHandler;
 import org.example.flowday.global.security.handler.CustomAuthenticationSuccessHandler;
 import org.example.flowday.global.security.util.JwtUtil;
+import org.example.flowday.global.security.util.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
 import org.example.flowday.global.security.util.oauth2.service.CustomOAuth2UserService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
@@ -41,16 +43,20 @@ public class SecurityConfig {
 
     private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
 
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
+
     public SecurityConfig(
             AuthenticationConfiguration authenticationConfiguration,
             CustomOAuth2UserService customOAuth2UserService,
             MemberRepository memberRepository,
+            HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository,
             CustomAuthenticationFailureHandler authenticationFailureHandler,
             CustomAuthenticationSuccessHandler authenticationSuccessHandler) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.customOAuth2UserService = customOAuth2UserService;
         this.memberRepository = memberRepository;
+        this.httpCookieOAuth2AuthorizationRequestRepository = httpCookieOAuth2AuthorizationRequestRepository;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.authenticationSuccessHandler = authenticationSuccessHandler;
 
@@ -122,6 +128,8 @@ public class SecurityConfig {
 
         http
                 .oauth2Login((oauth2) -> oauth2
+                        .authorizationEndpoint(auth -> auth
+                                .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository))
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService))
                         .successHandler(authenticationSuccessHandler)
