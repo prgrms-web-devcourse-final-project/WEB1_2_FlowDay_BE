@@ -11,6 +11,7 @@ import org.example.flowday.domain.member.entity.Member;
 //import org.example.flowday.domain.post.likes.entity.LikeEntity;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 //import org.example.flowday.domain.post.tag.entity.Tag;
+import org.example.flowday.domain.post.post.dto.PostRequestDTO;
 import org.example.flowday.domain.post.tag.entity.PostTag;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,9 +19,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Entity
@@ -117,6 +116,15 @@ public class Post {
             return "";
         }
         return "#"+tagsStr;
+
+    }
+
+    public void updatePost(PostRequestDTO request) {
+        region = request.getRegion();
+        season=request.getSeason();
+        title = request.getTitle();
+        contents = request.getContents();
+        status = request.getStatus();
 
     }
 

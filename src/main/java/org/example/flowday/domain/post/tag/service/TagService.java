@@ -41,5 +41,12 @@ public class TagService {
         }
     }
 
+    @Transactional
+    public void updateTags(String tags, Post post) {
+        post.getTags().clear();
+        createTags(tags, post);
+
+    }
+
 
 }

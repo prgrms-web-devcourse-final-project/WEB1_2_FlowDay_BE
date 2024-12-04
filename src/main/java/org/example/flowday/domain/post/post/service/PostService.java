@@ -199,18 +199,16 @@ public class PostService {
     }
 
 
+    //게시글 수정
     @Transactional
     public PostResponseDTO updatePost(Long id, PostRequestDTO updatedPostDTO, Long userId) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
         // 게시글 정보 수정
-        post.setTitle(updatedPostDTO.getTitle());
-        post.setContents(updatedPostDTO.getContents());
-        post.setRegion(updatedPostDTO.getRegion());
-        post.setSeason(updatedPostDTO.getSeason());
-        //post.setTags(updatedPostDTO.getTags());
-        post.setStatus(updatedPostDTO.getStatus());
+        post.updatePost(updatedPostDTO);
+        tagService.updateTags(updatedPostDTO.getTags(), post);
+
 
         Course course = null;
         List<SpotResDTO> spotResDTOs = null;
