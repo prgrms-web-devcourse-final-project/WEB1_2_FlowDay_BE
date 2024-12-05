@@ -9,6 +9,7 @@ import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -66,6 +67,7 @@ class SpotControllerTest {
                 .build();
 
         memberRepository.save(member);
+        SecurityUser securityUser = new SecurityUser(member);
 
         courseReqDTO = CourseReqDTO.builder()
                 .title("코스 이름")
@@ -74,7 +76,7 @@ class SpotControllerTest {
                 .color("blue")
                 .build();
 
-        courseResDTO = courseService.saveCourse(member.getId(), courseReqDTO);
+        courseResDTO = courseService.saveCourse(securityUser, courseReqDTO);
 
         spotReqDTO1 = SpotReqDTO.builder()
                 .placeId("kasal")

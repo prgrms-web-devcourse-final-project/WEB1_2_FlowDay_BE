@@ -36,21 +36,20 @@ public class WishPlaceController {
 
     // 위시 플레이스에서 장소 삭제
     @Operation(summary = "장소 삭제")
-    @DeleteMapping("/member/{memberId}/spot/{spotId}")
+    @DeleteMapping("/spot/{spotId}")
     public ResponseEntity<Void> removeSpotFromWishPlace(
-            @PathVariable Long memberId,
             @PathVariable Long spotId,
             @AuthenticationPrincipal SecurityUser user
     ) {
-        wishPlaceService.removeSpotFromWishPlace(user.getId(), memberId, spotId);
+        wishPlaceService.removeSpotFromWishPlace(user.getId(), spotId);
         return ResponseEntity.noContent().build();
     }
 
     // 회원 별 위시 플레이스 목록 조회
     @Operation(summary = "회원 별 위시 플레이스 목록 조회")
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<WishPlaceResDTO>> getMemberWishPlaces(@PathVariable Long memberId) {
-        List<WishPlaceResDTO> wishPlaces = wishPlaceService.getMemberWishPlaces(memberId);
+    @GetMapping
+    public ResponseEntity<List<WishPlaceResDTO>> getMemberWishPlaces(@AuthenticationPrincipal SecurityUser user) {
+        List<WishPlaceResDTO> wishPlaces = wishPlaceService.getMemberWishPlaces(user.getId());
         return ResponseEntity.ok(wishPlaces);
     }
 
