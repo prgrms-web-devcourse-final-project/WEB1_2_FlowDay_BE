@@ -11,6 +11,7 @@ import org.example.flowday.domain.post.likes.repository.LikeRepository;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.entity.Status;
 import org.example.flowday.domain.post.post.repository.PostRepository;
+import org.example.flowday.domain.post.tag.service.TagService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -55,6 +56,9 @@ public class PostControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private TagService tagService;
+
     private Member testMember1;
     private Member testMember2;
     private Post testPost1;
@@ -73,7 +77,7 @@ public class PostControllerTest {
         // 테스트 멤버 생성
         testMember1 = Member.builder()
                 .name("테스트유저1")
-                .loginId("testuser1@example.com")
+                .loginId("testuser10@example.com")
                 .pw("password")
                 .role(Role.ROLE_USER)
                 .build();
@@ -82,7 +86,7 @@ public class PostControllerTest {
 
         testMember2 = Member.builder()
                 .name("테스트유저2")
-                .loginId("testuser2@example.com")
+                .loginId("testuser20@example.com")
                 .pw("password")
                 .role(Role.ROLE_USER)
                 .build();
@@ -142,7 +146,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/posts - 게시글 생성 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void createPost_Success() throws Exception {
         // 요청 데이터 준비
         MockMultipartHttpServletRequestBuilder builder = multipart("/api/v1/posts");
@@ -168,7 +172,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/posts/{id} - 게시글 조회 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void getPostById_Success() throws Exception {
         mockMvc.perform(get("/api/v1/posts/{id}", testPost1.getId())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -182,7 +186,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/posts/all/latest - 최신 게시글 목록 조회 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void getAllPosts_Success() throws Exception {
         mockMvc.perform(get("/api/v1/posts/all/latest")
                         .param("page", "0")
@@ -196,7 +200,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("PUT /api/v1/posts/{id} - 게시글 수정 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void updatePost_Success() throws Exception {
         // 수정할 데이터 준비
         MockMultipartHttpServletRequestBuilder builder = multipart("/api/v1/posts/{id}", testPost1.getId());
@@ -223,7 +227,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/posts/{id} - 게시글 삭제 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void deletePost_Success() throws Exception {
         mockMvc.perform(delete("/api/v1/posts/{id}", testPost1.getId())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -234,7 +238,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/posts/all - 내 게시글 목록 조회 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void getAllMyPosts_Success() throws Exception {
         mockMvc.perform(get("/api/v1/posts/all")
                         .param("page", "0")
@@ -247,7 +251,7 @@ public class PostControllerTest {
     }
     @Test
     @DisplayName("GET /api/v1/posts/all/mostLike - 모든 게시글 인기순 조회 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void getAllPostsMostLike_Success() throws Exception {
         mockMvc.perform(get("/api/v1/posts/all/mostLike")
                         .param("page", "0")
@@ -260,7 +264,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/posts/all/couple - 커플 게시글 조회 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void getAllCouplePosts_Success() throws Exception {
         mockMvc.perform(get("/api/v1/posts/all/couple")
                         .param("page", "0")
@@ -275,7 +279,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/posts/all/private - Private 게시글 조회 성공")
-    @WithUserDetails(value = "testuser2@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser20@example.com", userDetailsServiceBeanName = "securityUserService")
     void getAllPrivatePosts_Success() throws Exception {
         mockMvc.perform(get("/api/v1/posts/all/private")
                         .param("page", "0")
@@ -289,7 +293,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/posts/all/likes - 내가 좋아요 누른 게시글 조회 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void getAllMyLikesPosts_Success() throws Exception {
         mockMvc.perform(get("/api/v1/posts/all/likes")
                         .param("page", "0")
@@ -302,7 +306,7 @@ public class PostControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/posts/all/reply - 내가 댓글 단 게시글 조회 성공")
-    @WithUserDetails(value = "testuser1@example.com", userDetailsServiceBeanName = "securityUserService")
+    @WithUserDetails(value = "testuser10@example.com", userDetailsServiceBeanName = "securityUserService")
     void getAllMyReplyPosts_Success() throws Exception {
         mockMvc.perform(get("/api/v1/posts/all/reply")
                         .param("page", "0")
