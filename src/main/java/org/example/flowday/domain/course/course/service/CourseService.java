@@ -176,11 +176,10 @@ public class CourseService {
     }
 
     // 회원 별 코스 목록 조회
-    public List<CourseResDTO> findCourseByMember(Long userId) {
-        Member member = memberRepository.findById(userId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-        Long partnerId = member.getPartnerId() != null ? member.getPartnerId() : null;
+    public List<CourseResDTO> findCourseByMember(SecurityUser user) {
+        Long partnerId = user.member().getPartnerId() != null ? user.member().getPartnerId() : null;
 
-        List<Course> memberCourses = courseRepository.findAllByMemberId(userId);
+        List<Course> memberCourses = courseRepository.findAllByMemberId(user.getId());
         List<Course> partnerCourses = partnerId != null
                 ? courseRepository.findAllByMemberIdAndStatus(partnerId, Status.COUPLE)
                 : new ArrayList<>();
@@ -209,7 +208,7 @@ public class CourseService {
         Pageable pageable = pageReqDTO.getPageable(Sort.by(Sort.Direction.DESC, "createdAt"));
 
         List<WishPlaceResDTO> wishPlaceResDTOS = wishPlaceService.getMemberAndPartnerWishPlaces(user);
-        List<CourseResDTO> courseResDTOS = findCourseByMember(user.getId());
+        List<CourseResDTO> courseResDTOS = findCourseByMember(user);
 
         List<Object> combinedCourses = new ArrayList<>();
         combinedCourses.addAll(wishPlaceResDTOS);
