@@ -10,6 +10,7 @@ import org.example.flowday.domain.course.wish.repository.WishPlaceRepository;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -145,7 +146,8 @@ class WishPlaceServiceTest {
         when(wishPlaceRepository.findAllByMemberId(1L)).thenReturn(List.of(wishPlace));
         when(wishPlaceRepository.findAllByMemberId(2L)).thenReturn(List.of(wishPlace2));
 
-        List<WishPlaceResDTO> result = wishPlaceService.getMemberAndPartnerWishPlaces(1L);
+        SecurityUser securityUser = new SecurityUser(member);
+        List<WishPlaceResDTO> result = wishPlaceService.getMemberAndPartnerWishPlaces(securityUser);
 
         assertNotNull(result);
         assertThat(result).hasSize(2);

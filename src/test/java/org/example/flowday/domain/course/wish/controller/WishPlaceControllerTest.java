@@ -101,7 +101,7 @@ class WishPlaceControllerTest {
     @Test
     @WithUserDetails(value = "testId4", userDetailsServiceBeanName = "securityUserService")
     void removeSpotFromWishPlace() throws Exception {
-        mockMvc.perform(delete("/api/v1/wishPlaces/member/{memberId}/spot/{spotId}", member.getId(), wishPlaceService.getMemberWishPlaces(member.getId()).get(0).getSpots().get(0).getId()))
+        mockMvc.perform(delete("/api/v1/wishPlaces/spot/{spotId}", wishPlaceService.getMemberWishPlaces(member.getId()).get(0).getSpots().get(0).getId()))
                 .andExpect(status().isNoContent());
     }
 
@@ -109,7 +109,7 @@ class WishPlaceControllerTest {
     @Test
     @WithUserDetails(value = "testId4", userDetailsServiceBeanName = "securityUserService")
     void getMemberAndPartnerWishPlaces() throws Exception {
-        mockMvc.perform(get("/api/v1/wishPlaces/member/{memberId}", member.getId()))
+        mockMvc.perform(get("/api/v1/wishPlaces", member.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
     }

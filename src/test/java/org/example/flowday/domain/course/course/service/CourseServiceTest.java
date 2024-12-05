@@ -17,6 +17,7 @@ import org.example.flowday.domain.course.wish.service.WishPlaceService;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -188,8 +189,8 @@ class CourseServiceTest {
                 .build();
 
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-
-        CourseResDTO result = courseService.saveCourse(member.getId(), courseReqDTO);
+        SecurityUser securityUser = new SecurityUser(member);
+        CourseResDTO result = courseService.saveCourse(securityUser, courseReqDTO);
 
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("코스 이름");
@@ -349,7 +350,8 @@ class CourseServiceTest {
         );
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
-        when(wishPlaceService.getMemberAndPartnerWishPlaces(memberId)).thenReturn(wishPlaceResDTOList);
+        SecurityUser securityUser = new SecurityUser(member);
+        when(wishPlaceService.getMemberAndPartnerWishPlaces(securityUser)).thenReturn(wishPlaceResDTOList);
         when(courseService.findCourseByMember(memberId)).thenReturn(courseResDTOList);
 
         List<Object> combinedList = new ArrayList<>();
