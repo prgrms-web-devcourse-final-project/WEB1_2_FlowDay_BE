@@ -22,6 +22,7 @@ public class PostBriefResponseDTO {
     private String imageURL;
     private Status status;
     private String nickName;
+    private String tags;
 
 
     public PostBriefResponseDTO(Post post , String url) {
@@ -36,6 +37,7 @@ public class PostBriefResponseDTO {
         status = post.getStatus();
         nickName=post.getWriter().getName();
         imageURL = url;
+        tags=post.getTagStr();
 
 
     }

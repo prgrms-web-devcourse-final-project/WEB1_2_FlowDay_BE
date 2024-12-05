@@ -1,6 +1,5 @@
 package org.example.flowday.domain.post.post.controller;
 
-import ch.qos.logback.core.model.Model;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -21,6 +20,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -54,17 +55,17 @@ public class PostController {
     @GetMapping("/all/latest")
     public ResponseEntity<Page<PostBriefResponseDTO>> getAllPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
-        Page<PostBriefResponseDTO> result = postService.getAllPosts(pageable);
+        Page<PostBriefResponseDTO> result = postService.getAllPublicPosts(pageable);
 
         return ResponseEntity.ok().body(result);
 
     }
 
-    @Operation(summary ="모든 게시글 인기순 조회"  , description = "status=Public으로 설정된 글만 최신순으로 불러옵니다")
+    @Operation(summary ="모든 게시글 인기순 조회"  , description = "좋아요가 많은 순서로 게시글을 불러옵니다 ")
     @GetMapping("/all/mostLike")
     public ResponseEntity<Page<PostBriefResponseDTO>> getMostPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
-        Page<PostBriefResponseDTO> result = postService.getAllPosts(pageable);
+        Page<PostBriefResponseDTO> result = postService.findAllMostLikePosts(pageable);
 
         return ResponseEntity.ok().body(result);
 
@@ -84,7 +85,7 @@ public class PostController {
     @GetMapping("/all/private")
     public ResponseEntity<Page<PostBriefResponseDTO>> getAllPrivatePosts( @RequestParam(defaultValue = "0") int page , @RequestParam(defaultValue = "10") int pageSize,
                                                                           @AuthenticationPrincipal SecurityUser user) {
-        PageRequest pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page, pageSize);
         Page<PostBriefResponseDTO> results = postService.findAllPrivate(pageable, user.getId());
 
         return ResponseEntity.ok().body(results);
@@ -111,7 +112,7 @@ public class PostController {
         return ResponseEntity.ok().body(result);
     }
 
-    @Operation(summary ="댓글 단 게시글 조회 "  , description = "내가 댓글 단 게시글을 불러옵니다.")
+    @Operation(summary ="내가 댓글 단 게시글 조회 "  , description = "내가 댓글 단 게시글을 불러옵니다.")
     @GetMapping("/all/reply")
     public ResponseEntity<Page<PostBriefResponseDTO>> getAllMyReplyPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
                                                                          @AuthenticationPrincipal SecurityUser user) {
@@ -134,6 +135,18 @@ public class PostController {
     public ResponseEntity<String> deletePost(@PathVariable Long id , @AuthenticationPrincipal SecurityUser user) {
         postService.deletePost(id,user.getId());
         return ResponseEntity.ok().body("게시글이 삭제되었습니다");
+    }
+
+    @Operation(summary ="게시글 키워드 검색 "  , description = "제목 ,내용,작성자,  지역 , 계절 ,태그, 코스이름, 장소이름을 대상으로 검색합니다")
+    @GetMapping("/all/list")
+    public ResponseEntity<Page<PostBriefResponseDTO>> searchKwPosts(@RequestParam(defaultValue = "") String kw ,
+                                                              @RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "10") int pageSize) {
+
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<PostBriefResponseDTO> result = postService.findAllKwPosts(kw, pageable);
+        return ResponseEntity.ok().body(result);
+
     }
 
 
