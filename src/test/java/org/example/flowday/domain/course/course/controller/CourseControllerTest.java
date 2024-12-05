@@ -75,14 +75,13 @@ class CourseControllerTest {
         memberRepository.save(partner);
 
         courseReqDTO = CourseReqDTO.builder()
-                .memberId(member.getId())
                 .title("코스 이름")
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("blue")
                 .build();
 
-        courseResDTO = courseService.saveCourse(courseReqDTO);
+        courseResDTO = courseService.saveCourse(member.getId(), courseReqDTO);
 
         SpotReqDTO spotReqDTO1 = SpotReqDTO.builder()
                 .id(1L)
@@ -105,14 +104,13 @@ class CourseControllerTest {
         courseResDTO = courseService.findCourse(courseResDTO.getId());
 
         courseReqDTO2 = CourseReqDTO.builder()
-                .memberId(partner.getId())
                 .title("코스 이름")
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("blue")
                 .build();
 
-        courseResDTO2 = courseService.saveCourse(courseReqDTO2);
+        courseResDTO2 = courseService.saveCourse(partner.getId(), courseReqDTO2);
     }
 
     @DisplayName("코스 생성 테스트")
@@ -120,7 +118,6 @@ class CourseControllerTest {
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void createCourse() throws Exception {
         courseReqDTO = CourseReqDTO.builder()
-                .memberId(member.getId())
                 .title("코스 이름")
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
@@ -152,7 +149,6 @@ class CourseControllerTest {
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void updateCourse() throws Exception {
         courseReqDTO = CourseReqDTO.builder()
-                .memberId(member.getId())
                 .title("코스 이름 수정")
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())

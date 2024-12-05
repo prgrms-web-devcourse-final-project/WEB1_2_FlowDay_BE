@@ -4,7 +4,6 @@ import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.course.spot.service.SpotService;
-import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
 import org.example.flowday.domain.course.wish.repository.WishPlaceRepository;
@@ -113,18 +112,15 @@ class WishPlaceServiceTest {
     void updateSpotInWishPlace() {
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        WishPlaceReqDTO wishPlaceReqDTO = WishPlaceReqDTO.builder()
-                .memberId(1L)
-                .spot(SpotReqDTO.builder()
-                        .placeId("ChIJgUbEo2")
-                        .name("장소 이름2")
-                        .city("서울")
-                        .build())
+        SpotReqDTO spotReqDTO = SpotReqDTO.builder()
+                .placeId("ChIJgUbEo1")
+                .name("성심당")
+                .city("서울")
                 .build();
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        spotService.addSpot(member.getId(), null, wishPlaceReqDTO.getSpot(), "wishPlace");
+        spotService.addSpot(member.getId(), null, spotReqDTO, "wishPlace");
 
         verify(spotRepository, times(1)).save(any(Spot.class));
     }

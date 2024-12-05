@@ -2,7 +2,6 @@ package org.example.flowday.domain.course.wish.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
-import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
@@ -42,8 +41,8 @@ class WishPlaceControllerTest {
 
     private Member member;
     private Member partner;
-    private WishPlaceReqDTO wishPlaceReqDTO;
-    private WishPlaceReqDTO wishPlaceReqDTO2;
+    private SpotReqDTO spotReqDTO;
+    private SpotReqDTO spotReqDTO2;
     private WishPlaceResDTO wishPlaceResDTO;
 
     @BeforeAll
@@ -68,28 +67,23 @@ class WishPlaceControllerTest {
         memberRepository.save(partner);
         wishPlaceService.saveWishPlace(partner.getId());
 
-        wishPlaceReqDTO = WishPlaceReqDTO.builder()
-                .memberId(member.getId())
-                .spot(SpotReqDTO.builder()
-                        .id(1L)
-                        .placeId("ChIJgUbEo1")
-                        .name("장소 이름1")
-                        .city("서울")
-                        .build())
+        spotReqDTO= SpotReqDTO.builder()
+                .id(1L)
+                .placeId("ChIJgUbEo3")
+                .name("성심당")
+                .city("대전")
                 .build();
 
-        wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
+        wishPlaceService.updateSpotInWishPlace(member.getId(), spotReqDTO);
 
-        wishPlaceReqDTO2 = WishPlaceReqDTO.builder()
-                .memberId(partner.getId())
-                .spot(SpotReqDTO.builder()
-                        .placeId("ChIJgUbEo2")
-                        .name("장소 이름2")
-                        .city("대전")
-                        .build())
+        spotReqDTO2 = SpotReqDTO.builder()
+                .id(2L)
+                .placeId("ChIJgUbEo5")
+                .name("바다")
+                .city("울산")
                 .build();
 
-        wishPlaceService.updateSpotInWishPlace(partner.getId(), wishPlaceReqDTO2);
+        wishPlaceService.updateSpotInWishPlace(partner.getId(), spotReqDTO2);
 
     }
 
@@ -99,7 +93,7 @@ class WishPlaceControllerTest {
     void addSpotToWishPlace() throws Exception {
         mockMvc.perform(post("/api/v1/wishPlaces")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(wishPlaceReqDTO)))
+                        .content(objectMapper.writeValueAsString(spotReqDTO)))
                 .andExpect(status().isNoContent());
     }
 

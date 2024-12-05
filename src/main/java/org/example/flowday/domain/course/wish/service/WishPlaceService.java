@@ -2,10 +2,10 @@ package org.example.flowday.domain.course.wish.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.course.spot.service.SpotService;
-import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
 import org.example.flowday.domain.course.wish.exception.WishPlaceException;
@@ -43,13 +43,9 @@ public class WishPlaceService {
     }
 
     // 위시 플레이스 장소 추가
-    public void updateSpotInWishPlace(Long userId, WishPlaceReqDTO wishPlaceReqDTO) {
-        if(!userId.equals(wishPlaceReqDTO.getMemberId())) {
-            throw WishPlaceException.FORBIDDEN.get();
-        }
-
+    public void updateSpotInWishPlace(Long userId, SpotReqDTO spotReqDTO) {
         try {
-            spotService.addSpot(userId, null, wishPlaceReqDTO.getSpot(), "wishPlace");
+            spotService.addSpot(userId, null, spotReqDTO, "wishPlace");
         } catch (Exception e) {
             e.printStackTrace();
             throw WishPlaceException.NOT_UPDATED.get();
