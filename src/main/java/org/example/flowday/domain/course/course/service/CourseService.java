@@ -43,8 +43,8 @@ public class CourseService {
     private final WishPlaceService wishPlaceService;
 
     // 코스 생성
-    public CourseResDTO saveCourse(CourseReqDTO courseReqDTO) {
-        Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+    public CourseResDTO saveCourse(Long userId, CourseReqDTO courseReqDTO) {
+        Member member = memberRepository.findById(userId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
         try {
             Course course = Course.builder()

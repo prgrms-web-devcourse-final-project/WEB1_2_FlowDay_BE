@@ -3,7 +3,7 @@ package org.example.flowday.domain.course.wish.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
+import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
 import org.example.flowday.domain.member.repository.MemberRepository;
@@ -27,10 +27,10 @@ public class WishPlaceController {
     @Operation(summary = "장소 추가")
     @PostMapping
     public ResponseEntity<Void> addSpotToWishPlace(
-            @RequestBody WishPlaceReqDTO wishPlaceReqDTO,
+            @RequestBody SpotReqDTO spotReqDTO,
             @AuthenticationPrincipal SecurityUser user
     ) {
-        wishPlaceService.updateSpotInWishPlace(user.getId(), wishPlaceReqDTO);
+        wishPlaceService.updateSpotInWishPlace(user.getId(), spotReqDTO);
         return ResponseEntity.noContent().build();
     }
 

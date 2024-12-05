@@ -68,14 +68,13 @@ class SpotControllerTest {
         memberRepository.save(member);
 
         courseReqDTO = CourseReqDTO.builder()
-                .memberId(member.getId())
                 .title("코스 이름")
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("blue")
                 .build();
 
-        courseResDTO = courseService.saveCourse(courseReqDTO);
+        courseResDTO = courseService.saveCourse(member.getId(), courseReqDTO);
 
         spotReqDTO1 = SpotReqDTO.builder()
                 .placeId("kasal")

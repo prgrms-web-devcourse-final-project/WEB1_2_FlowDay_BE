@@ -25,8 +25,8 @@ public class CourseController {
     // 코스 생성
     @Operation(summary = "생성")
     @PostMapping
-    public ResponseEntity<CourseResDTO> createCourse(@RequestBody CourseReqDTO courseReqDTO) {
-        return ResponseEntity.ok(courseService.saveCourse(courseReqDTO));
+    public ResponseEntity<CourseResDTO> createCourse(@RequestBody CourseReqDTO courseReqDTO, @AuthenticationPrincipal SecurityUser user) {
+        return ResponseEntity.ok(courseService.saveCourse(user.getId(), courseReqDTO));
     }
 
     // 코스 조회

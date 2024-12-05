@@ -181,7 +181,6 @@ class CourseServiceTest {
     @Test
     void saveCourse() {
         CourseReqDTO courseReqDTO = CourseReqDTO.builder()
-                .memberId(1L)
                 .title("코스 이름")
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())
@@ -190,7 +189,7 @@ class CourseServiceTest {
 
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-        CourseResDTO result = courseService.saveCourse(courseReqDTO);
+        CourseResDTO result = courseService.saveCourse(member.getId(), courseReqDTO);
 
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("코스 이름");
@@ -222,7 +221,6 @@ class CourseServiceTest {
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
         CourseReqDTO courseReqDTO = CourseReqDTO.builder()
-                .memberId(memberId)
                 .title("수정 코스 이름")
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())
