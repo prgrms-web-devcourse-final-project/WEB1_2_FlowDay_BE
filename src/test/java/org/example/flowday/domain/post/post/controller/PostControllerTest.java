@@ -76,7 +76,7 @@ public class PostControllerTest {
     void setUp() {
         // 테스트 멤버 생성
         testMember1 = Member.builder()
-                .name("테스트유저1")
+                .name("테스트유저10")
                 .loginId("testuser10@example.com")
                 .pw("password")
                 .role(Role.ROLE_USER)
@@ -85,7 +85,7 @@ public class PostControllerTest {
 
 
         testMember2 = Member.builder()
-                .name("테스트유저2")
+                .name("테스트유저20")
                 .loginId("testuser20@example.com")
                 .pw("password")
                 .role(Role.ROLE_USER)
@@ -246,7 +246,7 @@ public class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].nickName", is("테스트유저1")));
+                .andExpect(jsonPath("$.content[0].nickName", is("테스트유저10")));
 
     }
     @Test
