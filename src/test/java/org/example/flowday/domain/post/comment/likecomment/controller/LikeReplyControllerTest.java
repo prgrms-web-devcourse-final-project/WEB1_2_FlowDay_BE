@@ -73,7 +73,7 @@ public class LikeReplyControllerTest {
     void setUp() {
         // 테스트에 필요한 회원 생성
         testMember = Member.builder()
-                .name("테스트유저")
+                .name("테스트유저1")
                 .loginId("testuser1@example.com")
                 .email("testuser@example.com")
                 .pw("password")
