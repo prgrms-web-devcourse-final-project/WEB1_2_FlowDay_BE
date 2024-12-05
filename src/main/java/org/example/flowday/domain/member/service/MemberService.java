@@ -48,7 +48,7 @@ public class MemberService {
 
 
     // refreshToken을 사용하여 새로운 Access Token 생성
-    public String refreshAccessToken(String refreshToken) {
+    public Map<String,String> refreshAccessToken(String refreshToken) {
 
 
         if (refreshToken == null || !refreshToken.startsWith("Bearer ")) {
@@ -69,8 +69,6 @@ public class MemberService {
         String storedToken = memberRepository.findRefreshTokenByLoginId(loginId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         if (storedToken.equals(token)) {
 
-            // Refresh Rotate 전략
-            // refreshToken 을 1회용으로 만들어, 탈취 되었을 때의 피해를 최소화
             String updatedRefreshToken = jwtUtil.createJwt(Map.of(
                             "category","refreshToken",
                             "id",id,
@@ -80,15 +78,17 @@ public class MemberService {
 
             memberRepository.updateRefreshToken(loginId, updatedRefreshToken);
 
-            // 새 accessToken 생성
-            return jwtUtil.createJwt(Map.of(
+            String newAccessToken = jwtUtil.createJwt(Map.of(
                             "category", "accessToken",
                             "id", id,
                             "loginId", loginId,
                             "role", role),
-                    60 * 60 * 1000L);
+                    60 * 60 * 10000L);
+
+            // 새 accessToken 생성
+            return Map.of("access",newAccessToken,"refresh",updatedRefreshToken);
         } else {
-            return "Invalid token";
+            throw new IllegalArgumentException("Invalid refresh token");
         }
     }
     // 회원 가입
