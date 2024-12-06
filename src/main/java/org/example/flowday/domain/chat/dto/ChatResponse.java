@@ -1,6 +1,6 @@
 package org.example.flowday.domain.chat.dto;
 
-import org.example.flowday.domain.chat.entity.ChatMessageEntity;
+import org.example.flowday.domain.chat.entity.ChatMessageDocument;
 import java.time.LocalDateTime;
 
 public record ChatResponse(
@@ -11,14 +11,14 @@ public record ChatResponse(
         Integer totalPages   // 총 페이지 수
 ) {
     public static ChatResponse from(
-            final ChatMessageEntity chatMessageEntity,
+            final ChatMessageDocument chatMessageDocument,
             Integer pageNumber,
             Integer totalPages
     ) {
         return new ChatResponse(
-                chatMessageEntity.getFromId(),
-                chatMessageEntity.getTextMessage(),
-                chatMessageEntity.getSendTime(),
+                chatMessageDocument.getFromId(),
+                chatMessageDocument.getTextMessage(),
+                chatMessageDocument.getSendTime(),
                 pageNumber,
                 totalPages
         );

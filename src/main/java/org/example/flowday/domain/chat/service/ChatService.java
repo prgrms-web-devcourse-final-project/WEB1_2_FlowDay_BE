@@ -1,9 +1,9 @@
 package org.example.flowday.domain.chat.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.flowday.domain.chat.entity.ChatMessageEntity;
+import org.example.flowday.domain.chat.entity.ChatMessageDocument;
 import org.example.flowday.domain.chat.entity.ChatRoomEntity;
-import org.example.flowday.domain.chat.repository.ChatMessageRepository;
+import org.example.flowday.domain.chat.repository.ChatMessageDocumentRepository;
 import org.example.flowday.domain.chat.repository.ChatRoomRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Transactional(readOnly = true)
 @Service
 public class ChatService {
-    private final ChatMessageRepository chatMessageRepository;
+    private final ChatMessageDocumentRepository chatMessageDocumentRepository;
     private final ChatRoomRepository chatRoomRepository;
 
     /**
@@ -30,32 +30,31 @@ public class ChatService {
     }
 
     /**
-     * 채팅 메세지 저장
+     * [NoSQL] 채팅 메세지 저장
      */
-    @Transactional
-    public void saveMessage(
+    public ChatMessageDocument saveMessage(
             final Long roomId,
             final Long senderId,
             final String responseMessage,
             final LocalDateTime time
     ) {
-        ChatMessageEntity chatMessage = ChatMessageEntity.create(
+        ChatMessageDocument chatMessageDocument = ChatMessageDocument.create(
                 roomId,
                 senderId,
                 responseMessage,
                 time
         );
-        chatMessageRepository.save(chatMessage);
+        return chatMessageDocumentRepository.save(chatMessageDocument);
     }
 
     /**
-     * 채팅 조회
+     * [NoSQL] 채팅 메세지 조회
      */
-    public Page<ChatMessageEntity> getPagedChatMessages(
+    public Page<ChatMessageDocument> getPagedChatMessages(
             final Long roomId,
             final Pageable pageable
     ) {
-        return chatMessageRepository.findByChatRoomId(roomId, pageable);
+        return chatMessageDocumentRepository.findByChatRoomId(roomId, pageable);
     }
 
     /**

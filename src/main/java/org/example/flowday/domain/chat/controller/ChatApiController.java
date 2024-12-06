@@ -3,7 +3,7 @@ package org.example.flowday.domain.chat.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.chat.common.ApiResponse;
 import org.example.flowday.domain.chat.dto.ChatResponse;
-import org.example.flowday.domain.chat.entity.ChatMessageEntity;
+import org.example.flowday.domain.chat.entity.ChatMessageDocument;
 import org.example.flowday.domain.chat.service.ChatService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,7 +38,7 @@ public class ChatApiController {
     }
 
     /**
-     * 채팅 조회 (최신 10개, page)
+     * [NoSQL] 채팅 조회 (최신 10개, page)
      */
     @GetMapping("/{roomId}")
     public ResponseEntity<ApiResponse> getPagedChatMessages(
@@ -47,9 +47,11 @@ public class ChatApiController {
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "sendTime"));
-        Page<ChatMessageEntity> messages = chatService.getPagedChatMessages(roomId, pageable);
+        Page<ChatMessageDocument> messages = chatService.getPagedChatMessages(roomId, pageable);
+
+        int pageNumber = messages.getNumber() + 1;
         List<ChatResponse> chatResponses = messages.getContent().stream()
-                .map(message -> ChatResponse.from(message, messages.getNumber(), messages.getTotalPages()))
+                .map(message -> ChatResponse.from(message, pageNumber, messages.getTotalPages()))
                 .toList();
         return ResponseEntity.ok(ApiResponse.success(chatResponses));
     }

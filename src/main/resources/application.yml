@@ -21,6 +21,10 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/flowday_chat_db
+      auto-index-creation: true
   jpa:
     hibernate:
       ddl-auto: update
