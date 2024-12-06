@@ -32,7 +32,6 @@ public class ChatController {
         LocalDateTime time = LocalDateTime.now();
         String responseMessage = HtmlUtils.htmlEscape(chatMessage.message());
 
-        // TODO : 채팅 로그 저장 (동기 -> 비동기)
         chatService.saveMessage(roomId, senderId, responseMessage, time);
         // 페이지 정보는 웹소켓 연결에서는 의미 없으므로 0으로 설정
         return new ChatResponse(senderId, responseMessage, time, 0, 0);

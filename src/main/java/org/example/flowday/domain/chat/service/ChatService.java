@@ -3,8 +3,10 @@ package org.example.flowday.domain.chat.service;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.chat.entity.ChatMessageDocument;
 import org.example.flowday.domain.chat.entity.ChatRoomEntity;
+import org.example.flowday.domain.chat.event.dto.ChatMessageEvent;
 import org.example.flowday.domain.chat.repository.ChatMessageDocumentRepository;
 import org.example.flowday.domain.chat.repository.ChatRoomRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 public class ChatService {
     private final ChatMessageDocumentRepository chatMessageDocumentRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 채팅 방 생성
@@ -30,21 +33,17 @@ public class ChatService {
     }
 
     /**
-     * [NoSQL] 채팅 메세지 저장
+     * [비동기 - 스프링 이벤트] 채팅 메세지 저장
      */
-    public ChatMessageDocument saveMessage(
+    public void saveMessage(
             final Long roomId,
             final Long senderId,
             final String responseMessage,
             final LocalDateTime time
     ) {
-        ChatMessageDocument chatMessageDocument = ChatMessageDocument.create(
-                roomId,
-                senderId,
-                responseMessage,
-                time
+        applicationEventPublisher.publishEvent(
+                new ChatMessageEvent(roomId, senderId, responseMessage, time)
         );
-        return chatMessageDocumentRepository.save(chatMessageDocument);
     }
 
     /**
