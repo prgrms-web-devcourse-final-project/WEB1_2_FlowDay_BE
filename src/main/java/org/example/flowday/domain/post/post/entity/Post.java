@@ -62,7 +62,7 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     private Member writer;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Course course;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
