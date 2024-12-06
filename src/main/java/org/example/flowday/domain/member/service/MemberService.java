@@ -25,6 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -257,7 +262,10 @@ public class MemberService {
     @Transactional
     public void setMyinfo(Member member, MemberDTO.MyInfoSettingRequestDTO myInfo) throws Exception {
 
-        changeProfileImage(member.getId(), myInfo.getFile());
+        if (myInfo.getFile() != null) {
+            changeProfileImage(member.getId(), myInfo.getFile());
+        }
+
         member.setName(myInfo.getName());
         member.setBirthDt(myInfo.getBirthDt());
         memberRepository.save(member);
