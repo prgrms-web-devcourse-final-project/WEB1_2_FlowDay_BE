@@ -8,6 +8,7 @@ import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.comment.comment.exception.ReplyException;
 import org.example.flowday.domain.post.comment.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.post.entity.Post;
+import org.example.flowday.domain.post.post.exception.PostException;
 import org.example.flowday.domain.post.post.repository.PostRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ public class ReplyService {
 
         Reply reply = request.toEntity(member, parent, post);
         Reply saveReply = replyRepository.save(reply);
+        post.increaseComment();
 
 
         return new ReplyDTO.createResponse(saveReply, "댓글이 생성되었습니다");
@@ -50,6 +52,7 @@ public class ReplyService {
     @Transactional
     public ReplyDTO.deleteResponse removeReply(Long replyId , Long memberId) {
         Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyTaskException);
+        Post post = postRepository.findById(reply.getPost().getId()).orElseThrow(PostException.POST_NOT_FOUND::get);
         verifyMemberAuthority(memberId, reply);
         ReplyDTO.deleteResponse deleteResponse;
         if (reply.getParent() != null) {
@@ -57,6 +60,7 @@ public class ReplyService {
             reply.removePost(reply);
 
             replyRepository.delete(reply);
+            post.decreaseComment();
             deleteResponse = new ReplyDTO.deleteResponse("자식 댓글 삭제 완료", "댓글이 삭제되었습니다");
         } else {
             reply.updateDeleteMsg();

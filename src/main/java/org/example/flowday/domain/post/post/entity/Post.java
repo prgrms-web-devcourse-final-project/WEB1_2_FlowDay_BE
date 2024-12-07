@@ -50,6 +50,7 @@ public class Post {
     private Status status;
 
     private int likeCount;
+    private int commentCount;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -88,6 +89,10 @@ public class Post {
     public void decreaseLike() {
         likeCount--;
     }
+
+    public void increaseComment() {commentCount++;}
+
+    public void decreaseComment() {commentCount--;}
 
 
     public void addTag(String tagContent) {
