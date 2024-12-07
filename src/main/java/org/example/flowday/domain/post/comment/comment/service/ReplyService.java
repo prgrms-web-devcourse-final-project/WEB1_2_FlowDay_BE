@@ -10,6 +10,7 @@ import org.example.flowday.domain.post.comment.comment.repository.ReplyRepositor
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.exception.PostException;
 import org.example.flowday.domain.post.post.repository.PostRepository;
+import org.example.flowday.global.fileupload.service.GenFileService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ public class ReplyService {
     private final ReplyRepository replyRepository;
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
+    private final GenFileService genFileService;
 
     @Transactional
     public ReplyDTO.createResponse saveReply(ReplyDTO.createRequest request, Long memberId, Long postId) {
@@ -99,7 +101,8 @@ public class ReplyService {
         List<ReplyDTO.Response> result = new ArrayList<>();
 
         for (Reply reply : replies) {
-            ReplyDTO.Response dto = new ReplyDTO.Response(reply);
+            String profileImg = genFileService.getFirstImageUrlByObject("member", reply.getMember().getId());
+            ReplyDTO.Response dto = new ReplyDTO.Response(reply,profileImg);
             replyMap.put(reply.getId(), dto);
 
             if (reply.getParent() == null) {
