@@ -31,7 +31,7 @@ public class PostBriefResponseDTO {
         content = post.getContents().length() > 20
                 ? post.getContents().substring(0, 20)
                 : post.getContents();
-        commentCount = post.getReplies().size();
+        commentCount = post.getCommentCount();
         likeCount = post.getLikeCount();
         createdAt = post.getCreatedAt();
         status = post.getStatus();

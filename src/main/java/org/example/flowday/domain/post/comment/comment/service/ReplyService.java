@@ -8,7 +8,9 @@ import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.comment.comment.exception.ReplyException;
 import org.example.flowday.domain.post.comment.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.post.entity.Post;
+import org.example.flowday.domain.post.post.exception.PostException;
 import org.example.flowday.domain.post.post.repository.PostRepository;
+import org.example.flowday.global.fileupload.service.GenFileService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class ReplyService {
     private final ReplyRepository replyRepository;
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
+    private final GenFileService genFileService;
 
     @Transactional
     public ReplyDTO.createResponse saveReply(ReplyDTO.createRequest request, Long memberId, Long postId) {
@@ -39,6 +42,7 @@ public class ReplyService {
 
         Reply reply = request.toEntity(member, parent, post);
         Reply saveReply = replyRepository.save(reply);
+        post.increaseComment();
 
 
         return new ReplyDTO.createResponse(saveReply, "댓글이 생성되었습니다");
@@ -50,6 +54,7 @@ public class ReplyService {
     @Transactional
     public ReplyDTO.deleteResponse removeReply(Long replyId , Long memberId) {
         Reply reply = replyRepository.findById(replyId).orElseThrow(ReplyException.REPLY_NOT_FOUND::getReplyTaskException);
+        Post post = postRepository.findById(reply.getPost().getId()).orElseThrow(PostException.POST_NOT_FOUND::get);
         verifyMemberAuthority(memberId, reply);
         ReplyDTO.deleteResponse deleteResponse;
         if (reply.getParent() != null) {
@@ -57,6 +62,7 @@ public class ReplyService {
             reply.removePost(reply);
 
             replyRepository.delete(reply);
+            post.decreaseComment();
             deleteResponse = new ReplyDTO.deleteResponse("자식 댓글 삭제 완료", "댓글이 삭제되었습니다");
         } else {
             reply.updateDeleteMsg();
@@ -95,7 +101,8 @@ public class ReplyService {
         List<ReplyDTO.Response> result = new ArrayList<>();
 
         for (Reply reply : replies) {
-            ReplyDTO.Response dto = new ReplyDTO.Response(reply);
+            String profileImg = genFileService.getFirstImageUrlByObject("member", reply.getMember().getId());
+            ReplyDTO.Response dto = new ReplyDTO.Response(reply,profileImg);
             replyMap.put(reply.getId(), dto);
 
             if (reply.getParent() == null) {
