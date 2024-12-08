@@ -40,5 +40,3 @@ out/
 flowday_dev.mv.db
 flowday_dev.trace.db
 /src/main/resources/application-secret.yml
-/src/main/resources/static
-db/mongodb/data
