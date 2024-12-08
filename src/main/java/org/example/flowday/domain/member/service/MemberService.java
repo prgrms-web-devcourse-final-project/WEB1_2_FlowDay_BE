@@ -13,7 +13,7 @@ import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.exception.MemberTaskException;
 import org.example.flowday.domain.member.repository.MemberRepository;
-import org.example.flowday.domain.notification.dto.NotificationDTO;
+import org.example.flowday.domain.notification.dto.NotificationRequestDTO;
 import org.example.flowday.domain.notification.service.NotificationService;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.global.fileupload.service.GenFileService;
@@ -311,7 +311,7 @@ public class MemberService {
     @Transactional
     public void sendNotification(Member member, MemberDTO.SendCoupleRequestDTO dto) throws JsonProcessingException {
 
-        NotificationDTO.NotificationRequestDTO notify = new NotificationDTO.NotificationRequestDTO();
+        NotificationRequestDTO notify = new NotificationRequestDTO();
         notify.setSenderId(member.getId());
         notify.setReceiverId(dto.getPartnerId());
         notify.setMessage("연인 신청이 도착했습니다.");
