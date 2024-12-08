@@ -309,9 +309,9 @@ public class MemberService {
 
         return new MemberDTO.FindPartnerResponseDTO(
                 (Long) result.get("id"),
+                genFileService.getFirstImageUrlByObject("member", (Long) result.get("id")),
                 (String) result.get("name"),
-                (String) result.get("email"),
-                genFileService.getFirstImageUrlByObject("member", (Long) result.get("id"))
+                (String) result.get("email")
         );
 
     }
