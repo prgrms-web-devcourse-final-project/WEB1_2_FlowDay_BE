@@ -30,7 +30,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "m2.name AS partnerName, " +
             "m1.relationshipDt AS relationshipDt, " +
             "m1.birthDt AS birthDt, " +
-            "m1.partnerId AS partnerId " +
+            "m1.partnerId AS partnerId, " +
+            "m1.chattingRoomId AS roomId " +
             "FROM Member m1 " +
             "LEFT JOIN Member m2 ON m1.partnerId = m2.id " +
             "WHERE m1.id = :id")
