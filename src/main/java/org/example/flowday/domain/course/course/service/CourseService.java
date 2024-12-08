@@ -1,6 +1,7 @@
 package org.example.flowday.domain.course.course.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.example.flowday.domain.course.course.dto.CourseReqDTO;
 import org.example.flowday.domain.course.course.dto.CourseResDTO;
 import org.example.flowday.domain.course.course.dto.PageReqDTO;
@@ -15,9 +16,8 @@ import org.example.flowday.domain.course.spot.exception.SpotException;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
+import org.example.flowday.domain.course.wish.repository.WishPlaceRepository;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
-import org.example.flowday.domain.member.entity.Member;
-import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.data.domain.Page;
@@ -31,10 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
+@Log4j2
 public class CourseService {
 
     private final MemberRepository memberRepository;
@@ -42,26 +42,28 @@ public class CourseService {
     private final SpotRepository spotRepository;
     private final SpotService spotService;
     private final WishPlaceService wishPlaceService;
+    private final WishPlaceRepository wishPlaceRepository;
 
     // 코스 생성
+    @Transactional
     public CourseResDTO saveCourse(SecurityUser user, CourseReqDTO courseReqDTO) {try {
-            Course course = Course.builder()
-                    .member(user.member())
-                    .title(courseReqDTO.getTitle())
-                    .status(courseReqDTO.getStatus())
-                    .date(courseReqDTO.getDate())
-                    .color(courseReqDTO.getColor())
-                    .spots(null)
-                    .build();
+        Course course = Course.builder()
+                .member(user.member())
+                .title(courseReqDTO.getTitle())
+                .status(courseReqDTO.getStatus())
+                .date(courseReqDTO.getDate())
+                .color(courseReqDTO.getColor())
+                .spots(null)
+                .build();
 
-            courseRepository.save(course);
+        courseRepository.save(course);
 
-            CourseResDTO courseResDTO = new CourseResDTO(course, null);
+        CourseResDTO courseResDTO = new CourseResDTO(course, null);
 
-            return courseResDTO;
-        } catch (Exception e) {
-            throw CourseException.NOT_CREATED.get();
-        }
+        return courseResDTO;
+    } catch (Exception e) {
+        throw CourseException.NOT_CREATED.get();
+    }
     }
 
     // 코스 조회
@@ -78,6 +80,7 @@ public class CourseService {
     }
 
     // 코스 수정 - 정보
+    @Transactional
     public CourseResDTO updateCourseInfo(Long userId, Long courseId, CourseReqDTO courseReqDTO) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
@@ -110,6 +113,7 @@ public class CourseService {
     }
 
     // 코스 수정 - 장소 순서 변경
+    @Transactional
     public void updateCourseSpotSequence(Long userId, Long courseId, Long spotId, int sequence) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
@@ -135,6 +139,7 @@ public class CourseService {
     }
 
     // 코스에 장소 1개 추가
+    @Transactional
     public void addSpot(Long userId, Long courseId, SpotReqDTO spotReqDTO) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
@@ -149,6 +154,7 @@ public class CourseService {
     }
 
     // 코스의 장소 1개 삭제
+    @Transactional
     public void removeSpot(Long userId, Long courseId, Long spotId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
@@ -163,6 +169,7 @@ public class CourseService {
     }
 
     // 코스 삭제
+    @Transactional
     public CourseResDTO removeCourse(Long userId, Long courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
@@ -177,51 +184,52 @@ public class CourseService {
 
     // 회원 별 코스 목록 조회
     public List<CourseResDTO> findCourseByMember(SecurityUser user) {
-        Long partnerId = user.member().getPartnerId() != null ? user.member().getPartnerId() : null;
+        Long memberId = user.getId();
+        Long partnerId = user.member().getPartnerId();
 
-        List<Course> memberCourses = courseRepository.findAllByMemberId(user.getId());
-        List<Course> partnerCourses = partnerId != null
-                ? courseRepository.findAllByMemberIdAndStatus(partnerId, Status.COUPLE)
-                : new ArrayList<>();
+        // 한 번의 쿼리로 코스와 스팟 정보를 가져옴
+        List<Course> courses = courseRepository.findAllByMemberIdOrPartnerId(memberId, partnerId, Status.COUPLE);
 
-        List<Course> combinedCourses = new ArrayList<>();
-        combinedCourses.addAll(memberCourses);
-        combinedCourses.addAll(partnerCourses);
-
-        List<CourseResDTO> courseResDTOs = combinedCourses.stream()
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        // 코스를 DTO로 변환
+        return courses.stream()
                 .map(course -> {
-                    List<Spot> spots = spotRepository.findAllByCourseIdOrderBySequenceAsc(course.getId());
-                    List<SpotResDTO> spotResDTOs = spots.stream()
-                            .map(SpotResDTO::new)
+                    // Spot 리스트를 SpotResDTO로 변환
+                    List<SpotResDTO> spotResDTOs = course.getSpots().stream()
+                            .map(SpotResDTO::new)  // SpotResDTO 생성
                             .toList();
 
+                    // CourseResDTO 생성: SpotResDTO 리스트도 함께 전달
                     return new CourseResDTO(course, spotResDTOs);
                 })
                 .toList();
 
-        return courseResDTOs;
     }
 
     // 회원 별 위시 플레이스, 코스 목록 조회
     public Page<Object> findWishPlaceAndCourseListByMember(SecurityUser user, PageReqDTO pageReqDTO) {
         Pageable pageable = pageReqDTO.getPageable(Sort.by(Sort.Direction.DESC, "createdAt"));
 
+        // 위시 플레이스 가져오기
         List<WishPlaceResDTO> wishPlaceResDTOS = wishPlaceService.getMemberAndPartnerWishPlaces(user);
+
+        // 코스 목록 가져오기
         List<CourseResDTO> courseResDTOS = findCourseByMember(user);
 
-        List<Object> combinedCourses = new ArrayList<>();
-        combinedCourses.addAll(wishPlaceResDTOS);
-        combinedCourses.addAll(courseResDTOS);
+        // 위시 플레이스와 코스 데이터를 합침
+        List<Object> combinedList = new ArrayList<>();
+        combinedList.addAll(wishPlaceResDTOS);
+        combinedList.addAll(courseResDTOS);
 
+        // 페이징 처리
         int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), combinedCourses.size());
-        List<Object> paginatedList = combinedCourses.subList(start, end);
+        int end = Math.min((start + pageable.getPageSize()), combinedList.size());
+        List<Object> paginatedList = combinedList.subList(start, end);
 
-        return new PageImpl<>(paginatedList, pageable, combinedCourses.size());
+        return new PageImpl<>(paginatedList, pageable, combinedList.size());
     }
 
     // 그만 보기 시 상대방의 코스 비공개로 상태 변경
+    @Transactional
     public void updateCourseStatusToPrivate(Long userId, Long courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
@@ -238,6 +246,7 @@ public class CourseService {
     }
 
     // 연인 관계 해지 시 모든 코스 비공개로 변경
+    @Transactional
     public void updateCourseListStatusToPrivate(Long userId) {
         List<Course> courses = courseRepository.findAllByMemberId(userId);
 

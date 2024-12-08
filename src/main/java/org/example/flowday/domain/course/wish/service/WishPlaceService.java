@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class WishPlaceService {
 
     private final MemberRepository memberRepository;
@@ -31,6 +31,7 @@ public class WishPlaceService {
     private final SpotService spotService;
 
     // 위시 플레이스 생성
+    @Transactional
     public void saveWishPlace(Long userId) {
         Member member = memberRepository.findById(userId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
 
@@ -42,6 +43,7 @@ public class WishPlaceService {
     }
 
     // 위시 플레이스 장소 추가
+    @Transactional
     public void updateSpotInWishPlace(Long userId, SpotReqDTO spotReqDTO) {
         try {
             spotService.addSpot(userId, null, spotReqDTO, "wishPlace");
@@ -52,6 +54,7 @@ public class WishPlaceService {
     }
 
     // 위시 플레이스 장소 삭제
+    @Transactional
     public void removeSpotFromWishPlace(Long userId, Long spotId) {
         try {
             spotService.removeSpot(userId, null, spotId, "wishPlace");
@@ -79,22 +82,24 @@ public class WishPlaceService {
     // 회원 별 위시 플레이스 목록 조회 + 파트너
     public List<WishPlaceResDTO> getMemberAndPartnerWishPlaces(SecurityUser user) {
         Long partnerId = user.member().getPartnerId();
-
-        List<WishPlace> wishPlaces = new ArrayList<>(wishPlaceRepository.findAllByMemberId(user.getId()));
-
+        List<Long> memberIds = new ArrayList<>();
+        memberIds.add(user.getId());
         if (partnerId != null) {
-            wishPlaces.addAll(wishPlaceRepository.findAllByMemberId(partnerId));
+            memberIds.add(partnerId);
         }
+
+        List<WishPlace> wishPlaces = wishPlaceRepository.findAllWithSpotsByMemberIds(memberIds);
 
         return wishPlaces.stream()
                 .map(wishPlace -> {
-                    List<SpotResDTO> spotResDTOs = spotRepository.findAllByWishPlaceIdOrderByIdDesc(wishPlace.getId()).stream()
+                    List<SpotResDTO> spotResDTOs = wishPlace.getSpots().stream()
                             .map(SpotResDTO::new)
-                            .collect(Collectors.toList());
+                            .toList();
 
+                    // WishPlaceResDTO 생성
                     return new WishPlaceResDTO(wishPlace, spotResDTOs);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
 }
