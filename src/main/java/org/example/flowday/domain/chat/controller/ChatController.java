@@ -28,12 +28,12 @@ public class ChatController {
             @AuthenticationPrincipal SecurityUser user,
             ChatMessage chatMessage
     ) {
-        Long senderId = user.getId();
+        String senderId = chatMessage.senderId();
         LocalDateTime time = LocalDateTime.now();
         String responseMessage = HtmlUtils.htmlEscape(chatMessage.message());
 
-        chatService.saveMessage(roomId, senderId, responseMessage, time);
+        chatService.saveMessage(roomId, Long.parseLong(senderId), responseMessage, time);
         // 페이지 정보는 웹소켓 연결에서는 의미 없으므로 0으로 설정
-        return new ChatResponse(senderId, responseMessage, time, 0, 0);
+        return new ChatResponse(Long.parseLong(senderId), responseMessage, time, 0, 0);
     }
 }

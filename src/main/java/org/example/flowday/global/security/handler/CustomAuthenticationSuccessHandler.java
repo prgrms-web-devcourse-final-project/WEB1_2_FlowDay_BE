@@ -73,6 +73,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         response.setHeader("Authorization", "Bearer " + accessToken);
         response.setHeader("Refresh-Token", "Bearer " + refreshToken);
         response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("{\"message\":\"Login successful\"}");
+        response.getWriter().write(id.toString());
     }
 }
