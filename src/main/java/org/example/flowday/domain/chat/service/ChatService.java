@@ -1,10 +1,12 @@
 package org.example.flowday.domain.chat.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.flowday.domain.chat.entity.ChatMessageEntity;
+import org.example.flowday.domain.chat.entity.ChatMessageDocument;
 import org.example.flowday.domain.chat.entity.ChatRoomEntity;
-import org.example.flowday.domain.chat.repository.ChatMessageRepository;
+import org.example.flowday.domain.chat.event.dto.ChatMessageEvent;
+import org.example.flowday.domain.chat.repository.ChatMessageDocumentRepository;
 import org.example.flowday.domain.chat.repository.ChatRoomRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,8 +17,9 @@ import java.time.LocalDateTime;
 @Transactional(readOnly = true)
 @Service
 public class ChatService {
-    private final ChatMessageRepository chatMessageRepository;
+    private final ChatMessageDocumentRepository chatMessageDocumentRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
      * 채팅 방 생성
@@ -30,32 +33,27 @@ public class ChatService {
     }
 
     /**
-     * 채팅 메세지 저장
+     * [비동기 - 스프링 이벤트] 채팅 메세지 저장
      */
-    @Transactional
     public void saveMessage(
             final Long roomId,
             final Long senderId,
             final String responseMessage,
             final LocalDateTime time
     ) {
-        ChatMessageEntity chatMessage = ChatMessageEntity.create(
-                roomId,
-                senderId,
-                responseMessage,
-                time
+        applicationEventPublisher.publishEvent(
+                new ChatMessageEvent(roomId, senderId, responseMessage, time)
         );
-        chatMessageRepository.save(chatMessage);
     }
 
     /**
-     * 채팅 조회
+     * [NoSQL] 채팅 메세지 조회
      */
-    public Page<ChatMessageEntity> getPagedChatMessages(
+    public Page<ChatMessageDocument> getPagedChatMessages(
             final Long roomId,
             final Pageable pageable
     ) {
-        return chatMessageRepository.findByChatRoomId(roomId, pageable);
+        return chatMessageDocumentRepository.findByChatRoomId(roomId, pageable);
     }
 
     /**

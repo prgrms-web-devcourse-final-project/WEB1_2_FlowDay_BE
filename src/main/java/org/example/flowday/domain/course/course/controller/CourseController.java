@@ -25,8 +25,8 @@ public class CourseController {
     // 코스 생성
     @Operation(summary = "생성")
     @PostMapping
-    public ResponseEntity<CourseResDTO> createCourse(@RequestBody CourseReqDTO courseReqDTO) {
-        return ResponseEntity.ok(courseService.saveCourse(courseReqDTO));
+    public ResponseEntity<CourseResDTO> createCourse(@RequestBody CourseReqDTO courseReqDTO, @AuthenticationPrincipal SecurityUser user) {
+        return ResponseEntity.ok(courseService.saveCourse(user, courseReqDTO));
     }
 
     // 코스 조회
@@ -97,14 +97,14 @@ public class CourseController {
 
     // 회원 별 위시 플레이스, 코스 목록 조회
     @Operation(summary = "위시 플레이스 + 코스 목록 조회", description = "나와 (파트너의) 위시플레이스와 나와 (파트너의 COUPLE 상태) 코스 목록")
-    @GetMapping("/member/{memberId}")
+    @GetMapping
     public ResponseEntity<Page<Object>> CourseListByMember(
-            @PathVariable("memberId") Long memberId,
+            @AuthenticationPrincipal SecurityUser user,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size)
     {
         PageReqDTO pageReqDTO = PageReqDTO.builder().page(page).size(size).build();
-        return ResponseEntity.ok(courseService.findWishPlaceAndCourseListByMember(memberId, pageReqDTO));
+        return ResponseEntity.ok(courseService.findWishPlaceAndCourseListByMember(user, pageReqDTO));
     }
 
     // 그만 보기 시 상대방의 코스 비공개로 상태 변경
@@ -112,9 +112,9 @@ public class CourseController {
     @PatchMapping("/{courseId}/private")
     public ResponseEntity<Void> updateCourseStatusToPrivate(
             @PathVariable Long courseId,
-            @AuthenticationPrincipal SecurityUser member
+            @AuthenticationPrincipal SecurityUser user
     ) {
-        courseService.updateCourseStatusToPrivate(member.getId(), courseId);
+        courseService.updateCourseStatusToPrivate(user.getId(), courseId);
         return ResponseEntity.ok().build();
     }
 

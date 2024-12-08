@@ -26,7 +26,7 @@ public class ReplyDTO {
         private Long parentId;
 
 
-        public Reply toEntity(Member member ,Reply parent,  Post post) {
+        public Reply toEntity(Member member, Reply parent, Post post) {
             return Reply.builder()
                     .content(content)
                     .member(member)
@@ -49,19 +49,19 @@ public class ReplyDTO {
         private Long replyId;
         private LocalDateTime createdAt;
 
-        public createResponse (Reply reply , String msg) {
+        public createResponse(Reply reply, String msg) {
             this.msg = msg;
             this.content = reply.getContent();
-            this.memberName=reply.getMember().getName();
+            this.memberName = reply.getMember().getName();
             if (reply.getParent() != null) {
                 parentId = reply.getParent().getId();
             } else {
                 parentId = null;
             }
-            this.postId=reply.getPost().getId();
-            this.createdAt=reply.getCreatedAt();
-            this.replyId=reply.getId();
-            this.likeCount=reply.getLikeCount();
+            this.postId = reply.getPost().getId();
+            this.createdAt = reply.getCreatedAt();
+            this.replyId = reply.getId();
+            this.likeCount = reply.getLikeCount();
         }
 
 
@@ -85,8 +85,6 @@ public class ReplyDTO {
         private String content;
 
 
-
-
     }
 
     @Getter
@@ -98,14 +96,16 @@ public class ReplyDTO {
         private String memberName;
         private int likeCount;
         private LocalDateTime createdAt;
+        private String memberImgURL;
         private List<Response> children;
 
-        public Response (Reply reply) {
+        public Response(Reply reply , String imageURL) {
             id = reply.getId();
             content = reply.getContent();
             memberName = reply.getMember().getName();
             likeCount = reply.getLikeCount();
             createdAt = reply.getCreatedAt();
+            memberImgURL = imageURL;
             children = new ArrayList<>();
 
         }

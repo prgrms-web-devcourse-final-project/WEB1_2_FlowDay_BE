@@ -3,7 +3,6 @@ package org.example.flowday.domain.course.vote.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 
 import java.util.List;
 

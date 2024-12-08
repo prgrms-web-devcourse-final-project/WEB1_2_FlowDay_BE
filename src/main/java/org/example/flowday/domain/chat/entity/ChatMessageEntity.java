@@ -46,18 +46,4 @@ public class ChatMessageEntity {
         this.textMessage = textMessage;
         this.sendTime = sendTime;
     }
-
-    public static ChatMessageEntity create(
-            final Long chatRoomId,
-            final Long fromId,
-            final String textMessage,
-            final LocalDateTime sendTime
-    ) {
-        return ChatMessageEntity.builder()
-                .chatRoomId(chatRoomId)
-                .fromId(fromId)
-                .textMessage(textMessage)
-                .sendTime(sendTime)
-                .build();
-    }
 }

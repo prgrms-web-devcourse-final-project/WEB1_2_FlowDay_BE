@@ -10,6 +10,7 @@ import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -63,6 +64,7 @@ class CourseControllerTest {
                 .build();
 
         memberRepository.save(member);
+        SecurityUser securityUser = new SecurityUser(member);
 
         partner = Member.builder()
                 .name("partner")
@@ -73,16 +75,16 @@ class CourseControllerTest {
                 .build();
 
         memberRepository.save(partner);
+        SecurityUser securityUser2 = new SecurityUser(partner);
 
         courseReqDTO = CourseReqDTO.builder()
-                .memberId(member.getId())
                 .title("코스 이름")
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("blue")
                 .build();
 
-        courseResDTO = courseService.saveCourse(courseReqDTO);
+        courseResDTO = courseService.saveCourse(securityUser, courseReqDTO);
 
         SpotReqDTO spotReqDTO1 = SpotReqDTO.builder()
                 .id(1L)
@@ -105,14 +107,13 @@ class CourseControllerTest {
         courseResDTO = courseService.findCourse(courseResDTO.getId());
 
         courseReqDTO2 = CourseReqDTO.builder()
-                .memberId(partner.getId())
                 .title("코스 이름")
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
                 .color("blue")
                 .build();
 
-        courseResDTO2 = courseService.saveCourse(courseReqDTO2);
+        courseResDTO2 = courseService.saveCourse(securityUser2, courseReqDTO2);
     }
 
     @DisplayName("코스 생성 테스트")
@@ -120,7 +121,6 @@ class CourseControllerTest {
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void createCourse() throws Exception {
         courseReqDTO = CourseReqDTO.builder()
-                .memberId(member.getId())
                 .title("코스 이름")
                 .status(Status.COUPLE)
                 .date(LocalDate.now())
@@ -152,7 +152,6 @@ class CourseControllerTest {
     @WithUserDetails(value = "testId", userDetailsServiceBeanName = "securityUserService")
     void updateCourse() throws Exception {
         courseReqDTO = CourseReqDTO.builder()
-                .memberId(member.getId())
                 .title("코스 이름 수정")
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())
@@ -222,7 +221,7 @@ class CourseControllerTest {
     void getCourseListByMember() throws Exception {
         PageReqDTO pageReqDTO = PageReqDTO.builder().page(1).size(10).build();
 
-        mockMvc.perform(get("/api/v1/courses/member/{memberId}", member.getId())
+        mockMvc.perform(get("/api/v1/courses", member.getId())
                         .param("page", "1")
                         .param("size", "10"))
                 .andExpect(status().isOk());

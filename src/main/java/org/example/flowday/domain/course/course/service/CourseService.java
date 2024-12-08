@@ -19,6 +19,7 @@ import org.example.flowday.domain.course.wish.service.WishPlaceService;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -43,12 +44,9 @@ public class CourseService {
     private final WishPlaceService wishPlaceService;
 
     // 코스 생성
-    public CourseResDTO saveCourse(CourseReqDTO courseReqDTO) {
-        Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-
-        try {
+    public CourseResDTO saveCourse(SecurityUser user, CourseReqDTO courseReqDTO) {try {
             Course course = Course.builder()
-                    .member(member)
+                    .member(user.member())
                     .title(courseReqDTO.getTitle())
                     .status(courseReqDTO.getStatus())
                     .date(courseReqDTO.getDate())
@@ -178,11 +176,11 @@ public class CourseService {
     }
 
     // 회원 별 코스 목록 조회
-    public List<CourseResDTO> findCourseByMember(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+    public List<CourseResDTO> findCourseByMember(Long userId) {
+        Member member = memberRepository.findById(userId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         Long partnerId = member.getPartnerId() != null ? member.getPartnerId() : null;
 
-        List<Course> memberCourses = courseRepository.findAllByMemberId(memberId);
+        List<Course> memberCourses = courseRepository.findAllByMemberId(userId);
         List<Course> partnerCourses = partnerId != null
                 ? courseRepository.findAllByMemberIdAndStatus(partnerId, Status.COUPLE)
                 : new ArrayList<>();
@@ -207,11 +205,11 @@ public class CourseService {
     }
 
     // 회원 별 위시 플레이스, 코스 목록 조회
-    public Page<Object> findWishPlaceAndCourseListByMember(Long memberId, PageReqDTO pageReqDTO) {
+    public Page<Object> findWishPlaceAndCourseListByMember(SecurityUser user, PageReqDTO pageReqDTO) {
         Pageable pageable = pageReqDTO.getPageable(Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        List<WishPlaceResDTO> wishPlaceResDTOS = wishPlaceService.getMemberAndPartnerWishPlaces(memberId);
-        List<CourseResDTO> courseResDTOS = findCourseByMember(memberId);
+        List<WishPlaceResDTO> wishPlaceResDTOS = wishPlaceService.getMemberAndPartnerWishPlaces(user);
+        List<CourseResDTO> courseResDTOS = findCourseByMember(user.getId());
 
         List<Object> combinedCourses = new ArrayList<>();
         combinedCourses.addAll(wishPlaceResDTOS);
@@ -225,10 +223,10 @@ public class CourseService {
     }
 
     // 그만 보기 시 상대방의 코스 비공개로 상태 변경
-    public void updateCourseStatusToPrivate(Long memberId, Long courseId) {
+    public void updateCourseStatusToPrivate(Long userId, Long courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
-        if (!memberId.equals(courseRepository.findById(courseId).get().getMember().getPartnerId())) {
+        if (!userId.equals(courseRepository.findById(courseId).get().getMember().getPartnerId())) {
             throw CourseException.FORBIDDEN.get();
         }
 
@@ -241,8 +239,8 @@ public class CourseService {
     }
 
     // 연인 관계 해지 시 모든 코스 비공개로 변경
-    public void updateCourseListStatusToPrivate(Long memberId) {
-        List<Course> courses = courseRepository.findAllByMemberId(memberId);
+    public void updateCourseListStatusToPrivate(Long userId) {
+        List<Course> courses = courseRepository.findAllByMemberId(userId);
 
         for (Course course : courses) {
             if (Status.COUPLE.equals(course.getStatus())) {

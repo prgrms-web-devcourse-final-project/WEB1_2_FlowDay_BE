@@ -23,6 +23,7 @@ public class PostResponseDTO {
     private Status status;
     private Long courseId;
     private int likeCount;
+    private int commentCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<SpotResDTO> spots;
