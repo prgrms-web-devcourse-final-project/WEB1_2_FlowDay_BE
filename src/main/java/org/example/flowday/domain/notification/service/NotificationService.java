@@ -59,4 +59,9 @@ public interface NotificationService {
      * 커플 끊어짐 알림 생성
      */
     void sendCoupleDisconnectNotification(Member sender, Member receiver);
+
+    /**
+     * 투표 요청 알림 생성
+     */
+    void sendVoteRequestNotification(Member sender, Long voteId, Member receiver);
 }

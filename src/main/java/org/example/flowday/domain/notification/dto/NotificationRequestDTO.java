@@ -1,12 +1,16 @@
 package org.example.flowday.domain.notification.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class NotificationRequestDTO {
     private Long senderId;      // 보낸 사람의 ID
     private Long receiverId;    // 받는 사람의 ID
