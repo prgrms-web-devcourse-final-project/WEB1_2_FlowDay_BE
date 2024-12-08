@@ -219,8 +219,9 @@ public class MemberService {
         String partnerName = (String) resultMap.get("partnerName");
         LocalDate relationshipDt = (LocalDate) resultMap.get("relationshipDt");
         LocalDate birthDt = (LocalDate) resultMap.get("birthDt");
+        Long chattingRoom = (Long) resultMap.get("roomId");
 
-        return new MemberDTO.MyPageResponseDTO(profileImage, name, partnerImage, partnerName, relationshipDt, birthDt);
+        return new MemberDTO.MyPageResponseDTO(profileImage, name, partnerImage, partnerName, relationshipDt, birthDt, chattingRoom);
 
     }
 

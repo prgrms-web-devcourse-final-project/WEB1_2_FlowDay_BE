@@ -105,6 +105,7 @@ public class MemberDTO {
         private String partnerName;
         private LocalDate relationshipDt;
         private LocalDate birthDt;
+        private Long chattingRoom;
     }
 
     @Data
