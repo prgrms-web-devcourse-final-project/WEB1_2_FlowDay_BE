@@ -5,17 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import org.example.flowday.domain.course.course.entity.Status;
-import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Builder
 @Getter
 public class CourseReqDTO {
-    @NotNull(message = "Member ID cannot be null")
-    private Long memberId;
-
     @NotBlank(message = "Title cannot be blank")
     private String title;
 

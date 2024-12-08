@@ -1,6 +1,8 @@
 package org.example.flowday.global.initData;
 
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.course.course.dto.CourseReqDTO;
 import org.example.flowday.domain.course.course.dto.CourseResDTO;
@@ -17,6 +19,8 @@ import org.example.flowday.domain.member.repository.MemberRepository;
 import org.example.flowday.domain.post.comment.comment.entity.Reply;
 import org.example.flowday.domain.post.comment.comment.repository.ReplyRepository;
 import org.example.flowday.domain.post.comment.comment.service.ReplyService;
+import org.example.flowday.domain.post.likes.entity.Likes;
+import org.example.flowday.domain.post.likes.repository.LikeRepository;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.repository.PostRepository;
 import org.example.flowday.domain.post.post.service.PostService;
@@ -52,9 +56,11 @@ public class NotProd {
     private final SpotRepository spotRepository;
     private final PostService postService;
     private final PasswordEncoder passwordEncoder;
-    @Autowired
+    private final LikeRepository likeRepository;
     private CourseService courseService;
 
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Bean
     ApplicationRunner initNotProd() {
@@ -69,7 +75,6 @@ public class NotProd {
         if (memberRepository.findAll().size() > 0) {
             return;
         }
-
         //멤버 생성
         // given - 테스트에 필요한 데이터 준비
         Member member = Member.builder()
@@ -178,6 +183,12 @@ public class NotProd {
 
         replyRepository.save(reply2);
 
+        Likes like = Likes.builder()
+                .memberId(member.getId())
+                .postId(post1.getId())
+                .build();
+
+        likeRepository.save(like);
 
 
     }

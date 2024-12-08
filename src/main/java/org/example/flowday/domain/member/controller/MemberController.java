@@ -38,15 +38,15 @@ public class MemberController {
     public ResponseEntity<String> refreshAccessToken(@RequestBody MemberDTO.TokenRefreshRequestDTO dto) {
         try {
             // JwtService를 통해 Access Token 갱신
-            String newAccessToken = memberService.refreshAccessToken(dto.getToken());
-            if(!Objects.equals(newAccessToken, "Invalid token")) {
-                HttpHeaders headers = new HttpHeaders();
-                headers.add("Authorization", "Bearer " + newAccessToken);
-                // 새로 발급된 토큰 반환
-                return ResponseEntity.ok().headers(headers).body("newAccessToken");
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
+            Map<String,String> tokens = memberService.refreshAccessToken(dto.getToken());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer " + tokens.get("access"));
+            headers.add("Refresh-Token", "Bearer " + tokens.get("refresh"));
+
+            // 새로 발급된 토큰 반환
+            return ResponseEntity.ok().headers(headers).body("Token Refresh Success");
+
         } catch (IllegalArgumentException e) {
             // 예외 발생 시 401 Unauthorized 응답
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -231,7 +231,7 @@ public class MemberController {
     @PutMapping("/partnerUpdate")
     public ResponseEntity<String> updatePartnerId(
             @AuthenticationPrincipal SecurityUser user,
-            @RequestBody Map<String,Object> requestParams
+            @RequestBody MemberDTO.UpdatePartnerIdRequestDTO requestParams
             ) {
         try {
             memberService.updatePartnerId(user.member(), requestParams);

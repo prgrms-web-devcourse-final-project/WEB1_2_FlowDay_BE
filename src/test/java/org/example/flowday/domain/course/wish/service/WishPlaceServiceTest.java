@@ -3,13 +3,14 @@ package org.example.flowday.domain.course.wish.service;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
-import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
+import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
 import org.example.flowday.domain.course.wish.repository.WishPlaceRepository;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,9 @@ class WishPlaceServiceTest {
 
     @InjectMocks
     private WishPlaceService wishPlaceService;
+
+    @InjectMocks
+    private SpotService spotService;
 
     private Member member;
     private Member partner;
@@ -109,18 +113,15 @@ class WishPlaceServiceTest {
     void updateSpotInWishPlace() {
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        WishPlaceReqDTO wishPlaceReqDTO = WishPlaceReqDTO.builder()
-                .memberId(1L)
-                .spot(SpotReqDTO.builder()
-                        .placeId("ChIJgUbEo2")
-                        .name("장소 이름2")
-                        .city("서울")
-                        .build())
+        SpotReqDTO spotReqDTO = SpotReqDTO.builder()
+                .placeId("ChIJgUbEo1")
+                .name("성심당")
+                .city("서울")
                 .build();
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        wishPlaceService.updateSpotInWishPlace(member.getId(), wishPlaceReqDTO);
+        spotService.addSpot(member.getId(), null, spotReqDTO, "wishPlace");
 
         verify(spotRepository, times(1)).save(any(Spot.class));
     }
@@ -132,7 +133,7 @@ class WishPlaceServiceTest {
 
         when(wishPlaceRepository.findByMemberId(1L)).thenReturn(Optional.of(wishPlace));
 
-        wishPlaceService.removeSpotFromWishPlace(member.getId(), 1L, 1L);
+       spotService.removeSpot(member.getId(), null, 1L, "wishPlace");
 
         assertTrue(wishPlace.getSpots().isEmpty());
         verify(spotRepository, times(1)).delete(spot);
@@ -145,7 +146,8 @@ class WishPlaceServiceTest {
         when(wishPlaceRepository.findAllByMemberId(1L)).thenReturn(List.of(wishPlace));
         when(wishPlaceRepository.findAllByMemberId(2L)).thenReturn(List.of(wishPlace2));
 
-        List<WishPlaceResDTO> result = wishPlaceService.getMemberAndPartnerWishPlaces(1L);
+        SecurityUser securityUser = new SecurityUser(member);
+        List<WishPlaceResDTO> result = wishPlaceService.getMemberAndPartnerWishPlaces(securityUser);
 
         assertNotNull(result);
         assertThat(result).hasSize(2);

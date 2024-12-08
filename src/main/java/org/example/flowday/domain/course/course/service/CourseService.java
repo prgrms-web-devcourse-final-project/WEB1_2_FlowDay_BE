@@ -13,11 +13,13 @@ import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.exception.SpotException;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
+import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.exception.MemberException;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,15 +40,13 @@ public class CourseService {
     private final MemberRepository memberRepository;
     private final CourseRepository courseRepository;
     private final SpotRepository spotRepository;
+    private final SpotService spotService;
     private final WishPlaceService wishPlaceService;
 
     // 코스 생성
-    public CourseResDTO saveCourse(CourseReqDTO courseReqDTO) {
-        Member member = memberRepository.findById(courseReqDTO.getMemberId()).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
-
-        try {
+    public CourseResDTO saveCourse(SecurityUser user, CourseReqDTO courseReqDTO) {try {
             Course course = Course.builder()
-                    .member(member)
+                    .member(user.member())
                     .title(courseReqDTO.getTitle())
                     .status(courseReqDTO.getStatus())
                     .date(courseReqDTO.getDate())
@@ -82,9 +81,7 @@ public class CourseService {
     public CourseResDTO updateCourseInfo(Long userId, Long courseId, CourseReqDTO courseReqDTO) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
-        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
+        validateUserPermission(userId, course);
 
         try {
             if (courseReqDTO.getTitle() != null) {
@@ -116,9 +113,7 @@ public class CourseService {
     public void updateCourseSpotSequence(Long userId, Long courseId, Long spotId, int sequence) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
-        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
+        validateUserPermission(userId, course);
 
         try {
             List<Spot> spots = spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId);
@@ -128,24 +123,8 @@ public class CourseService {
                     .filter(spot -> spot.getId().equals(spotId))
                     .findFirst()
                     .orElseThrow(SpotException.NOT_FOUND::get);
-            int beforeSequence = inpustSpot.getSequence();
 
-            inpustSpot.changeSequence(sequence);
-
-            // 순서 재배치
-            for (Spot spot : spots) {
-                if (!spot.getId().equals(spotId)) {
-                    if (beforeSequence < sequence) {
-                        if (spot.getSequence() > beforeSequence && spot.getSequence() <= sequence) {
-                            spot.changeSequence(spot.getSequence() - 1);
-                        }
-                    } else {
-                        if (spot.getSequence() < beforeSequence && spot.getSequence() >= sequence) {
-                            spot.changeSequence(spot.getSequence() + 1);
-                        }
-                    }
-                }
-            }
+            updateSpotSequence(spots, inpustSpot, sequence);
 
             spotRepository.saveAll(spots);
 
@@ -159,28 +138,10 @@ public class CourseService {
     public void addSpot(Long userId, Long courseId, SpotReqDTO spotReqDTO) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
-        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
+        validateUserPermission(userId, course);
 
         try {
-            List<Integer> existingSequences = spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId).stream()
-                    .map(Spot::getSequence)
-                    .toList();
-
-            // 가장 마지막 순서 배정
-            int sequence = existingSequences.isEmpty() ? 1 : existingSequences.stream().max(Integer::compareTo).orElse(0) + 1;
-
-            Spot spot = Spot.builder()
-                    .placeId(spotReqDTO.getPlaceId())
-                    .name(spotReqDTO.getName())
-                    .city(spotReqDTO.getCity())
-                    .comment(spotReqDTO.getComment())
-                    .sequence(sequence)
-                    .course(course)
-                    .build();
-
-            spotRepository.save(spot);
+            spotService.addSpot(userId, courseId, spotReqDTO, "course");
         } catch (Exception e) {
             e.printStackTrace();
             throw SpotException.NOT_CREATED.get();
@@ -191,33 +152,10 @@ public class CourseService {
     public void removeSpot(Long userId, Long courseId, Long spotId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
-        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
-            throw CourseException.FORBIDDEN.get();
-        }
+        validateUserPermission(userId, course);
 
         try {
-            Spot spotToRemove = course.getSpots().stream()
-                    .filter(spot -> spot.getId().equals(spotId))
-                    .findFirst()
-                    .orElseThrow(SpotException.NOT_FOUND::get);
-
-            course.getSpots().remove(spotToRemove);
-
-            spotRepository.delete(spotToRemove);
-
-            // 남은 장소 순서 재배치
-            List<Spot> updatedSpots = course.getSpots().stream()
-                    .sorted(Comparator.comparingInt(Spot::getSequence))
-                    .toList();
-
-            for (int i = 0; i < updatedSpots.size(); i++) {
-                Spot spot = updatedSpots.get(i);
-
-                spot.changeSequence(i + 1);
-
-                spotRepository.save(spot);
-            }
-
+            spotService.removeSpot(userId, courseId, spotId, "course");
         } catch (Exception e) {
             e.printStackTrace();
             throw SpotException.NOT_DELETED.get();
@@ -238,11 +176,11 @@ public class CourseService {
     }
 
     // 회원 별 코스 목록 조회
-    public List<CourseResDTO> findCourseByMember(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
+    public List<CourseResDTO> findCourseByMember(Long userId) {
+        Member member = memberRepository.findById(userId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         Long partnerId = member.getPartnerId() != null ? member.getPartnerId() : null;
 
-        List<Course> memberCourses = courseRepository.findAllByMemberId(memberId);
+        List<Course> memberCourses = courseRepository.findAllByMemberId(userId);
         List<Course> partnerCourses = partnerId != null
                 ? courseRepository.findAllByMemberIdAndStatus(partnerId, Status.COUPLE)
                 : new ArrayList<>();
@@ -267,11 +205,11 @@ public class CourseService {
     }
 
     // 회원 별 위시 플레이스, 코스 목록 조회
-    public Page<Object> findWishPlaceAndCourseListByMember(Long memberId, PageReqDTO pageReqDTO) {
+    public Page<Object> findWishPlaceAndCourseListByMember(SecurityUser user, PageReqDTO pageReqDTO) {
         Pageable pageable = pageReqDTO.getPageable(Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        List<WishPlaceResDTO> wishPlaceResDTOS = wishPlaceService.getMemberAndPartnerWishPlaces(memberId);
-        List<CourseResDTO> courseResDTOS = findCourseByMember(memberId);
+        List<WishPlaceResDTO> wishPlaceResDTOS = wishPlaceService.getMemberAndPartnerWishPlaces(user);
+        List<CourseResDTO> courseResDTOS = findCourseByMember(user.getId());
 
         List<Object> combinedCourses = new ArrayList<>();
         combinedCourses.addAll(wishPlaceResDTOS);
@@ -285,10 +223,10 @@ public class CourseService {
     }
 
     // 그만 보기 시 상대방의 코스 비공개로 상태 변경
-    public void updateCourseStatusToPrivate(Long memberId, Long courseId) {
+    public void updateCourseStatusToPrivate(Long userId, Long courseId) {
         Course course = courseRepository.findById(courseId).orElseThrow(CourseException.NOT_FOUND::get);
 
-        if (!memberId.equals(courseRepository.findById(courseId).get().getMember().getPartnerId())) {
+        if (!userId.equals(courseRepository.findById(courseId).get().getMember().getPartnerId())) {
             throw CourseException.FORBIDDEN.get();
         }
 
@@ -301,12 +239,35 @@ public class CourseService {
     }
 
     // 연인 관계 해지 시 모든 코스 비공개로 변경
-    public void updateCourseListStatusToPrivate(Long memberId) {
-        List<Course> courses = courseRepository.findAllByMemberId(memberId);
+    public void updateCourseListStatusToPrivate(Long userId) {
+        List<Course> courses = courseRepository.findAllByMemberId(userId);
 
         for (Course course : courses) {
             if (Status.COUPLE.equals(course.getStatus())) {
                 course.changeStatus(Status.PRIVATE);
+            }
+        }
+    }
+
+    // 사용자 비교
+    private void validateUserPermission(Long userId, Course course) {
+        if (!userId.equals(course.getMember().getId()) && !userId.equals(course.getMember().getPartnerId())) {
+            throw CourseException.FORBIDDEN.get();
+        }
+    }
+
+    // 순서 재배열
+    private void updateSpotSequence(List<Spot> spots, Spot targetSpot, int newSequence) {
+        int oldSequence = targetSpot.getSequence();
+        targetSpot.changeSequence(newSequence);
+
+        for (Spot spot : spots) {
+            if (spot.getId().equals(targetSpot.getId())) continue;
+
+            if (oldSequence < newSequence && spot.getSequence() > oldSequence && spot.getSequence() <= newSequence) {
+                spot.changeSequence(spot.getSequence() - 1);
+            } else if (oldSequence > newSequence && spot.getSequence() < oldSequence && spot.getSequence() >= newSequence) {
+                spot.changeSequence(spot.getSequence() + 1);
             }
         }
     }

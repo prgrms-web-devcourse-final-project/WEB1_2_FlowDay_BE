@@ -12,6 +12,8 @@ import org.example.flowday.domain.post.post.dto.PostResponseDTO;
 import org.example.flowday.domain.post.post.entity.Post;
 import org.example.flowday.domain.post.post.mapper.PostMapper;
 import org.example.flowday.domain.post.post.repository.PostRepository;
+import org.example.flowday.domain.post.tag.repository.TagRepository;
+import org.example.flowday.domain.post.tag.service.TagService;
 import org.example.flowday.global.fileupload.service.GenFileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,7 +53,13 @@ class PostServiceTest {
     private GenFileService genFileService;
 
     @Mock
+    private TagRepository tagRepository;
+
+    @Mock
     private PostMapper postMapper;
+
+    @Mock
+    private TagService tagService;
 
     private Member member;
     private Member partner;
@@ -146,6 +154,7 @@ class PostServiceTest {
                 .region("서울")
                 .season("겨울")
                 .status(org.example.flowday.domain.post.post.entity.Status.PUBLIC)
+                .tags("")
                 .courseId(1L)
                 .build();
 

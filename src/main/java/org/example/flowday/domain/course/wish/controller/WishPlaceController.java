@@ -3,7 +3,7 @@ package org.example.flowday.domain.course.wish.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.example.flowday.domain.course.wish.dto.WishPlaceReqDTO;
+import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
 import org.example.flowday.domain.member.repository.MemberRepository;
@@ -27,30 +27,29 @@ public class WishPlaceController {
     @Operation(summary = "장소 추가")
     @PostMapping
     public ResponseEntity<Void> addSpotToWishPlace(
-            @RequestBody WishPlaceReqDTO wishPlaceReqDTO,
+            @RequestBody SpotReqDTO spotReqDTO,
             @AuthenticationPrincipal SecurityUser user
     ) {
-        wishPlaceService.updateSpotInWishPlace(user.getId(), wishPlaceReqDTO);
+        wishPlaceService.updateSpotInWishPlace(user.getId(), spotReqDTO);
         return ResponseEntity.noContent().build();
     }
 
     // 위시 플레이스에서 장소 삭제
     @Operation(summary = "장소 삭제")
-    @DeleteMapping("/member/{memberId}/spot/{spotId}")
+    @DeleteMapping("/spot/{spotId}")
     public ResponseEntity<Void> removeSpotFromWishPlace(
-            @PathVariable Long memberId,
             @PathVariable Long spotId,
             @AuthenticationPrincipal SecurityUser user
     ) {
-        wishPlaceService.removeSpotFromWishPlace(user.getId(), memberId, spotId);
+        wishPlaceService.removeSpotFromWishPlace(user.getId(), spotId);
         return ResponseEntity.noContent().build();
     }
 
     // 회원 별 위시 플레이스 목록 조회
     @Operation(summary = "회원 별 위시 플레이스 목록 조회")
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<WishPlaceResDTO>> getMemberWishPlaces(@PathVariable Long memberId) {
-        List<WishPlaceResDTO> wishPlaces = wishPlaceService.getMemberWishPlaces(memberId);
+    @GetMapping
+    public ResponseEntity<List<WishPlaceResDTO>> getMemberWishPlaces(@AuthenticationPrincipal SecurityUser user) {
+        List<WishPlaceResDTO> wishPlaces = wishPlaceService.getMemberWishPlaces(user.getId());
         return ResponseEntity.ok(wishPlaces);
     }
 

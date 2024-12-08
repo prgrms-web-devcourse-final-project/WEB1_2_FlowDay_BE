@@ -10,12 +10,14 @@ import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.entity.Spot;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
+import org.example.flowday.domain.course.spot.service.SpotService;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
 import org.example.flowday.domain.course.wish.service.WishPlaceService;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.entity.Role;
 import org.example.flowday.domain.member.repository.MemberRepository;
+import org.example.flowday.global.security.util.SecurityUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,6 +55,9 @@ class CourseServiceTest {
 
     @InjectMocks
     private CourseService courseService;
+
+    @InjectMocks
+    private SpotService spotService;
 
     private Member member;
     private WishPlace wishPlace;
@@ -177,7 +182,6 @@ class CourseServiceTest {
     @Test
     void saveCourse() {
         CourseReqDTO courseReqDTO = CourseReqDTO.builder()
-                .memberId(1L)
                 .title("코스 이름")
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())
@@ -185,8 +189,8 @@ class CourseServiceTest {
                 .build();
 
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-
-        CourseResDTO result = courseService.saveCourse(courseReqDTO);
+        SecurityUser securityUser = new SecurityUser(member);
+        CourseResDTO result = courseService.saveCourse(securityUser, courseReqDTO);
 
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("코스 이름");
@@ -218,7 +222,6 @@ class CourseServiceTest {
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
         CourseReqDTO courseReqDTO = CourseReqDTO.builder()
-                .memberId(memberId)
                 .title("수정 코스 이름")
                 .status(Status.PRIVATE)
                 .date(LocalDate.now())
@@ -259,8 +262,8 @@ class CourseServiceTest {
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(spots);
 
-        courseService.addSpot(memberId, courseId, spotReqDTO1);
-        courseService.addSpot(memberId, courseId, spotReqDTO2);
+        spotService.addSpot(memberId, courseId, spotReqDTO1, "course");
+        spotService.addSpot(memberId, courseId, spotReqDTO2, "course");
 
         courseService.updateCourseSpotSequence(memberId, courseId, spotId, newSequence);
 
@@ -282,7 +285,7 @@ class CourseServiceTest {
                 .city("서울")
                 .build();
 
-        courseService.addSpot(member.getId(), courseId, spotReqDTO);
+        spotService.addSpot(member.getId(), courseId, spotReqDTO, "course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
         when(spotRepository.findAllByCourseIdOrderBySequenceAsc(courseId)).thenReturn(List.of(addSpot));
@@ -347,7 +350,8 @@ class CourseServiceTest {
         );
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
-        when(wishPlaceService.getMemberAndPartnerWishPlaces(memberId)).thenReturn(wishPlaceResDTOList);
+        SecurityUser securityUser = new SecurityUser(member);
+        when(wishPlaceService.getMemberAndPartnerWishPlaces(securityUser)).thenReturn(wishPlaceResDTOList);
         when(courseService.findCourseByMember(memberId)).thenReturn(courseResDTOList);
 
         List<Object> combinedList = new ArrayList<>();

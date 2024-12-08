@@ -10,6 +10,7 @@ import org.example.flowday.domain.post.post.entity.Post;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class PostMapper {
@@ -19,7 +20,6 @@ public class PostMapper {
                 .writer(writer)
                 .region(DTO.getRegion())
                 .season(DTO.getSeason())
-                .tags(DTO.getTags())
                 .title(DTO.getTitle())
                 .contents(DTO.getContents())
                 .course(course)
@@ -28,14 +28,16 @@ public class PostMapper {
     }
 
     public PostResponseDTO toResponseDTO(Post post , List<SpotResDTO> spots , List<GenFileResponseDTO> images) {
+
         return PostResponseDTO.builder()
                 .id(post.getId())
                 .title(post.getTitle())
                 .contents(post.getContents())
                 .region(post.getRegion())
                 .season(post.getSeason())
-                .tags(post.getTags())
+                .tags(post.getTagStr())
                 .likeCount(post.getLikeCount())
+                .commentCount(post.getCommentCount())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .status(post.getStatus())

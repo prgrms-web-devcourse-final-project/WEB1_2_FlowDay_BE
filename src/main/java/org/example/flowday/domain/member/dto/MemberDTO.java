@@ -105,6 +105,7 @@ public class MemberDTO {
         private String partnerName;
         private LocalDate relationshipDt;
         private LocalDate birthDt;
+        private Long chattingRoom;
     }
 
     @Data
@@ -158,8 +159,7 @@ public class MemberDTO {
     @NoArgsConstructor  // Lombok의 @NoArgsConstructor 추가
     public static class UpdatePartnerIdRequestDTO {
 
-        @JsonProperty("partnerId")
-        private Long partnerId;
+        private Long senderId;
         private String relationshipDt;
     }
 

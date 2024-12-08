@@ -25,6 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,7 +53,7 @@ public class MemberService {
 
 
     // refreshToken을 사용하여 새로운 Access Token 생성
-    public String refreshAccessToken(String refreshToken) {
+    public Map<String,String> refreshAccessToken(String refreshToken) {
 
 
         if (refreshToken == null || !refreshToken.startsWith("Bearer ")) {
@@ -69,8 +74,6 @@ public class MemberService {
         String storedToken = memberRepository.findRefreshTokenByLoginId(loginId).orElseThrow(MemberException.MEMBER_NOT_FOUND::getMemberTaskException);
         if (storedToken.equals(token)) {
 
-            // Refresh Rotate 전략
-            // refreshToken 을 1회용으로 만들어, 탈취 되었을 때의 피해를 최소화
             String updatedRefreshToken = jwtUtil.createJwt(Map.of(
                             "category","refreshToken",
                             "id",id,
@@ -80,15 +83,17 @@ public class MemberService {
 
             memberRepository.updateRefreshToken(loginId, updatedRefreshToken);
 
-            // 새 accessToken 생성
-            return jwtUtil.createJwt(Map.of(
+            String newAccessToken = jwtUtil.createJwt(Map.of(
                             "category", "accessToken",
                             "id", id,
                             "loginId", loginId,
                             "role", role),
-                    60 * 60 * 1000L);
+                    60 * 60 * 10000L);
+
+            // 새 accessToken 생성
+            return Map.of("access",newAccessToken,"refresh",updatedRefreshToken);
         } else {
-            return "Invalid token";
+            throw new IllegalArgumentException("Invalid refresh token");
         }
     }
     // 회원 가입
@@ -214,8 +219,9 @@ public class MemberService {
         String partnerName = (String) resultMap.get("partnerName");
         LocalDate relationshipDt = (LocalDate) resultMap.get("relationshipDt");
         LocalDate birthDt = (LocalDate) resultMap.get("birthDt");
+        Long chattingRoom = (Long) resultMap.get("roomId");
 
-        return new MemberDTO.MyPageResponseDTO(profileImage, name, partnerImage, partnerName, relationshipDt, birthDt);
+        return new MemberDTO.MyPageResponseDTO(profileImage, name, partnerImage, partnerName, relationshipDt, birthDt, chattingRoom);
 
     }
 
@@ -257,7 +263,10 @@ public class MemberService {
     @Transactional
     public void setMyinfo(Member member, MemberDTO.MyInfoSettingRequestDTO myInfo) throws Exception {
 
-        changeProfileImage(member.getId(), myInfo.getFile());
+        if (myInfo.getFile() != null) {
+            changeProfileImage(member.getId(), myInfo.getFile());
+        }
+
         member.setName(myInfo.getName());
         member.setBirthDt(myInfo.getBirthDt());
         memberRepository.save(member);
@@ -310,30 +319,28 @@ public class MemberService {
     // 커플 신청 보내기
     @Transactional
     public void sendNotification(Member member, MemberDTO.SendCoupleRequestDTO dto) throws JsonProcessingException {
-
-        NotificationRequestDTO notify = new NotificationRequestDTO();
-        notify.setSenderId(member.getId());
-        notify.setReceiverId(dto.getPartnerId());
-        notify.setMessage("연인 신청이 도착했습니다.");
-        notify.setUrl("/api/v1/members/partnerUpdate");
-        notify.setParams(Map.of(
-                "relationshipDt",dto.getRelationshipDt(),
-                "senderId",member.getId()
-        ));
-
-
+        NotificationRequestDTO notify = NotificationRequestDTO.builder()
+                .senderId(member.getId())
+                .receiverId(dto.getPartnerId())
+                .message("연인 신청이 도착했습니다.")
+                .url("/api/v1/members/partnerUpdate")
+                .params(Map.of(
+                        "relationshipDt", dto.getRelationshipDt(),
+                        "senderId", member.getId()
+                ))
         notificationService.createNotification(notify);
 
     }
 
     // 파트너 ID 등록 (수락한 사람)
     @Transactional
-    public void acceptAddPartnerId(Long partnerId, Long myId, Long chattingRoomId) {
+    public void acceptAddPartnerId(Long partnerId, MemberDTO.UpdatePartnerIdRequestDTO dto, Long chattingRoomId) {
 
-        Member member = isExist(myId);
+        Member member = isExist(dto.getSenderId());
 
         member.setPartnerId(partnerId);
         member.setChattingRoomId(chattingRoomId);
+        member.setRelationshipDt(LocalDate.parse(dto.getRelationshipDt()));
 
         memberRepository.save(member);
 
@@ -341,17 +348,17 @@ public class MemberService {
 
     // 파트너 ID 등록 (요청을 보낸 사람)
     @Transactional
-    public void updatePartnerId(Member member, Map<String,Object> request) {
+    public void updatePartnerId(Member member, MemberDTO.UpdatePartnerIdRequestDTO request) {
 
-        member.setPartnerId((Long) request.get("senderId"));
+        member.setPartnerId(request.getSenderId());
 
         member.setChattingRoomId(chatService.registerChatRoom(LocalDateTime.now()));
 
-        member.setRelationshipDt(LocalDate.parse(request.get("relationshipDt").toString()));
+        member.setRelationshipDt(LocalDate.parse(request.getRelationshipDt()));
 
         memberRepository.save(member);
 
-        acceptAddPartnerId(member.getId(), (Long) request.get("senderId"), member.getChattingRoomId());
+        acceptAddPartnerId(member.getId(), request, member.getChattingRoomId());
 
     }
 

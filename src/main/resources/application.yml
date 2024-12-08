@@ -21,6 +21,10 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/flowday_chat_db
+      auto-index-creation: true
   jpa:
     hibernate:
       ddl-auto: update
@@ -43,3 +47,11 @@ file:
   local:
     upload:
       path: ./local_image_storage
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"   # 모든 엔드포인트를 공개
+  endpoint:
+    prometheus:
