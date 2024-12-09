@@ -35,17 +35,25 @@ public class SpotService {
             return Collections.emptyList();
         }
 
+        Map<String, Spot> representativeSpots = spots.stream()
+                .collect(Collectors.groupingBy(
+                        Spot::getPlaceId,
+                        Collectors.collectingAndThen(
+                                Collectors.minBy(Comparator.comparing(Spot::getId)),
+                                Optional::get
+                        )
+                ));
+
         Map<String, Long> placeIdCount = spots.stream()
                 .collect(Collectors.groupingBy(Spot::getPlaceId, Collectors.counting()));
 
-        List<String> topPlaceIds = placeIdCount.entrySet().stream()
+        List<Spot> topSpots = placeIdCount.entrySet().stream()
                 .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
                 .limit(4)
-                .map(Map.Entry::getKey)
+                .map(entry -> representativeSpots.get(entry.getKey()))
                 .collect(Collectors.toList());
 
-        return spots.stream()
-                .filter(spot -> topPlaceIds.contains(spot.getPlaceId()))
+        return topSpots.stream()
                 .map(SpotResDTO::new)
                 .collect(Collectors.toList());
     }
