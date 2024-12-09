@@ -327,7 +327,7 @@ public class MemberService {
                 .params(Map.of(
                         "relationshipDt", dto.getRelationshipDt(),
                         "senderId", member.getId()
-                ))
+                )).build();
         notificationService.createNotification(notify);
 
     }
