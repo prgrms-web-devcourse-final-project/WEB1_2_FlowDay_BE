@@ -12,10 +12,12 @@ import org.example.flowday.domain.notification.mapper.NotificationMapper;
 import org.example.flowday.domain.notification.repository.NotificationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +29,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+
+    @Autowired
+    private  SimpMessagingTemplate simpMessagingTemplate;
     private final NotificationMapper notificationMapper;
 
     // getMemberById 메서드 로깅 추가
@@ -70,7 +74,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     // WebSocket 알림 전송 메서드
-    private void sendWebSocketNotification(Long receiverId, Notification notification) {
+    @Async
+    public void sendWebSocketNotification(Long receiverId, Notification notification) {
         try {
             NotificationResponseDTO responseDTO = notificationMapper.toResponseDTO(notification);
             responseDTO.setType(notification.getType());
