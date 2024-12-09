@@ -35,22 +35,18 @@ public class SpotService {
             return Collections.emptyList();
         }
 
-        // placeId로 그룹화 후 가장 먼저 저장된 장소 선택
-        Map<String, Spot> topSpots = spots.stream()
-                .collect(Collectors.groupingBy(
-                        Spot::getPlaceId,
-                        Collectors.collectingAndThen(
-                                Collectors.minBy(Comparator.comparing(Spot::getId)),
-                                Optional::get)
-                ));
+        Map<String, Long> placeIdCount = spots.stream()
+                .collect(Collectors.groupingBy(Spot::getPlaceId, Collectors.counting()));
 
-        // 상위 4개 반환
-        List<Spot> topSpotsList = topSpots.values().stream()
+        List<String> topPlaceIds = placeIdCount.entrySet().stream()
+                .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
                 .limit(4)
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
-        return topSpotsList.stream()
-                .map(spot -> new SpotResDTO(spot))
+        return spots.stream()
+                .filter(spot -> topPlaceIds.contains(spot.getPlaceId()))
+                .map(SpotResDTO::new)
                 .collect(Collectors.toList());
     }
 
