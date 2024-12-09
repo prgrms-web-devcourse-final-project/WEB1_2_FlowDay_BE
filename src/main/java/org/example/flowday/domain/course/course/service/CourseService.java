@@ -25,9 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -187,37 +185,22 @@ public class CourseService {
         Long memberId = user.getId();
         Long partnerId = user.member().getPartnerId();
 
-        List<Object[]> results = courseRepository.findAllByMemberIdOrPartnerId(memberId, partnerId, Status.COUPLE);
+        List<Object[]> results = courseRepository.findAllByMemberIdOrPartnerId(memberId, partnerId);
         List<CourseListResDTO> courseListResDTOs = new ArrayList<>();
 
         for (Object[] result : results) {
-            Long courseId = (Long) result[0];
-            Long memberIdFromCourse = (Long) result[1];
-            String title = (String) result[2];
-            Status status = (Status) result[3];
-            LocalDate date = (LocalDate) result[4];
-            String color = (String) result[5];
-            String placeIds = (String) result[6];
-            String sequences = (String) result[7];
+            Course course = (Course) result[0];
+            String placeIds = (String) result[1];
 
-            List<String> spotPlaceIds = (placeIds != null && !placeIds.isEmpty())
-                    ? Arrays.asList(placeIds.split(","))
-                    : new ArrayList<>();
-
-            List<Integer> spotSequences = (sequences != null && !sequences.isEmpty())
-                    ? Arrays.asList(sequences.split(",")).stream()
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList())
-                    : new ArrayList<>();
-
-            List<PlaceIdDTO> spots = new ArrayList<>();
-            for (int i = 0; i < spotPlaceIds.size(); i++) {
-                String placeId = spotPlaceIds.get(i);
-                int sequence = (i < spotSequences.size()) ? spotSequences.get(i) : 0;
-                spots.add(new PlaceIdDTO(placeId, sequence));
+            List<PlaceIdDTO> spotPlaceIds = new ArrayList<>();
+            if (placeIds != null && !placeIds.isEmpty()) {
+                String[] placeIdArray = placeIds.split(",");
+                for (int i = 0; i < placeIdArray.length; i++) {
+                    spotPlaceIds.add(new PlaceIdDTO(placeIdArray[i], i + 1));
+                }
             }
 
-            courseListResDTOs.add(new CourseListResDTO(courseId, memberIdFromCourse, title, status, date, color, spots));
+            courseListResDTOs.add(new CourseListResDTO(course, spotPlaceIds));
         }
         return courseListResDTOs;
     }

@@ -1,6 +1,7 @@
 package org.example.flowday.domain.course.course.dto;
 
 import lombok.Getter;
+import org.example.flowday.domain.course.course.entity.Course;
 import org.example.flowday.domain.course.course.entity.Status;
 
 import java.time.LocalDate;
@@ -16,13 +17,13 @@ public class CourseListResDTO {
     private String color;
     private List<PlaceIdDTO> spots;
 
-    public CourseListResDTO(Long id, Long memberIdFromCourse, String title, Status status, LocalDate date, String color, List<PlaceIdDTO> spots) {
-        this.id = id;
-        this.memberId = memberIdFromCourse;
-        this.title = title;
-        this.status = status;
-        this.date = date;
-        this.color = color;
+    public CourseListResDTO(Course course, List<PlaceIdDTO> spots) {
+        this.id = course.getId();
+        this.memberId = course.getMember().getId();
+        this.title = course.getTitle();
+        this.status = course.getStatus();
+        this.date = course.getDate();
+        this.color = course.getColor();
         this.spots = spots;
     }
 
