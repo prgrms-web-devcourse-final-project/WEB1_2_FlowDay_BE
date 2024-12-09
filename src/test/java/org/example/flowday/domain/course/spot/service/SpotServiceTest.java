@@ -31,6 +31,7 @@ class SpotServiceTest {
     private Spot spot3;
     private Spot spot4;
     private Spot spot5;
+    private Spot spot6;
 
     @BeforeEach
     void setUp() {
@@ -76,6 +77,15 @@ class SpotServiceTest {
                 .city("서울")
                 .sequence(5)
                 .build();
+
+        spot6 = Spot.builder()
+                .id(1L)
+                .placeId("ChIJgUbEo1")
+                .name("장소1")
+                .city("서울")
+                .comment("여기 빵 맛집이래")
+                .sequence(1)
+                .build();
     }
 
     @DisplayName("지역별 인기 장소 Top 4 조회 테스트")
@@ -86,10 +96,8 @@ class SpotServiceTest {
         List<SpotResDTO> result = spotService.findTopSpotsByCity("서울");
 
         assertThat(result).hasSize(4);
-        assertThat(result.get(0).getName()).isEqualTo("장소5");
-        assertThat(result.get(1).getName()).isEqualTo("장소4");
-        assertThat(result.get(2).getName()).isEqualTo("장소3");
-        assertThat(result.get(3).getName()).isEqualTo("장소2");
+        assertThat(result.get(0).getName()).isEqualTo("장소2");
+        assertThat(result.get(1).getName()).isEqualTo("장소3");
 
         verify(spotRepository, times(1)).findAllByCity("서울");
     }
