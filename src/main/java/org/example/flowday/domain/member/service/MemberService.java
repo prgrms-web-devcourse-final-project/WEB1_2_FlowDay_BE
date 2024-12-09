@@ -319,7 +319,6 @@ public class MemberService {
     // 커플 신청 보내기
     @Transactional
     public void sendNotification(Member member, MemberDTO.SendCoupleRequestDTO dto) throws JsonProcessingException {
-
         NotificationRequestDTO notify = NotificationRequestDTO.builder()
                 .senderId(member.getId())
                 .receiverId(dto.getPartnerId())
@@ -329,9 +328,6 @@ public class MemberService {
                         "relationshipDt", dto.getRelationshipDt(),
                         "senderId", member.getId()
                 ))
-                .build();
-
-
         notificationService.createNotification(notify);
 
     }

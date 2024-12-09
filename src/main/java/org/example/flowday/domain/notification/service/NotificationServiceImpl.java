@@ -1,7 +1,6 @@
 package org.example.flowday.domain.notification.service;
 
 import java.util.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.example.flowday.domain.member.entity.Member;
 import org.example.flowday.domain.member.repository.MemberRepository;
@@ -45,11 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
      */
     @Override
     @Transactional
-    public NotificationResponseDTO createNotification(NotificationRequestDTO dto) throws JsonProcessingException {
-        // sender와 receiver 객체 조회
-        Member sender = getMemberById(dto.getSenderId());
-        Member receiver = getMemberById(dto.getReceiverId());
-
+    public NotificationResponseDTO createNotification(NotificationRequestDTO dto) {
         // Notification 엔티티로 변환
         Notification notify = notificationMapper.toEntity(dto);
         // 추가 파라미터 설정
@@ -59,21 +54,22 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = notificationRepository.save(notify);
 
         // WebSocket을 통해 클라이언트로 알림 전송
-        sendWebSocketNotification(dto.getReceiverId(), notification);
-
-        // 알림 응답 DTO 반환
+        try {
+            sendWebSocketNotification(dto.getReceiverId(), notification);
+        } catch (Exception e) {
+            logger.error("WebSocket 알림 전송 실패 : 수신자 {}에게 알림 전송 중 오류 발생", dto.getReceiverId());
+        }
         return notificationMapper.toResponseDTO(notification);
     }
 
     // WebSocket 알림 전송 메서드
     private void sendWebSocketNotification(Long receiverId, Notification notification) {
         try {
-            simpMessagingTemplate.convertAndSend("/topic/notifications/" + receiverId,
-                    new NotificationResponseDTO.CreateResponseDTO(notification.getReceiverId().getId()));
+            NotificationResponseDTO responseDTO = notificationMapper.toResponseDTO(notification);
+            simpMessagingTemplate.convertAndSend("/topic/notifications/" + receiverId, responseDTO);
             logger.info("알림을 성공적으로 수신자 {}에게 전송하였습니다.", receiverId);
         } catch (Exception e) {
             logger.error("WebSocket 알림 전송 실패: 수신자 {}에게 알림 전송 중 오류 발생", receiverId, e);
-            // 실패 시 대체 처리 로직 (예: DB에 저장된 알림을 나중에 재전송)
         }
     }
 
@@ -86,12 +82,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .url(url)
                 .params(params)
                 .build();
-
-        try {
-            createNotification(requestDTO);
-        } catch (JsonProcessingException e) {
-            logger.error("알림 생성 중 오류 발생", e);
-        }
+        createNotification(requestDTO);
     }
 
     /**
@@ -172,5 +163,14 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendCoupleDisconnectNotification(Member sender, Member receiver) {
         String message = sender.getName() + "님과의 커플 관계가 끊어졌습니다.";
         sendNotification(sender, receiver, message, "/couple/disconnect", Map.of("senderId", sender.getId()));
+    }
+
+    /**
+     * 투표 요청 알림
+     */
+    @Override
+    public void sendVoteRequestNotification(Member sender, Long voteId, Member receiver) {
+        String message = sender.getName() + "님이 투표를 요청했습니다.";
+        sendNotification(sender, receiver, message, "/vote/request" + voteId, Map.of("voteId", voteId, "senderId", sender.getId()));
     }
 }
