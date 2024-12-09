@@ -1,10 +1,12 @@
 package org.example.flowday.domain.course.wish.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.flowday.domain.course.course.dto.PlaceIdDTO;
 import org.example.flowday.domain.course.spot.dto.SpotReqDTO;
 import org.example.flowday.domain.course.spot.dto.SpotResDTO;
 import org.example.flowday.domain.course.spot.repository.SpotRepository;
 import org.example.flowday.domain.course.spot.service.SpotService;
+import org.example.flowday.domain.course.wish.dto.WishPlaceListResDTO;
 import org.example.flowday.domain.course.wish.dto.WishPlaceResDTO;
 import org.example.flowday.domain.course.wish.entity.WishPlace;
 import org.example.flowday.domain.course.wish.exception.WishPlaceException;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,8 +67,8 @@ public class WishPlaceService {
         }
     }
 
-    // 회원 별 위시 플레이스 목록 조회
-    public List<WishPlaceResDTO> getMemberWishPlaces(Long userId) {
+    // 나의 위시 플레이스 조회
+    public List<WishPlaceResDTO> findMemberWishPlaces(Long userId) {
         List<WishPlace> wishPlaces = wishPlaceRepository.findAllByMemberId(userId);
 
         return wishPlaces.stream()
@@ -79,8 +82,23 @@ public class WishPlaceService {
                 .collect(Collectors.toList());
     }
 
+    // 파트너의 위시 플레이스 조회
+    public List<WishPlaceResDTO> findPartnerWishPlaces(SecurityUser user) {
+        List<WishPlace> wishPlaces = wishPlaceRepository.findAllByMemberId(user.member().getPartnerId());
+
+        return wishPlaces.stream()
+                .map(wishPlace -> {
+                    List<SpotResDTO> spotResDTOs = spotRepository.findAllByWishPlaceIdOrderByIdDesc(wishPlace.getId()).stream()
+                            .map(SpotResDTO::new)
+                            .collect(Collectors.toList());
+
+                    return new WishPlaceResDTO(wishPlace, spotResDTOs);
+                })
+                .collect(Collectors.toList());
+    }
+
     // 회원 별 위시 플레이스 목록 조회 + 파트너
-    public List<WishPlaceResDTO> getMemberAndPartnerWishPlaces(SecurityUser user) {
+    public List<WishPlaceListResDTO> findMemberAndPartnerWishPlaces(SecurityUser user) {
         Long partnerId = user.member().getPartnerId();
         List<Long> memberIds = new ArrayList<>();
         memberIds.add(user.getId());
@@ -88,18 +106,25 @@ public class WishPlaceService {
             memberIds.add(partnerId);
         }
 
-        List<WishPlace> wishPlaces = wishPlaceRepository.findAllWithSpotsByMemberIds(memberIds);
+        List<Object[]> wishPlacesResults = wishPlaceRepository.findAllWithSpotsByMemberIds(memberIds);
 
-        return wishPlaces.stream()
-                .map(wishPlace -> {
-                    List<SpotResDTO> spotResDTOs = wishPlace.getSpots().stream()
-                            .map(SpotResDTO::new)
-                            .toList();
+        return wishPlacesResults.stream()
+                .map(result -> {
+                    WishPlace wishPlace = (WishPlace) result[0];
+                    String placeIds = (String) result[1];
 
-                    // WishPlaceResDTO 생성
-                    return new WishPlaceResDTO(wishPlace, spotResDTOs);
+                    List<String> spotPlaceIds = (placeIds != null && !placeIds.isEmpty())
+                            ? Arrays.asList(placeIds.split(","))
+                            : new ArrayList<>();
+
+                    List<PlaceIdDTO> spots = new ArrayList<>();
+                    for (String placeId : spotPlaceIds) {
+                        spots.add(new PlaceIdDTO(placeId, 0));
+                    }
+
+                    return new WishPlaceListResDTO(wishPlace, spots);
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
 }

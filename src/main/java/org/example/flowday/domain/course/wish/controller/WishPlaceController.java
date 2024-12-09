@@ -45,11 +45,19 @@ public class WishPlaceController {
         return ResponseEntity.noContent().build();
     }
 
-    // 회원 별 위시 플레이스 목록 조회
-    @Operation(summary = "회원 별 위시 플레이스 목록 조회")
+    // 나의 위시 플레이스 목록 조회
+    @Operation(summary = "나의 위시 플레이스 목록 조회")
     @GetMapping
     public ResponseEntity<List<WishPlaceResDTO>> getMemberWishPlaces(@AuthenticationPrincipal SecurityUser user) {
-        List<WishPlaceResDTO> wishPlaces = wishPlaceService.getMemberWishPlaces(user.getId());
+        List<WishPlaceResDTO> wishPlaces = wishPlaceService.findMemberWishPlaces(user.getId());
+        return ResponseEntity.ok(wishPlaces);
+    }
+
+    // 파트너의 위시 플레이스 목록 조회
+    @Operation(summary = "파트너의 위시 플레이스 목록 조회")
+    @GetMapping("/partner")
+    public ResponseEntity<List<WishPlaceResDTO>> getPartnerWishPlaces(@AuthenticationPrincipal SecurityUser user) {
+        List<WishPlaceResDTO> wishPlaces = wishPlaceService.findPartnerWishPlaces(user);
         return ResponseEntity.ok(wishPlaces);
     }
 

@@ -28,7 +28,7 @@ public class SpotService {
     private final WishPlaceRepository wishPlaceRepository;
 
     // 지역별 인기 장소 top4
-    public List<SpotResDTO> getTopSpotsByCity(String city) {
+    public List<SpotResDTO> findTopSpotsByCity(String city) {
         List<Spot> spots = spotRepository.findAllByCity(city);
 
         if (spots.isEmpty()) {

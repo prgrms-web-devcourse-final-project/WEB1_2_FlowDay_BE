@@ -14,11 +14,13 @@ public interface WishPlaceRepository extends JpaRepository<WishPlace, Long> {
     List<WishPlace> findAllByMemberId(Long memberId);
 
     @Query("""
-    SELECT wp FROM WishPlace wp
-    LEFT JOIN FETCH wp.spots s
+    SELECT wp, COALESCE(GROUP_CONCAT(s.placeId), '') 
+    FROM WishPlace wp
+    LEFT JOIN wp.spots s
     WHERE wp.member.id IN (:memberIds)
+    GROUP BY wp.id
     ORDER BY wp.id DESC
     """)
-    List<WishPlace> findAllWithSpotsByMemberIds(@Param("memberIds") List<Long> memberIds);
+    List<Object[]> findAllWithSpotsByMemberIds(@Param("memberIds") List<Long> memberIds);
 
 }
