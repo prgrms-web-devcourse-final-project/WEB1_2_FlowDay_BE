@@ -14,6 +14,7 @@ public class NotificationResponseDTO {
     private String message;    // 알림 메시지
     private Boolean isRead;    // 읽음 여부
     private String url;        // 실행할 URL
+    private String type;
     private LocalDateTime createdAt;  // 생성 일시
     private String additionalParamsJson;  // 추가 파라미터
 
