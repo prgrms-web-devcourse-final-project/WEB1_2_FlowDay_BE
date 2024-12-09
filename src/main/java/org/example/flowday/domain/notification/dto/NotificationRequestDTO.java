@@ -17,5 +17,6 @@ public class NotificationRequestDTO {
     private String message;     // 알림 메시지
     private String url;         // 실행할 URL
     private Map<String, Object> params;     // 추가 파라미터
+    private String type;
 
 }

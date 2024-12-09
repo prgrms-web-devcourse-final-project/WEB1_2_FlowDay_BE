@@ -7,6 +7,8 @@ import org.example.flowday.domain.notification.dto.NotificationResponseDTO;
 import org.example.flowday.domain.notification.entity.Notification;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class NotificationMapper {
 
@@ -33,6 +35,8 @@ public class NotificationMapper {
                 .url(dto.getUrl())
                 .isRead(false)
                 .additionalParamsJson(dto.getParams() != null ? dto.getParams().toString() : null)  // params를 JSON으로 저장
+                .type(dto.getType())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -49,6 +53,7 @@ public class NotificationMapper {
                 .url(notification.getUrl())
                 .createdAt(notification.getCreatedAt())
                 .additionalParamsJson(notification.getAdditionalParamsJson())
+                .type(notification.getType())
                 .build();
     }
 }

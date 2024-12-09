@@ -30,14 +30,21 @@ public class NotificationServiceImpl implements NotificationService {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final NotificationMapper notificationMapper;
 
-    // 공통된 Member 조회 로직을 처리하는 메서드
-    private Member getMemberById(Long memberId) {
-        return memberRepository.findById(memberId)
+    // getMemberById 메서드 로깅 추가
+    public Member getMemberById(Long memberId) {
+        logger.info("사용자 조회 시작 : 사용자 ID {}", memberId);
+
+        // 사용자 조회
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> {
-                    logger.error("회원 {}를 찾을 수 없습니다.", memberId);
-                    return new ReceiverException("회원 정보를 찾을 수 없습니다.");
+                    logger.error("사용자 조회 실패 : 사용자 ID {}를 찾을 수 없습니다.", memberId);
+                    return new RuntimeException("사용자를 찾을 수 없습니다. 사용자 ID: " + memberId);
                 });
+
+        logger.info("사용자 조회 성공 : 사용자 ID {}, 사용자 이름 {}", memberId, member.getName());
+        return member;
     }
+
 
     /**
      * 알림 생성
@@ -66,6 +73,7 @@ public class NotificationServiceImpl implements NotificationService {
     private void sendWebSocketNotification(Long receiverId, Notification notification) {
         try {
             NotificationResponseDTO responseDTO = notificationMapper.toResponseDTO(notification);
+            responseDTO.setType(notification.getType());
             simpMessagingTemplate.convertAndSend("/topic/notifications/" + receiverId, responseDTO);
             logger.info("알림을 성공적으로 수신자 {}에게 전송하였습니다.", receiverId);
         } catch (Exception e) {
@@ -74,13 +82,14 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     // 알림 타입별 공통 메서드
-    private void sendNotification(Member sender, Member receiver, String message, String url, Map<String, Object> params) {
+    private void sendNotification(Member sender, Member receiver, String message, String url, Map<String, Object> params, String type) {
         NotificationRequestDTO requestDTO = NotificationRequestDTO.builder()
                 .senderId(sender.getId())
                 .receiverId(receiver.getId())
                 .message(message)
                 .url(url)
                 .params(params)
+                .type(type)
                 .build();
         createNotification(requestDTO);
     }
@@ -126,7 +135,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendLikeNotification(Member sender, Long postId, Member receiver) {
         String message = sender.getName() + "님이 게시글에 좋아요를 눌렀습니다.";
-        sendNotification(sender, receiver, message, "/post/" + postId, Map.of("postId", postId, "senderId", sender.getId()));
+        String type = "LIKE";
+        sendNotification(sender, receiver, message, "/post/" + postId, Map.of("postId", postId, "senderId", sender.getId()), type);
     }
 
     /**
@@ -135,7 +145,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendCommentNotification(Member sender, Long postId, Member receiver) {
         String message = sender.getName() + "님이 게시글에 댓글을 작성하였습니다.";
-        sendNotification(sender, receiver, message, "/post/" + postId, Map.of("postId", postId, "senderId", sender.getId()));
+        String type = "COMMENT";
+        sendNotification(sender, receiver, message, "/post/" + postId, Map.of("postId", postId, "senderId", sender.getId()), type);
     }
 
     /**
@@ -144,7 +155,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendCourseShareNotification(Member sender, Long courseId, Member receiver) {
         String message = sender.getName() + "님이 코스를 공유했습니다.";
-        sendNotification(sender, receiver, message, "/course/" + courseId, Map.of("courseId", courseId, "senderId", sender.getId()));
+        String type = "COURSE";
+        sendNotification(sender, receiver, message, "/course/" + courseId, Map.of("courseId", courseId, "senderId", sender.getId()), type);
     }
 
     /**
@@ -153,7 +165,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendCoupleRequestNotification(Member sender, Member receiver) {
         String message = sender.getName() + "님의 커플 신청이 있습니다.";
-        sendNotification(sender, receiver, message, "/couple/request", Map.of("senderId", sender.getId()));
+        String type = "COUPLE";
+        sendNotification(sender, receiver, message, "/couple/request", Map.of("senderId", sender.getId()), type);
     }
 
     /**
@@ -162,7 +175,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendCoupleDisconnectNotification(Member sender, Member receiver) {
         String message = sender.getName() + "님과의 커플 관계가 끊어졌습니다.";
-        sendNotification(sender, receiver, message, "/couple/disconnect", Map.of("senderId", sender.getId()));
+        String type = "COUPLE";
+        sendNotification(sender, receiver, message, "/couple/disconnect", Map.of("senderId", sender.getId()), type);
     }
 
     /**
@@ -171,6 +185,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendVoteRequestNotification(Member sender, Long voteId, Member receiver) {
         String message = sender.getName() + "님이 투표를 요청했습니다.";
-        sendNotification(sender, receiver, message, "/vote/request" + voteId, Map.of("voteId", voteId, "senderId", sender.getId()));
+        String type = "VOTE";
+        sendNotification(sender, receiver, message, "/vote/request" + voteId, Map.of("voteId", voteId, "senderId", sender.getId()), type);
     }
 }

@@ -36,6 +36,7 @@ public class Notification {
     private String message;
     private Boolean isRead;
     private String url;
+    private String type;
 
     @CreatedDate
     private LocalDateTime createdAt;
