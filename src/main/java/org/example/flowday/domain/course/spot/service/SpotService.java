@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class SpotService {
 
     private final SpotRepository spotRepository;
@@ -28,7 +28,7 @@ public class SpotService {
     private final WishPlaceRepository wishPlaceRepository;
 
     // 지역별 인기 장소 top4
-    public List<SpotResDTO> getTopSpotsByCity(String city) {
+    public List<SpotResDTO> findTopSpotsByCity(String city) {
         List<Spot> spots = spotRepository.findAllByCity(city);
 
         if (spots.isEmpty()) {
@@ -55,6 +55,7 @@ public class SpotService {
     }
 
     // comment 수정
+    @Transactional
     public SpotResDTO updateComment(Long spotId, SpotReqDTO spotReqDTO) {
         Spot spot = spotRepository.findById(spotId).orElseThrow(SpotException.NOT_FOUND::get);
         try {
@@ -68,6 +69,7 @@ public class SpotService {
     }
 
     // 장소 추가 : 장소 1개를 추가하는 공통 메서드
+    @Transactional
     public void addSpot(Long userId, Long entityId, SpotReqDTO spotReqDTO, String entityType) {
         try {
             if (entityType.equals("course")) {
@@ -101,6 +103,7 @@ public class SpotService {
     }
 
     // 장소 삭제 : 장소 1개를 삭제하는 공통 메서드
+    @Transactional
     public void removeSpot(Long userId, Long entityId, Long spotId, String entityType) {
         try {
             if (entityType.equals("course")) {

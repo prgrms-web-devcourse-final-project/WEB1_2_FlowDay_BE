@@ -101,7 +101,7 @@ class WishPlaceControllerTest {
     @Test
     @WithUserDetails(value = "testId4", userDetailsServiceBeanName = "securityUserService")
     void removeSpotFromWishPlace() throws Exception {
-        mockMvc.perform(delete("/api/v1/wishPlaces/spot/{spotId}", wishPlaceService.getMemberWishPlaces(member.getId()).get(0).getSpots().get(0).getId()))
+        mockMvc.perform(delete("/api/v1/wishPlaces/spot/{spotId}", wishPlaceService.findMemberWishPlaces(member.getId()).get(0).getSpots().get(0).getId()))
                 .andExpect(status().isNoContent());
     }
 

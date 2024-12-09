@@ -83,7 +83,7 @@ class SpotServiceTest {
     void getTopSpotsByCity() {
         when(spotRepository.findAllByCity("서울")).thenReturn(List.of(spot1, spot2, spot3, spot4, spot5));
 
-        List<SpotResDTO> result = spotService.getTopSpotsByCity("서울");
+        List<SpotResDTO> result = spotService.findTopSpotsByCity("서울");
 
         assertThat(result).hasSize(4);
         assertThat(result.get(0).getName()).isEqualTo("장소5");
@@ -100,7 +100,7 @@ class SpotServiceTest {
         when(spotRepository.findAllByCity("부산"))
                 .thenReturn(List.of());
 
-        List<SpotResDTO> result = spotService.getTopSpotsByCity("부산");
+        List<SpotResDTO> result = spotService.findTopSpotsByCity("부산");
 
         assertThat(result).isEmpty();
 
@@ -118,7 +118,7 @@ class SpotServiceTest {
 
         SpotResDTO spotResDTO = spotService.updateComment(spot1.getId(), spotReqDTO);
 
-        List<SpotResDTO> result = spotService.getTopSpotsByCity("서울");
+        List<SpotResDTO> result = spotService.findTopSpotsByCity("서울");
 
         assertEquals("수정", spotReqDTO.getComment());
 

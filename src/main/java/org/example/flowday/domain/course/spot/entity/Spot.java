@@ -23,7 +23,7 @@ public class Spot {
     private String comment;
     private int sequence;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = true)
     private Course course;
 
@@ -31,7 +31,7 @@ public class Spot {
     @JoinColumn(name = "vote_id", nullable = true)
     private Vote vote;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wish_place_id", nullable = true)
     private WishPlace wishPlace;
 

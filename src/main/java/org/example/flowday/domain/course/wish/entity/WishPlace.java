@@ -21,6 +21,6 @@ public class WishPlace {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Member member;
 
-    @OneToMany(mappedBy = "wishPlace", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "wishPlace", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Spot> spots;
 }
